@@ -37,7 +37,7 @@
 |---|---|---|---|
 | **Sistema base** | Linux Mint + Docker CE del repo oficial; sense suspensió, *restore on AC power loss*, `systemd-time-wait-sync` actiu, rotació de logs, `unattended-upgrades` només seguretat a les 04:30 excloent `docker-ce*` | config del sistema | És el que ja s'està fent i deixa el host de propòsit general que tot el desplegament necessita |
 | **Instal·lació de HA** | **HA Container**, versió fixada, congelada fins al 10/03/2027 | `docker-compose.yml` | Supervised s'actualitza sol i decideix per tu quan reiniciar HA; HA OS et pren el host i amb ell scripts, timers i git |
-| **Stack de contenidors** | **Un. Només `homeassistant`** | YAML de compose (~15 línies) | Sense Postgres no hi ha `depends_on`, ni healthcheck, ni credencials, ni contenidor efímer de restauració |
+| **Stack de contenidors** | **Un. Només `homeassistant`** | YAML de compose (38 línies) | Sense Postgres no hi ha `depends_on`, ni healthcheck, ni credencials, ni contenidor efímer de restauració |
 | **Base de dades de l'històric** | **SQLite**, `purge_keep_days: 730`, `commit_interval: 30`, `exclude` per **llistes explícites** (mai globs) | recorder d'HA | Amb arxiu CSV diari immutable a git, el motor deixa de ser el dipòsit de la prova i Postgres només compra un mode de fallada silenciós més |
 | **Lògica de control** | **HA natiu.** Un **únic** sensor de plantilla `sensor.decisio_del_soterrani` és l'únic que avalua; l'automatisme només hi actua. `\| float` **sense valor per defecte** + `availability:` explícit | YAML + Jinja2, 1 fitxer `packages/rosada.yaml` | Un sensor de motiu que reavalua ment; un que decideix no pot mentir, i s'estalvia un subprocés cada 60 s i un fitxer d'estat paral·lel |
 | **Exportador de dades** | **Un sol script nocturn** a les 03:40 (franja vall): `VACUUM INTO` → guardes → CSV.gz + SHA-256 → segell RFC 3161 → commit+push → disc extern → ping amb estat | Python 3 **stdlib** (`sqlite3`, `csv`, `gzip`, `hashlib`, `urllib`) + `systemd timer` amb `Persistent=true` | La instantània serveix alhora de còpia i de font d'exportació, i l'exportador és el **vigilant** de la base de dades |
@@ -135,7 +135,7 @@
 > mor, deixen d'arribar les lectures dels sis sensors— i igual de mantenible (reserva DHCP,
 > credencials Tapo, firmware).
 
-**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (15 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
+**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (38 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
 **Fitxers que editaràs de debò: deu.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **20/09/2026**, és gairebé el triple:
