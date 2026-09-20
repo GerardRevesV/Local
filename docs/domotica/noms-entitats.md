@@ -26,7 +26,7 @@ sensor.<zona>_<punt>_<magnitud>
 
 ## Taula d'entitats
 
-### Sensors d'ambient — font: integració `tplink`
+### Sensors d'ambient — font: **Matter** (hub H110 via `matter-server`)
 
 | Aparell | Ubicació | `entity_id` de temperatura | `entity_id` d'humitat |
 |---|---|---|---|
@@ -43,7 +43,7 @@ sensor.<zona>_<punt>_<magnitud>
 | DS18B20 | Paret freda 1 | `sensor.soterrani_paret_1_superficie` |
 | DS18B20 | Paret freda 2 | `sensor.soterrani_paret_2_superficie` |
 
-### Actuadors i mesura — font: integració `tplink`
+### Actuadors i mesura — font: **Matter** (vegeu la nota de sota)
 
 | Aparell | Funció | `entity_id` |
 |---|---|---|

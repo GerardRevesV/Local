@@ -2,13 +2,24 @@
 
 > ### 🔄 Revisió del 20/09/2026 — maquinari real
 >
-> El maquinari ja estava comprat quan es va prendre aquesta decisió. Queden **superades** dues
+> El maquinari ja estava comprat quan es va prendre aquesta decisió. Queden **superades** tres
 > files de la taula, i la resta es manté:
 >
 > - **Ràdio: ZHA + SLZB-06 → FORA.** Els sensors són **Tapo T310/T315 amb hub H110**, que
 >   parlen per **868 MHz sub-GHz**, amb millor penetració en formigó que el Zigbee de 2,4 GHz.
->   Integració `tplink` oficial, consulta local. Desapareix la prova de cobertura i la decisió
->   irreversible d'emparellament.
+>   Desapareix la prova de cobertura i la decisió irreversible d'emparellament.
+> - **🔴 Revisió del 21/09/2026 — la via al hub és Matter, no `tplink`, i l'stack passa a
+>   dos contenidors.** El H110 xifra amb **TPAP**, i la biblioteca que porta HA 2026.9.3
+>   (`python-kasa` 0.10.2) només coneix KLAP, AES i XOR: la integració `tplink` el rebutja amb
+>   *«Unsupported device»*. És un problema obert d'upstream
+>   ([`python-kasa#1590`](https://github.com/python-kasa/python-kasa/issues/1590)), no una
+>   configuració nostra. De les tres sortides —esperar upstream (sense data, i el calendari
+>   s'acaba al març), un component de tercers per HACS (que aquest document rebutja dins la
+>   finestra probatòria) o **Matter**— es tria Matter: el hub l'anuncia a la xarxa, comprovat
+>   per mDNS. **Costa un segon contenidor i a canvi l'accés al hub passa a ser completament
+>   local:** sense el núvol de Tapo, sense credencials de compte i sense res que caduqui. Per
+>   al valor probatori és millor que el pla original. El detall és a la capçalera de
+>   `docker-compose.yml`.
 > - **Deshumidificador: verificació resolta.** El **Qlima D 825 PA Smart** (470 W, 25 L/dia,
 >   bomba de condensats, higròstat 40–80 %) **es reprèn sol després d'un tall de corrent**.
 >   L'arquitectura (a) queda confirmada, i **no s'integra per Tuya**: l'higròstat propi regula
@@ -37,17 +48,17 @@
 |---|---|---|---|
 | **Sistema base** | Linux Mint + Docker CE del repo oficial; sense suspensió, *restore on AC power loss*, `systemd-time-wait-sync` actiu, rotació de logs, `unattended-upgrades` només seguretat a les 04:30 excloent `docker-ce*` | config del sistema | És el que ja s'està fent i deixa el host de propòsit general que tot el desplegament necessita |
 | **Instal·lació de HA** | **HA Container**, versió fixada, congelada fins al 10/03/2027 | `docker-compose.yml` | Supervised s'actualitza sol i decideix per tu quan reiniciar HA; HA OS et pren el host i amb ell scripts, timers i git |
-| **Stack de contenidors** | **Un. Només `homeassistant`** | YAML de compose (38 línies) | Sense Postgres no hi ha `depends_on`, ni healthcheck, ni credencials, ni contenidor efímer de restauració |
+| **Stack de contenidors** | ~~Un. Només `homeassistant`~~ → **DOS**: `homeassistant` + `matter-server` *(imatge fixada per **digest**, no per etiqueta: no en publica cap de versió i «stable» es mou)* | YAML de compose (94 línies) | Segueix sense Postgres, que és el que estalviava `depends_on`, healthchecks i credencials. El segon contenidor no és una preferència: és l'únic camí local al hub que existeix avui |
 | **Base de dades de l'històric** | **SQLite**, `purge_keep_days: 730`, `commit_interval: 30`, `exclude` per **llistes explícites** (mai globs) | recorder d'HA | Amb arxiu CSV diari immutable a git, el motor deixa de ser el dipòsit de la prova i Postgres només compra un mode de fallada silenciós més |
 | **Lògica de control** | **HA natiu.** Un **únic** sensor de plantilla `sensor.decisio_del_soterrani` és l'únic que avalua; l'automatisme només hi actua. `\| float` **sense valor per defecte** + `availability:` explícit | YAML + Jinja2, 1 fitxer `packages/rosada.yaml` | Un sensor de motiu que reavalua ment; un que decideix no pot mentir, i s'estalvia un subprocés cada 60 s i un fitxer d'estat paral·lel |
 | **Exportador de dades** | **Un sol script nocturn** a les 03:40 (franja vall): `VACUUM INTO` → guardes → CSV.gz + SHA-256 → segell RFC 3161 → commit+push → disc extern → ping amb estat | Python 3 **stdlib** (`sqlite3`, `csv`, `gzip`, `hashlib`, `urllib`) + `systemd timer` amb `Persistent=true` | La instantània serveix alhora de còpia i de font d'exportació, i l'exportador és el **vigilant** de la base de dades |
 | **Allotjament de les dades** | **GitHub `Local-data` privat**, un commit diari, **clau de desplegament SSH** (mai token) | git | Gratuït, fora del local, i un token que caduqués el gener de 2027 seria una fallada silenciosa just abans del venciment |
 | **Panell web** | **No n'hi ha.** Dashboards natius d'HA + app Companion per Tailscale | cap | Cobreixen 4,5 dels 5 gràfics amb zero codi, zero allotjament i zero credencials; el mig gràfic que falta no val una pàgina, una llibreria i un esquema de fitxers |
 | **Desplegament** | **`desplega.sh` llançat a mà per SSH** des de `main`. Mai `git clean` | bash `set -euo pipefail` (~80 línies) | N=1: Ansible, Makefile i CI són cerimònia; les baranes van al script perquè són el que s'oblida la nit que importen |
-| **Còpies de seguretat** | Instantània `VACUUM INTO` + `.storage` + `secrets.yaml` → **disc extern USB al local** cada nit; **tarball xifrat de `.storage`+`secrets.yaml` a `Local-data` cada diumenge** (~1 MB) | `gpg --symmetric` + git | Perdre `.storage` obliga a reemparellar-ho tot, i reemparellar **parteix totes les sèries**: ha de tenir còpia fora del local encara que la BD no la tingui |
+| **Còpies de seguretat** | Instantània `VACUUM INTO` + `.storage` + `secrets.yaml` + **`matter-data/`** → **disc extern USB al local** cada nit; **tarball xifrat de `.storage`+`secrets.yaml`+`matter-data/` a `Local-data` cada diumenge** (~1 MB) | `gpg --symmetric` + git | Perdre `.storage` obliga a reemparellar-ho tot, i reemparellar **parteix totes les sèries**: ha de tenir còpia fora del local encara que la BD no la tingui. ⚠️ **`matter-data/` hi entra pel mateix motiu i amb la mateixa urgència:** hi viuen les **claus** dels aparells emparellats. És al `.gitignore` perquè són secrets, cosa que el fa fàcil d'oblidar precisament a la còpia |
 | **Supervisió de vida** | **healthchecks.io, dos checks**: `bategada` (host, cada 30 min, marge 3 h) i `nit` (dades, marge 26 h) **amb l'estat al cos del ping** | `curl` | Un sol bit no diu si has d'obrir l'SSH o agafar el cotxe; dos checks i un cos JSON converteixen l'avís en diagnòstic per tres línies |
 | *(Accés remot)* | **Tailscale**, expiració de clau desactivada. Única via d'administració i de consulta | paquet `apt` | Ja decidit i correcte; CGNAT elimina la resta per física de xarxa |
-| *(Ràdio)* | ~~ZHA + SLZB-06 per TCP~~ → **SUPERADA.** **Hub Tapo H110 + sensors T310/T315 per 868 MHz sub-GHz**, ja comprats i actius | integració `tplink` d'HA | El maquinari ja hi era. El sub-GHz penetra millor el formigó que el Zigbee de 2,4 GHz, la consulta és local per IP, i desapareixen alhora la prova de cobertura i l'emparellament irreversible |
+| *(Ràdio)* | ~~ZHA + SLZB-06 per TCP~~ → **SUPERADA.** **Hub Tapo H110 + sensors T310/T315 per 868 MHz sub-GHz**, ja comprats i actius | **Matter** (via `matter-server`), no `tplink` | El maquinari ja hi era. El sub-GHz penetra millor el formigó que el Zigbee de 2,4 GHz, i desapareixen la prova de cobertura i l'emparellament irreversible. La via `tplink` va quedar tancada pel xifratge TPAP del hub — vegeu la revisió del 21/09 a dalt |
 | *(Sensor que decideix el cas)* | **ESP32 + ESPHome + 2× DS18B20**, compilat **al portàtil de casa**, pujat per OTA | YAML d'ESPHome (~40 línies) | És l'únic sensor que discrimina condensació de capil·laritat i n'hi havia **un de sol** |
 
 ---
@@ -55,22 +66,27 @@
 ## Com interactuen
 
 ```
-   868 MHz sub-GHz                             Wi-Fi — integració `tplink` local
+   868 MHz sub-GHz                             Wi-Fi — endolls i relés
  ┌────────────────────┐                      ┌────────────────────────────┐
  │ 5× T/HR T310/T315  │                      │ Tapo P110      (deshumid.) │
  │ 1× inundació T300  │                      │ Tapo S110E ×2  (vent.)     │
  └─────────┬──────────┘                      └─────────────┬──────────────┘
            │ sub-GHz                                       │ consulta local per IP
  ┌─────────▼─────────┐                                     │
- │  Hub Tapo H110    │──────── Wi-Fi ────────┐             │
- │  (IR + sub-GHz)   │                       │             │
- └───────────────────┘                       │             │
-                                             │             │
- ESP32 + 2×DS18B20 ── API ESPHome (TCP) ─────┤             │
- (T superfície paret)                        │             │
-                                             ▼             ▼
+ │  Hub Tapo H110    │   Matter (IPv6 + multidifusió)      │
+ │  (IR + sub-GHz)   │─────────┐                           │
+ └───────────────────┘         │                           │
+              ┌───────────────▼──────────────┐             │
+              │ CONTENIDOR  matter-server    │             │
+              │ (digest fixat · ./matter-data│             │
+              │  = CLAUS dels emparellats)   │             │
+              └───────────────┬──────────────┘             │
+                              │ WebSocket local            │
+ ESP32 + 2×DS18B20 ── API ESPHome (TCP) ──────┐            │
+ (T superfície paret)                         │            │
+                              ▼               ▼            ▼
  ┌──────────────────────────────────────────────────────────────────────────┐
- │  CONTENIDOR  homeassistant   (imatge fixada, únic contenidor)            │
+ │  CONTENIDOR  homeassistant   (imatge fixada · un dels DOS de l'stack)    │
  │                                                                          │
  │   packages/rosada.yaml   ← YAML + Jinja2, ~566 línies, UN fitxer         │
  │     sensor.soterrani_*_td, sensor.delta_td, sensor.marge_superficie      │
@@ -125,31 +141,33 @@
 | Suma de les tres propostes (recompte de la Crítica 1) | **30** | **11–12** |
 | Proposta A tota sola | 10 | 8 |
 | Mínim de la Crítica 1 | 9 | 5 |
-| **AQUESTA DECISIÓ** | **11** | **8** |
+| **AQUESTA DECISIÓ** | **12** | **8** |
 
-**Al local (7):** host Mint+Docker · contenidor HA (únic) · `tailscaled` · **hub Tapo H110** · node ESPHome · timer+`nit.py` · timer+`bategada.sh`.
+**Al local (8):** host Mint+Docker · contenidor HA · **contenidor `matter-server`** · `tailscaled` · **hub Tapo H110** · node ESPHome · timer+`nit.py` · timer+`bategada.sh`.
 **Fora (4):** GitHub `Local` · GitHub `Local-data`+clau · healthchecks.io (2 checks) · TSA RFC 3161 (sense compte).
 
-> ℹ️ **Per què el total segueix sent 11.** El coordinador **SLZB-06 ja no hi és**, però la
-> peça no desapareix del recompte: la substitueix el **hub H110**, que és igual de crític —si
-> mor, deixen d'arribar les lectures dels sis sensors— i igual de mantenible (reserva DHCP,
-> credencials Tapo, firmware).
+> ℹ️ **D'11 peces a 12, i per què.** El coordinador **SLZB-06 ja no hi és**, però la peça no
+> desapareix: la substitueix el **hub H110**, igual de crític —si mor, deixen d'arribar les
+> lectures dels sis sensors— i igual de mantenible. La dotzena és el **contenidor
+> `matter-server`**, que entra el 21/09/2026 perquè `tplink` rebutja el hub. És una peça que
+> no es volia, i es paga a canvi de treure'n una altra que no es comptava: **el núvol de Tapo
+> i les credencials del compte**, que eren un punt de fallada fora del local i amb caducitat.
 
-**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (38 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
+**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (94 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
 **Fitxers que editaràs de debò: onze.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~1.620 línies**):* `packages/rosada.yaml` (**566**), `tools/replica.py` (276), `scripts/prepara-host.sh` (240), `scripts/comprova.sh` (180), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (50), `docker-compose.yml` (38).
+- *Ja escrits (**~1.670 línies**):* `packages/rosada.yaml` (**566**), `tools/replica.py` (276), `scripts/prepara-host.sh` (240), `scripts/comprova.sh` (180), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (50), `docker-compose.yml` (**94**).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
-**~2.040 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
+**~2.090 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
 estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
 d'`utility_meter` i `history_stats`. La resta són **eines de verificació i de frontera** que
 l'estimació no preveia perquè no preveia que calguessin: comprovar el host, validar el YAML
 des de casa i tancar l'experimentació abans que comenci la sèrie que val com a prova.
 
-Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la diferència és exactament: **SQL** (perquè em nego a vigilar la base de dades des d'una API que no la llegeix) i **ESPHome** (perquè és el sensor que decideix el cas). Contra la suma de les tres propostes: **−19 peces, −4 sintaxis**.
+Sóc **tres** peces i tres sintaxis per sobre del mínim de la Crítica 1: **SQL** (perquè em nego a vigilar la base de dades des d'una API que no la llegeix), **ESPHome** (perquè és el sensor que decideix el cas) i el **`matter-server`** (que no vaig triar: el va imposar el xifratge del hub). Contra la suma de les tres propostes: **−18 peces, −4 sintaxis**.
 
 ---
 
@@ -158,7 +176,7 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 **Base de dades i contenidors**
 - **PostgreSQL** (Proposta A, `monitoritzacio.md`) — el seu únic avantatge real és Grafana en viu, i el paga amb vuit artefactes que només existeixen per fer-lo inofensiu.
 - **MariaDB** (`monitoritzacio.md`) — tots els costos de Postgres i cap avantatge tret de més receptes copiables.
-- **Mosquitto i Zigbee2MQTT** (`desplegament.md`) — dos contenidors que el **hub H110 i la integració `tplink`** fan innecessaris. Amb el sub-GHz de Tapo no hi ha ni Zigbee ni MQTT a la casa.
+- **Mosquitto i Zigbee2MQTT** (`desplegament.md`) — segueixen fora: amb el sub-GHz de Tapo no hi ha ni Zigbee ni MQTT a la casa. ⚠️ Però l'argument «i així l'stack és d'un sol contenidor» **ja no val**: el `matter-server` n'és un segon. El que es manté és que MQTT no aportaria res que Matter no doni.
 - **Contenidor d'ESPHome al local** (Proposta A) — només cal per compilar; es compila a casa i es puja per OTA.
 - **Grafana** (`monitoritzacio.md`, A, C) — fora del pla, no «ajornat»: una peça ajornada que justifica una decisió d'avui no és gratuïta. Si cal per al dossier, viu al portàtil de casa contra els CSV.
 - **InfluxDB, VictoriaMetrics, TimescaleDB, `ltss`, Prometheus** — problema equivocat, ja descartats bé al repositori.

@@ -110,7 +110,8 @@ Llista completa i ordre a
 de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la màquina.**
 
 **Un cop a la SIM:** reserva DHCP → `tailscale ping` (mirar si va **directe o per DERP**) →
-72 h de `vnstat` → emparellar el hub → **i només llavors** la integració `tplink`.
+72 h de `vnstat` → emparellar el hub → **i només llavors** afegir-lo a HA **per Matter**
+(no per `tplink`: el rebutja pel xifratge TPAP).
 
 ### Muntatge
 
@@ -147,7 +148,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       els S110E no estiguin instal·lats quedarien `unavailable` i embrutarien l'històric.*
 - [ ] Fixar els **noms d'entitat definitius** abans de posar cap sensor en producció. El
       conveni **ja està escrit** a [noms-entitats.md](domotica/noms-entitats.md); el que falta
-      és **aplicar-lo** en afegir la integració `tplink`, perquè renombrar després parteix la
+      és **aplicar-lo** en emparellar el hub per Matter, perquè renombrar després parteix la
       sèrie.
 - [x] ~~Muntar el **ritual mensual** d'exportació CSV + SHA-256 fora del local.~~ ✅
       **Descartat i substituït:** el fa el **commit nocturn**, cada dia i amb segell RFC 3161,
@@ -179,6 +180,16 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       El que **sí** es manté és el requisit de fons: les marques de temps de l'arxiu van en
       **ISO 8601 amb zona horària**, i el CSV diari les porta en ISO8601+offset **i** en
       epoch.
+- [ ] 🔴 **`matter-data/` ha d'entrar a la còpia de seguretat.** Hi viuen les **claus** dels
+      aparells emparellats per Matter. És al `.gitignore` perquè són secrets, i per això és
+      fàcil oblidar-la justament a la còpia: perdre-la obliga a **reemparellar**, i
+      reemparellar **parteix totes les sèries**. Va al mateix sac que `config/.storage` —al
+      `nit.py` i al tarball xifrat setmanal.
+- [ ] **Emparellar el hub H110 per Matter** i comprovar que apareixen els sis sensors i que
+      graven. ⚠️ **No per `tplink`**: el rebutja amb *«Unsupported device»* pel xifratge TPAP
+      ([`python-kasa#1590`](https://github.com/python-kasa/python-kasa/issues/1590)).
+- [ ] **Congelar també el `matter-server`** fins al 10/03/2027. Ja va fixat per **digest** i no
+      per etiqueta, perquè la imatge no publica versions i `stable` es mou sota els peus.
 - [ ] Escriure el **script de desplegament** amb validació de configuració abans del reinici.
 - [x] ~~**Fixar les versions** al `docker-compose.yml` — res de `:latest`.~~ ✅ **2026.9.3**,
       congelada fins al 10/03/2027.
@@ -198,7 +209,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [x] ~~**Decidir el protocol dels sensors** (Zigbee + coordinador SLZB-06).~~ ✅ **Superat
       pel maquinari real:** els sensors **ja estan comprats i actius**. Són **Tapo T310/T315
       amb hub H110** per **868 MHz sub-GHz**, que penetra el formigó millor que el Zigbee de
-      2,4 GHz, amb integració `tplink` i consulta local per IP.
+      2,4 GHz. ⚠️ **La via cap al hub és Matter, no `tplink`** (el rebutja pel xifratge TPAP).
       → [inventari.md](domotica/inventari.md)
 - [x] ~~**Prova de cobertura de ràdio** al soterrani, 48 h.~~ ✅ **Sense objecte:** no hi ha
       Zigbee i els sensors ja donen lectures des del soterrani. Queda només confirmar **on és

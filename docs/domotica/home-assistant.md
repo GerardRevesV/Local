@@ -19,7 +19,7 @@
       instància en calent: falta la comprovació per `/api/config` amb el testimoni.*
 - [ ] **Esborrar la integració `bluetooth` d'HA** — vegeu el parany del
       [runbook](runbook-servidor.md#-el-bluetooth-omple-el-log).
-- [ ] Emparellar el hub H110 al **router SIM** i després afegir la integració `tplink`.
+- [ ] Emparellar el hub H110 al **router SIM** i després **emparellar-lo per Matter**. ⚠️ **No per `tplink`**: el rebutja amb *«Unsupported device»* pel xifratge TPAP. Cal el contenidor `matter-server`, que ja és al `docker-compose.yml`.
 - [ ] Decidir la ubicació física definitiva dins del local.
 
 > **Auditoria del 20/09/2026, feta per SSH contra la màquina en marxa.** El que ja hi és:
@@ -57,7 +57,7 @@ descàrregues i tot el que obligui a tenir el portàtil al davant.
 
 | | |
 |---|---|
-| **HA no veu cap sensor fins que no comparteix xarxa amb el hub** | La integració `tplink` consulta el **H110 per IP local**. Mentre el hub i Home Assistant siguin a xarxes diferents no es grava ni una lectura, i el rellotge dels **28 dies de la Fase B encara no ha començat** |
+| **HA no veu cap sensor fins que no comparteix xarxa amb el hub** | La via és **Matter**, que va per **IPv6 i multidifusió a la xarxa local**: encara més exigent que una consulta per IP, perquè sense xarxa del host no es descobreix ni s'empara res. Mentre el hub i Home Assistant siguin a xarxes diferents no es grava ni una lectura, i el rellotge dels **28 dies de la Fase B encara no ha començat** |
 | **La integració es configura un cop i es guarda la IP** | Afegir-la sobre la xarxa de casa obliga a refer-la després. Per això el [runbook](runbook-servidor.md) diu de no tocar-la fins que el hub sigui al **Wi-Fi definitiu** |
 | **El calendari** | Del 20/09/2026 al 09/03/2027 hi caben els 28 dies de la Fase B, la Fase C i el dossier: **un cop cadascun**. Cada setmana que s'ajorna la SIM és una setmana d'hivern que no es mesura |
 
@@ -104,7 +104,7 @@ i com s'entra al BIOS és més avall, a [Entrar al BIOS](#entrar-al-bios).
 - [x] ~~Crear el **compte d'HA** i un **testimoni de llarga durada**.~~ ✅ **Fet el
       20/09/2026:** compte creat i **dos** testimonis de llarga durada emesos.
 - [ ] ⚠️ **Verificar `purge_keep_days: 730` contra la instància en calent**, no contra el fitxer. És l'única línia del projecte que no té arreglada a posteriori.
-- [ ] **Fixar els noms d'entitat** de [noms-entitats.md](noms-entitats.md) **abans** d'afegir la integració `tplink`: renombrar després parteix la sèrie.
+- [ ] **Fixar els noms d'entitat** de [noms-entitats.md](noms-entitats.md) **abans** d'emparellar el hub per Matter: renombrar després parteix la sèrie.
 
 ### I un cop a la SIM, en aquest ordre
 
@@ -115,7 +115,7 @@ i com s'entra al BIOS és més avall, a [Entrar al BIOS](#entrar-al-bios).
 | 3 | `tailscale status` i `tailscale ping local-ha` des de casa | **Si diu `via DERP` en comptes de directe**, el CGNAT està relegant el trànsit: funciona, però amb latència i consum |
 | 4 | Deixar-ho **72 h** i llegir `vnstat -d` i `vnstat -m` | El consum en repòs, abans d'afegir-hi sensors. És el número que decideix el pla de dades |
 | 5 | Emparellar el **H110 al Wi-Fi de la SIM** | — |
-| 6 | **Només llavors**, afegir la integració `tplink` a HA i renombrar les entitats | A partir d'aquí comença a gravar-se l'històric: els noms ja no es toquen |
+| 6 | **Només llavors**, emparellar el hub per **Matter** i renombrar les entitats | A partir d'aquí comença a gravar-se l'històric: els noms ja no es toquen |
 
 ## El maquinari del servidor
 
@@ -172,13 +172,16 @@ La línia que decidia era la darrera: `mmcblk0` hauria estat eMMC soldada; `nvme
 ### Serveix per a Home Assistant?
 
 **Sí, i amb marge.** La raó no és que el portàtil sigui potent —no ho és— sinó que
-[l'stack decidit](decisio-stack.md) és deliberadament petit: **un sol contenidor**, SQLite,
-sense Postgres, sense Grafana i sense panell web.
+[l'stack decidit](decisio-stack.md) és deliberadament petit: SQLite, sense Postgres, sense
+Grafana i sense panell web. ⚠️ **Des del 21/09/2026 són dos contenidors i no un** —hi entra
+`matter-server`, perquè `tplink` rebutja el hub—, i això menja una part del marge de RAM que
+hi havia. El veredicte es manté, però la xifra de sota **s'ha de tornar a mirar amb Matter en
+marxa**: és una mesura pendent, no una estimació que ja tinguem.
 
 | Recurs | El que hi ha | El que demana l'stack decidit | Veredicte |
 |---|---|---|---|
-| **CPU** | Celeron **N5100, 4 nuclis**, 6 W | 1 contenidor d'HA amb ~40 entitats + un script de Python de pocs minuts cada nit | ✅ **Sobra** |
-| **RAM** | 4 GB (3,6 útils) | HA Container en repòs: 400–700 MB. Mint amb Xfce: ~700 MB | ✅ **Suficient** — *precisament perquè* no hi ha Postgres, ni InfluxDB, ni Grafana |
+| **CPU** | Celeron **N5100, 4 nuclis**, 6 W | HA amb ~40 entitats + `matter-server` + un script de Python de pocs minuts cada nit | ✅ **Sobra** |
+| **RAM** | 4 GB (3,6 útils) | HA Container en repòs: 400–700 MB. Mint amb Xfce: ~700 MB. **`matter-server`: per mesurar** | 🟡 **Suficient sobre el paper** — *perquè* no hi ha Postgres, ni InfluxDB, ni Grafana— però amb menys marge del que deia el 20/09 |
 | **Disc** | **SSD NVMe de 128 GB** | Mint + Docker ≈ 20 GB. SQLite a 730 dies amb ~40 entitats ≈ **2–4 GB** | ✅ **De sobres**, i amb escriptura ràpida |
 | **Xarxa** | Wi-Fi 6 **+ RJ-45 gigabit** | Hub Tapo per IP local + Tailscale | ✅ I el **cable** evita que el servidor depengui del Wi-Fi |
 | **Alimentació** | 45 W màx.; en repòs amb la pantalla apagada, **8–12 W** | 24/7 | ✅ ≈ 7 kWh/mes → **menys d'1 €/mes** amb la [tarifa contractada](../local/subministraments.md) |
@@ -198,7 +201,9 @@ la tapa. Queda com a bona pràctica mantenir `vm.swappiness` baix, però ja no �
 
 **2. La memòria està soldada.** No hi ha camí d'ampliació: si un dia s'hi volgués afegir
 Postgres, InfluxDB i Grafana, la decisió no seria «instal·lar-ho» sinó «canviar de màquina».
-És un argument més a favor de l'stack d'un sol contenidor, no una limitació nova.
+És un argument més a favor de mantenir l'stack petit, no una limitació nova. ⚠️ I el 21/09 ha
+deixat de ser teòric: el segon contenidor de Matter **no era opcional**, i és el recordatori
+que cada peça que entra en aquesta màquina ja no en surt fàcilment.
 
 ### El que aquest portàtil NO ha de fer
 
@@ -345,7 +350,7 @@ res** — i, en aquest projecte, una sèrie de dades amb un forat.
 |---|---|---|
 | **HA OS** (bare metal) | Sí | El sistema operatiu *és* Home Assistant i es menja el disc sencer: incompatible amb tenir Mint a sota, i amb Mint se'n anirien els scripts, els *timers* i el git de què depèn tot el desplegament |
 | **HA Supervised** | Sí | Oficialment només sobre **Debian** net, i Mint no és base suportada. Pitjor encara: **decideix ell quan reiniciar HA**, i una actualització no planificada és un forat a l'històric |
-| ✅ **HA Container** (Docker) | **No** | Suportat sobre qualsevol Linux i deixa el host de propòsit general. Es perd la botiga d'add-ons, però l'stack decidit és **un sol contenidor** i no en necessita cap |
+| ✅ **HA Container** (Docker) | **No** | Suportat sobre qualsevol Linux i deixa el host de propòsit general. Es perd la botiga d'add-ons, i això s'ha notat el 21/09: el servidor Matter, que amb Supervised seria un add-on d'un clic, aquí és un **segon servei al compose**. Es paga de bon grat per no cedir el control del host |
 | **HA Core** (venv de Python) | No | Tot manual, i sense l'aïllament ni la reproductibilitat d'una imatge fixada |
 
 ## Les premisses de partida — on ha quedat cadascuna
