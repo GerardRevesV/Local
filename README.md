@@ -11,9 +11,13 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
 
 | Carpeta | Contingut |
 |---|---|
-| [`docs/local/`](docs/local/) | Fitxa tècnica, compravenda, humitats, comunitat i instal·lacions |
-| [`docs/domotica/`](docs/domotica/) | Objectius, arquitectura, accés remot, muntatge de Home Assistant i inventari |
+| [`docs/local/`](docs/local/) | Fitxa tècnica, compravenda, humitats, comunitat, instal·lacions i subministraments |
+| [`docs/domotica/`](docs/domotica/) | Objectius, arquitectura, accés remot, inventari, muntatge de Home Assistant, el [runbook del servidor](docs/domotica/runbook-servidor.md) i el [conveni de noms d'entitat](docs/domotica/noms-entitats.md) |
+| [`docs/pendents.md`](docs/pendents.md) | Llista única de coses obertes |
 | [`docs/fonts.md`](docs/fonts.md) | D'on surt cada dada i què s'ha deixat fora deliberadament |
+| [`config/`](config/) | La configuració de Home Assistant que es desplega al local, amb la lògica del punt de rosada a [`packages/rosada.yaml`](config/packages/rosada.yaml) |
+| [`scripts/`](scripts/) | Guions per al host del local: preparar-lo i comprovar-lo |
+| [`tools/`](tools/) | Eines que corren a casa: rèplica offline de la lògica i validació del YAML |
 
 ## Estat actual (20 de setembre de 2026)
 

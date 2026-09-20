@@ -71,6 +71,7 @@ docs/
     humitats.md        El tema obert: retenció de 3.000 €, ITE, pla
     comunitat.md       Junta (per càrrec), derrames, acords
     installacions.md   Ventilació, splits, subministraments
+    subministraments.md  Llum, aigua i la SIM de dades: contractes i estat
   domotica/
     decisio-stack.md   ⭐ LA DECISIÓ. Mana sobre qualsevol proposta anterior
     fases.md           ⭐ Fases, portes de test i repartiment de feina
@@ -84,8 +85,20 @@ docs/
     home-assistant.md  Muntatge del servidor i registre d'instal·lació
     runbook-servidor.md  Refer el servidor de zero: ordres, versions i paranys
     inventari.md       Aparells existents i candidats
+    noms-entitats.md   Conveni de noms d'entitat — es fixa ABANS d'emparellar
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE
+
+config/                Configuració de Home Assistant (es desplega al local)
+  configuration.yaml   `recorder`: purge_keep_days, commit_interval, exclusions
+  packages/rosada.yaml La lògica del punt de rosada — UN sol punt d'avaluació
+docker-compose.yml     HA Container amb la versió fixada
+scripts/               Guions per al host del local (bash)
+  prepara-host.sh      Deixa el portàtil llest: SSH, NTP, cap suspensió, Docker
+  comprova.sh          Verifica d'una passada que tot segueix com ha de ser
+tools/                 Eines que corren a casa, no al local (Python stdlib)
+  replica.py           Rèplica offline de la lògica + test de deriva
+  valida_yaml.py       Valida el YAML abans de desplegar
 ```
 
 ## Dades personals — regla dura
