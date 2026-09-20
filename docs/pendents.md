@@ -51,6 +51,39 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ## Domòtica
 
+### 🆕 Requisits definits el 21/09/2026 — [requisits.md](domotica/requisits.md)
+
+Tres coses que el sistema ha de saber fer i que encara **no són decisions preses**. El
+raonament sencer, amb el que desbloqueja cadascuna, és a
+[requisits.md](domotica/requisits.md). Aquí només hi ha el que s'ha de fer.
+
+- [ ] 🔴 **R2 — Provar si un llindar canviat sobreviu a un reinici d'HA.** Tres minuts al banc
+      de casa: posar `input_number.delta_td_on` a 3,0, reiniciar el contenidor i mirar si hi
+      segueix. La documentació d'HA diu que amb `initial:` **no** hi segueix, i els nou helpers
+      de `rosada.yaml` en porten. Si es confirma, cada reinici esborra l'ajust de tot un
+      hivern **sense dir res**.
+- [ ] 🔴 **R2 — Garantir que els `input_number` es graven i s'exporten.** Mai a l'`exclude` del
+      `recorder`, i sempre a la llista d'entitats de `nit.py`. Sense això, *«quin llindar
+      regia el 3 de gener»* no té resposta.
+- [ ] **R2 — Detectar paràmetres incoherents** (Δ_OFF ≥ Δ_ON) al sensor de decisió, amb pas a
+      `bloquejat` i avís. Un `min:`/`max:` no ho pot impedir.
+- [ ] 🔴 **R3 — Gravar la previsió des del primer dia de sèrie.** Des de 2024 les previsions
+      ja no són atributs: cal un sensor per disparador que cridi `weather.get_forecasts` i
+      deixi el Td previst a +3 h, +12 h i +24 h **com a estat**. El que no es gravi al
+      novembre no es podrà reconstruir al gener.
+- [ ] **R3 — Avançar el guió de gràfics** de la Fase D a la Fase B, i fer-hi la correlació
+      creuada entre el Td del soterrani i el de l'exterior: és la resposta continuada a *per
+      on entra l'aire*, i no costa cap maquinari.
+- [ ] **R3 — Obrir `docs/domotica/diari-de-la-serie.md`** per anotar els esdeveniments
+      externs. Un pic explicat val més que un pic esborrat.
+- [ ] **R1 — Mesurar abans de filtrar:** cadència real de report dels Tapo per Matter, soroll
+      base de cada sensor i pendent màxima creïble de T i HR. Són els tres números sense els
+      quals el filtre s'estaria inventant.
+- [ ] **R1 — Escriure el filtratge en paral·lel i sense decidir res**, amb comptador de
+      mostres descartades i alerta per taxa de descart. ⚠️ La sèrie crua **no es toca mai**, i
+      el filtre `range` d'HA queda **prohibit**: retalla al límit i converteix una lectura
+      absurda en una de plausible.
+
 ### El portàtil que farà de servidor
 
 Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **suficient**.
