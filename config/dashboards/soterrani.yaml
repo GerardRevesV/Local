@@ -1,0 +1,251 @@
+# ═════════════════════════════════════════════════════════════════════════════
+#  TAULER DEL SOTERRANI — optimització de consum
+#
+#  L'objectiu d'aquest tauler és respondre UNA pregunta, de pressa i sense
+#  interpretació: **ara mateix, val la pena obrir els ventiladors?**
+#
+#  Per això l'ordre és: primer la resposta, després el perquè, i al final les
+#  dades crues. No al revés.
+#
+#  ⚠️ En YAML i versionat a posta. El que es crea des de la interfície viu a
+#     `.storage/`, no es pot revisar en un PR i no es pot refer si es perd.
+# ═════════════════════════════════════════════════════════════════════════════
+
+title: Soterrani
+
+views:
+  # ───────────────────────────────────────────────────────────────────────────
+  - title: Ara
+    path: ara
+    icon: mdi:gauge
+    cards:
+
+      # ── LA RESPOSTA ─────────────────────────────────────────────────────────
+      - type: markdown
+        content: >
+          {% set d = states('sensor.decisio_del_soterrani') %}
+          {% set m = state_attr('sensor.decisio_del_soterrani', 'motiu') %}
+
+          # {{ {'ventilar': '🌬️ VENTILAR',
+                'deshumidificar': '💧 DESHUMIDIFICAR',
+                'repos': '✅ REPÒS',
+                'bloquejat': '⛔ BLOQUEJAT',
+                'sense_dades': '❓ SENSE DADES'}.get(d, d) }}
+
+          ### {{ m if m else '—' }}
+
+          {% if d == 'ventilar' %}
+          L'aire de fora és més sec que el de dins: obrir els ventiladors
+          treu aigua **sense engegar el compressor**.
+          {% elif d == 'deshumidificar' %}
+          Ventilar ara **afegiria aigua**. Si cal assecar, ha de ser amb el
+          deshumidificador.
+          {% elif d == 'repos' %}
+          L'objectiu d'humitat ja està assolit. No cal fer res.
+          {% endif %}
+
+      # ── EL NÚMERO QUE DECIDEIX ──────────────────────────────────────────────
+      - type: gauge
+        entity: sensor.dtd_interior_exterior
+        name: ΔTd · dins menys fora
+        unit: °C
+        min: -6
+        max: 6
+        needle: true
+        severity:
+          red: -6      # ventilar afegiria aigua
+          yellow: 0.8  # banda morta: ni engega ni atura
+          green: 2.0   # a partir d'aquí, ventilar surt a compte
+
+      - type: entities
+        title: Els dos números que es resten
+        entities:
+          - entity: sensor.soterrani_punt_de_rosada_de_referencia
+            name: Td interior (el punt més humit)
+          - entity: sensor.exterior_punt_de_rosada
+            name: Td exterior
+          - type: divider
+          - entity: sensor.dtd_interior_exterior
+            name: Diferència
+          - type: attribute
+            entity: sensor.decisio_del_soterrani
+            attribute: punt_mes_humit
+            name: Racó més humit ara
+
+      # ── ELS PUNTS, UN A UN ──────────────────────────────────────────────────
+      - type: entities
+        title: Soterrani
+        state_color: true
+        entities:
+          - type: section
+            label: Fons
+          - entity: sensor.soterrani_fons_temperatura
+            name: Temperatura
+          - entity: sensor.soterrani_fons_humitat
+            name: Humitat
+          - entity: sensor.soterrani_fons_punt_de_rosada
+            name: Punt de rosada
+          - type: section
+            label: Centre
+          - entity: sensor.soterrani_centre_temperatura
+            name: Temperatura
+          - entity: sensor.soterrani_centre_humitat
+            name: Humitat
+          - entity: sensor.soterrani_centre_punt_de_rosada
+            name: Punt de rosada
+          - type: section
+            label: Gran
+          - entity: sensor.soterrani_gran_temperatura
+            name: Temperatura
+          - entity: sensor.soterrani_gran_humitat
+            name: Humitat
+          - entity: sensor.soterrani_gran_punt_de_rosada
+            name: Punt de rosada
+          - type: divider
+          - entity: binary_sensor.soterrani_inundacio
+            name: Sensor d'inundació
+
+      - type: entities
+        title: Planta baixa i exterior
+        entities:
+          - type: section
+            label: Dalt
+          - entity: sensor.baixa_temperatura
+            name: Temperatura
+          - entity: sensor.baixa_humitat
+            name: Humitat
+          - entity: sensor.planta_baixa_punt_de_rosada
+            name: Punt de rosada
+          - type: section
+            label: Fora
+          - entity: sensor.exterior_temperatura
+            name: Temperatura
+          - entity: sensor.exterior_humitat
+            name: Humitat
+          - entity: sensor.exterior_punt_de_rosada
+            name: Punt de rosada
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - title: Històric
+    path: historic
+    icon: mdi:chart-line
+    cards:
+
+      # El gràfic que ho explica tot: quan la línia de fora va per sota de la
+      # de dins, ventilar asseca. La distància entre les dues és el ΔTd.
+      - type: history-graph
+        title: Punt de rosada — dins contra fora
+        hours_to_show: 48
+        entities:
+          - entity: sensor.soterrani_punt_de_rosada_de_referencia
+            name: Interior (referència)
+          - entity: sensor.exterior_punt_de_rosada
+            name: Exterior
+
+      - type: history-graph
+        title: ΔTd — per sobre de 2 °C, ventilar surt a compte
+        hours_to_show: 48
+        entities:
+          - entity: sensor.dtd_interior_exterior
+            name: ΔTd
+
+      - type: history-graph
+        title: Decisió
+        hours_to_show: 48
+        entities:
+          - entity: sensor.decisio_del_soterrani
+            name: Què hauria fet
+
+      - type: history-graph
+        title: Els tres punts del soterrani — on és el problema
+        hours_to_show: 48
+        entities:
+          - entity: sensor.soterrani_fons_punt_de_rosada
+            name: Fons
+          - entity: sensor.soterrani_centre_punt_de_rosada
+            name: Centre
+          - entity: sensor.soterrani_gran_punt_de_rosada
+            name: Gran
+
+      - type: history-graph
+        title: Humitat relativa
+        hours_to_show: 48
+        entities:
+          - entity: sensor.soterrani_fons_humitat
+            name: Fons
+          - entity: sensor.soterrani_centre_humitat
+            name: Centre
+          - entity: sensor.soterrani_gran_humitat
+            name: Gran
+          - entity: sensor.exterior_humitat
+            name: Fora
+
+      - type: history-graph
+        title: Temperatura
+        hours_to_show: 48
+        entities:
+          - entity: sensor.soterrani_fons_temperatura
+            name: Fons
+          - entity: sensor.soterrani_centre_temperatura
+            name: Centre
+          - entity: sensor.soterrani_gran_temperatura
+            name: Gran
+          - entity: sensor.baixa_temperatura
+            name: Dalt
+          - entity: sensor.exterior_temperatura
+            name: Fora
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - title: Ajustos
+    path: ajustos
+    icon: mdi:tune
+    cards:
+
+      - type: markdown
+        content: >
+          ### Els llindars
+
+          Aquests valors són els que decideixen. Els d'ara són una **estimació
+          de partida** treta de l'error dels sensors, no una mesura: es fixaran
+          amb dades pròpies quan n'hi hagi un mes.
+
+          ⚠️ **`Δ d'arrencada` ha de ser més gran que `Δ d'aturada`.** Si es
+          creuen, el ventilador engega i s'atura sense parar.
+
+      - type: entities
+        title: Llindars de decisió
+        entities:
+          - entity: input_number.delta_td_on
+            name: Δ d'arrencada — per sobre d'això, ventilar
+          - entity: input_number.delta_td_off
+            name: Δ d'aturada — per sota, parar
+          - entity: input_number.hr_objectiu
+            name: Humitat relativa objectiu
+          - entity: input_number.marge_superficie_min
+            name: Marge mínim de condensació
+
+      - type: entities
+        title: Bloquejos de seguretat
+        entities:
+          - entity: input_number.t_int_minima
+            name: Temperatura interior mínima per ventilar
+          - entity: input_number.hr_ext_bloqueig
+            name: HR exterior que bloqueja
+
+      - type: entities
+        title: Protecció dels aparells
+        entities:
+          - entity: input_number.min_on_ventilador
+            name: Temps mínim d'engegada del ventilador
+          - entity: input_number.min_off_ventilador
+            name: Temps mínim d'aturada del ventilador
+          - entity: input_number.min_off_deshumidificador
+            name: Temps mínim d'aturada del deshumidificador
+
+      - type: entities
+        title: Mode
+        entities:
+          - entity: input_select.mode_soterrani
+            name: Mode del soterrani
+          - entity: timer.override_manual
+            name: Caducitat del mode manual

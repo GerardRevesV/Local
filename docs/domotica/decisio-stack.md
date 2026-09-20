@@ -1,5 +1,42 @@
 # Decisió d'arquitectura — registre autoritzat
 
+> ### 🟢 Revisió del 21/09/2026 — **canvia l'objectiu del projecte**
+>
+> Aquest document es va escriure amb un objectiu: **documentar les humitats per defensar la
+> retenció de 3.000 € que venç el ~09/03/2027.** Tota l'arquitectura en sortia — el segell
+> RFC 3161, el CSV diari immutable, el repositori d'arxiu, la congelació de versions.
+>
+> **L'objectiu passa a ser un altre: optimitzar el consum.** Saber quan val la pena obrir els
+> ventiladors en comptes de fer anar el deshumidificador, en tres passos: **veure** (panell
+> amb temps real i històric navegable), **decidir** (llindars amb dades pròpies) i **actuar**
+> (muntar els S110E). La documentació per a un eventual plet queda **ajornada, amb la porta
+> oberta**, i no s'hi inverteix temps ara.
+>
+> **Queda superat:**
+>
+> | | |
+> |---|---|
+> | Segell **RFC 3161** diari | Una peça externa per a una garantia que ara no fa falta |
+> | Repositori **`Local-data`** + clau de desplegament | Infraestructura per arxivar el que no s'ha de defensar |
+> | **CSV diari immutable** amb SHA-256 i `meta.json` | Igual |
+> | **Test de deriva** rèplica contra producció | Existia per demostrar que la lògica no havia canviat pel camí |
+> | **Congelació de versions fins al 10/03/2027** | El seu únic motiu era no tenir forats a la finestra probatòria |
+> | **«Panell web: no n'hi ha»** | Es reobre. Primer taulers natius; si no hi arriben, panell propi servit per HA des de `config/www/` |
+> | Rebuig de **components de tercers** | Fora de la finestra probatòria, una targeta de front-end per HACS deixa de ser un risc |
+>
+> **Es manté, perquè és gratis i és l'única cosa irreversible:**
+>
+> - ⚠️ **`purge_keep_days: 730` i gravar les dades crues.** Ja està posat i no costa res. Si
+>   algun dia es reprèn la via documental, caldran les dades d'aquest hivern, i **aquest
+>   hivern passa un sol cop**. És el que manté la porta oberta a cost zero.
+> - **Noms d'entitat fixats** (fets el 21/09/2026): renombrar més tard parteix les sèries.
+> - **Còpies de seguretat**, simplificades: sense segells ni repositori a part. Perdre la base
+>   de dades costaria també l'optimització, no només el plet.
+>
+> **El que això canvia del calendari:** el ~09/03/2027 deixa de governar cada decisió. Segueix
+> sent rellevant —l'hivern és quan la disjuntiva ventilar/deshumidificar es juga— però una
+> setmana de retard ja no és una pèrdua irreparable.
+
 > ### 🔄 Revisió del 20/09/2026 — maquinari real
 >
 > El maquinari ja estava comprat quan es va prendre aquesta decisió. Queden **superades** tres

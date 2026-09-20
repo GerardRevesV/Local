@@ -48,3 +48,19 @@ logger:
   default: warning
   logs:
     homeassistant.components.recorder: info
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  TAULERS
+#  El tauler per defecte es queda editable des de la interfície. El del
+#  soterrani va en YAML i versionat: és el que decideix quan ventilar, i ha
+#  de poder revisar-se en un PR i refer-se si es perd.
+# ─────────────────────────────────────────────────────────────────────────────
+lovelace:
+  mode: storage
+  dashboards:
+    tauler-soterrani:
+      mode: yaml
+      title: Soterrani
+      icon: mdi:home-thermometer
+      show_in_sidebar: true
+      filename: dashboards/soterrani.yaml
