@@ -90,7 +90,7 @@
 |---|---|---|---|
 | **Sistema base** | Linux Mint + Docker CE del repo oficial; sense suspensió, *restore on AC power loss*, `systemd-time-wait-sync` actiu, rotació de logs, `unattended-upgrades` només seguretat a les 04:30 excloent `docker-ce*` | config del sistema | És el que ja s'està fent i deixa el host de propòsit general que tot el desplegament necessita |
 | **Instal·lació de HA** | **HA Container**, versió fixada, congelada fins al 10/03/2027 | `docker-compose.yml` | Supervised s'actualitza sol i decideix per tu quan reiniciar HA; HA OS et pren el host i amb ell scripts, timers i git |
-| **Stack de contenidors** | ~~Un. Només `homeassistant`~~ → **DOS**: `homeassistant` + `matter-server` *(imatge fixada per **digest**, no per etiqueta: no en publica cap de versió i «stable» es mou)* | YAML de compose (141 línies) | Segueix sense Postgres, que és el que estalviava `depends_on`, healthchecks i credencials. El segon contenidor no és una preferència: és l'únic camí local al hub que existeix avui. **Tots dos amb sostre de memòria** (1.536 + 512 MB de 3.716): amb la RAM soldada, el que evita que una fuita mati l'amfitrió és el sostre, no l'ampliació |
+| **Stack de contenidors** | ~~Un. Només `homeassistant`~~ → **DOS**: `homeassistant` + `matter-server` *(imatge fixada per **digest**, no per etiqueta: no en publica cap de versió i «stable» es mou)* | YAML de compose (149 línies) | Segueix sense Postgres, que és el que estalviava `depends_on`, healthchecks i credencials. El segon contenidor no és una preferència: és l'únic camí local al hub que existeix avui. **Tots dos amb sostre de memòria** (1.536 + 512 MB de 3.716): amb la RAM soldada, el que evita que una fuita mati l'amfitrió és el sostre, no l'ampliació |
 | **Base de dades de l'històric** | **SQLite**, `purge_keep_days: 730`, `commit_interval: 30`, `exclude` per **llistes explícites** (mai globs) | recorder d'HA | Amb arxiu CSV diari immutable a git, el motor deixa de ser el dipòsit de la prova i Postgres només compra un mode de fallada silenciós més |
 | **Lògica de control** | **HA natiu.** Un **únic** sensor de plantilla `sensor.decisio_del_soterrani` és l'únic que avalua; l'automatisme només hi actua. `\| float` **sense valor per defecte** + `availability:` explícit | YAML + Jinja2, 1 fitxer `packages/rosada.yaml` | Un sensor de motiu que reavalua ment; un que decideix no pot mentir, i s'estalvia un subprocés cada 60 s i un fitxer d'estat paral·lel |
 | **Exportador de dades** | **Un sol script nocturn** a les 03:40 (franja vall): `VACUUM INTO` → guardes → CSV.gz + SHA-256 → segell RFC 3161 → commit+push → disc extern → ping amb estat | Python 3 **stdlib** (`sqlite3`, `csv`, `gzip`, `hashlib`, `urllib`) + `systemd timer` amb `Persistent=true` | La instantània serveix alhora de còpia i de font d'exportació, i l'exportador és el **vigilant** de la base de dades |
@@ -195,12 +195,12 @@
 > no es volia, i es paga a canvi de treure'n una altra que no es comptava: **el núvol de Tapo
 > i les credencials del compte**, que eren un punt de fallada fora del local i amb caducitat.
 
-**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (141 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
+**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (149 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
 **Fitxers que editaràs de debò: onze.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~1.885 línies**):* `packages/rosada.yaml` (**577**), `scripts/comprova.sh` (288), `tools/replica.py` (276), `scripts/prepara-host.sh` (270), `scripts/inicia-serie.sh` (167), `docker-compose.yml` (**141**), `tools/valida_yaml.py` (100), `config/configuration.yaml` (66).
+- *Ja escrits (**~1.900 línies**):* `packages/rosada.yaml` (**577**), `scripts/comprova.sh` (288), `tools/replica.py` (276), `scripts/prepara-host.sh` (270), `scripts/inicia-serie.sh` (167), `docker-compose.yml` (**149**), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
 **~2.090 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies

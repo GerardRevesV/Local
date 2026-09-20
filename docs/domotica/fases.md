@@ -125,7 +125,7 @@ feina i tu menys.
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
-| B.4 | ✅ **Fet** — `packages/rosada.yaml` (566 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
+| B.4 | ✅ **Fet** — `packages/rosada.yaml` (577 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
 | B.7 | ✅ **Fet** — `tools/replica.py` (276 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
