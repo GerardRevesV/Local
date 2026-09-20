@@ -112,7 +112,56 @@ CONF
 sudo systemctl restart systemd-journald
 ok "Journal limitat a 200 MB."
 
-# ─────────────────────────────────────────────────────── 6. Tailscale ───────
+# ──────────────────────────────────────── 6. Bluetooth fora ─────────────────
+log "Apagar el Bluetooth"
+# Aquest portàtil fa de servidor i els sensors parlen per 868 MHz amb el hub.
+# El Bluetooth no s'usa per res, i en canvi HA hi insisteix i omple el log
+# d'errors perquè el contenidor no té NET_ADMIN/NET_RAW. Donar-li aquestes
+# capacitats seria regalar privilegis per una funció que no volem: més val
+# treure l'adaptador de l'equació.
+if systemctl list-unit-files bluetooth.service >/dev/null 2>&1; then
+  sudo systemctl disable --now bluetooth 2>/dev/null || true
+  ok "Bluetooth aturat i desactivat a l'arrencada"
+else
+  ok "No hi ha servei de Bluetooth"
+fi
+
+# ──────────────────────── 7. Actualitzacions: només seguretat ───────────────
+log "unattended-upgrades — només seguretat, i mai Docker"
+sudo apt-get install -y -qq unattended-upgrades
+. /etc/os-release
+sudo tee /etc/apt/apt.conf.d/52-local-ha >/dev/null <<CONF
+// Només seguretat. La resta d'actualitzacions es fan a mà i quan convingui:
+// una actualització no planificada és un forat a l'històric.
+Unattended-Upgrade::Allowed-Origins {
+        "Ubuntu:${UBUNTU_CODENAME}-security";
+};
+// Docker mai automàticament: reiniciar el dimoni reinicia Home Assistant.
+Unattended-Upgrade::Package-Blacklist {
+        "docker-ce";
+        "docker-ce-cli";
+        "containerd.io";
+        "docker-compose-plugin";
+};
+Unattended-Upgrade::Automatic-Reboot "false";
+CONF
+sudo tee /etc/apt/apt.conf.d/20auto-upgrades >/dev/null <<'CONF'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+CONF
+
+# A les 04:30, dins la franja vall i lluny de l'exportació nocturna de les 03:40.
+sudo mkdir -p /etc/systemd/system/apt-daily-upgrade.timer.d
+sudo tee /etc/systemd/system/apt-daily-upgrade.timer.d/99-hora.conf >/dev/null <<'CONF'
+[Timer]
+OnCalendar=
+OnCalendar=*-*-* 04:30
+RandomizedDelaySec=15m
+CONF
+sudo systemctl daemon-reload
+ok "Només seguretat, a les 04:30, i Docker exclòs"
+
+# ─────────────────────────────────────────────────────── 8. Tailscale ───────
 log "Tailscale"
 if ! command -v tailscale >/dev/null 2>&1; then
   curl -fsSL https://tailscale.com/install.sh | sh
