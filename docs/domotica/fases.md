@@ -32,6 +32,7 @@ invalidar.
 | 0.3 | **Paret més freda i humida** amb termòmetre IR de mà | 👤 Tu |
 | 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. Queda dir-me **on és cada sensor** i si «Fora» és realment a l'exterior | 👤 Tu |
 | 0.5 | **Salut del portàtil:** SMART del disc, capacitat de bateria, pila CMOS, si té Ethernet | 🤝 Tu executes, jo interpreto |
+| 0.5b | 🔧 **Tanda física al BIOS, abans de moure el portàtil:** *restore on AC power loss*, límit de càrrega, disc intern a dalt de l'arrencada, RJ-45 amb cable | 👤 Tu |
 | 0.6 | Ubicació física del portàtil: **planta baixa**, aixecat de terra, ventilat | 👤 Tu |
 | 0.7 | Contractar la SIM i saber-ne el **límit de dades** | 👤 Tu |
 
@@ -44,6 +45,8 @@ invalidar.
 - [ ] Sé **quin model és l'endoll** (P110/P115 mesuren consum; P100/P105 no).
 - [ ] Sé **on és cada sensor** i si el de fora està protegit de la pluja.
 - [ ] Sé si el portàtil necessita **SAI**.
+- [ ] ⚠️ Sé si el BIOS té ***restore on AC power loss***. Si no el té, la mitigació està
+      decidida i escrita (apagada ordenada al 20 %, o `Wake on LAN`).
 
 > ⚠️ **0.1 pot canviar el projecte de naturalesa.** Si l'aire entra per fissures en contacte
 > amb el terreny, els ventiladors estan xuclant aire saturat del subsol i **poden estar
