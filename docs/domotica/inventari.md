@@ -55,6 +55,27 @@ Fons 23,5 °C / 62 % · Fora 23,9 °C / 68 % · Gran 22,7 °C / 64 %.
 > **17,5 °C**: ara mateix **ventilar afegiria aigua**. És exactament el cas que l'automatisme
 > ha d'evitar, i es veu ja al primer cop d'ull.
 
+### Servidor de Home Assistant
+
+**Acer TravelMate B3 — TMB311-32-C4JR** (plataforma N20Q14, fabricat el 29/06/2022).
+
+| Característica | Valor |
+|---|---|
+| Ràdio | **Intel AX201NGW** — Wi-Fi 6 + Bluetooth 5 |
+| Xarxa per cable | **RJ-45 gigabit** *(a confirmar visualment)* |
+| Alimentació | 45 W: 19 V ⎓ 2,37 A **o USB-C PD** 20 V ⎓ 2,25 A |
+| Consum en servei | ~8–12 W → **< 1 €/mes** |
+| Bateria | ~48 Wh → **4–5 h** de marge davant un tall |
+| Refrigeració | **Sense ventilador** |
+| CPU / RAM / disc | ⏳ **Pendents de confirmar** (Celeron de 2 o 4 nuclis, 4 GB soldats, 64–128 GB eMMC o SSD) |
+
+**Veredicte: suficient per a l'stack decidit**, perquè l'stack és d'un sol contenidor sobre
+SQLite. Les especificacions completes, el veredicte raonat i com entrar al BIOS són a
+[home-assistant.md](home-assistant.md#el-maquinari-del-servidor).
+
+> ⚠️ **Va a la planta baixa, no al soterrani.** I és l'únic aparell de la cadena amb bateria:
+> en un tall de corrent el hub H100 i el router cauen igualment.
+
 ### Deshumidificador
 
 **QLIMA D 825 PA SMART** (ref. Leroy Merlin 91164803, EAN 8713508793047)

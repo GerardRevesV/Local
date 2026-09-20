@@ -1,0 +1,12 @@
+# El repositori s'edita a Windows i s'executa a Linux.
+# Sense això, un script amb finals de línia CRLF peta al local amb un
+# «bad interpreter: /bin/bash^M» que costa una tarda de trobar.
+* text=auto eol=lf
+
+# Binaris: que git no hi toqui res
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gz  binary
+*.db  binary
+*.tsr binary

@@ -23,3 +23,19 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Runtime de Home Assistant — es genera al local i NO es versiona.
+# Sense aquestes línies, «desplega.sh» avortaria sempre pel pas 1
+# (arbre brut), perquè HA reescriu aquests fitxers contínuament.
+config/.storage/
+config/.cloud/
+config/backups/
+config/deps/
+config/tts/
+config/www/
+config/.uuid
+config/*.db
+config/*.db-shm
+config/*.db-wal
+config/home-assistant.log*
+config/known_devices.yaml

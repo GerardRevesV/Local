@@ -21,7 +21,9 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
 - **Tema obert:** humitats al soterrani. Hi ha una **retenció de 3.000 € amb data límit
   ~9 de març de 2027** per determinar-ne l'origen. Vegeu [humitats.md](docs/local/humitats.md).
 - **Domòtica:** fase zero. S'està instal·lant **Home Assistant en un portàtil secundari**
-  (ara mateix, preparant un pen drive amb Linux Mint).
+  (ara mateix, preparant un pen drive amb Linux Mint). El maquinari del servidor ja està
+  identificat i **és suficient** per a l'stack decidit.
+  → [home-assistant.md](docs/domotica/home-assistant.md#el-maquinari-del-servidor)
   L'objectiu és **governar els ventiladors cap a l'exterior pel punt de rosada per estalviar
   deshumidificador, i monitoritzar-ho tot**. L'arquitectura ja **està decidida**: un sol
   contenidor de Home Assistant sobre SQLite, lògica en YAML natiu, exportació nocturna en

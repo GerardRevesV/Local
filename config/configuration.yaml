@@ -1,0 +1,47 @@
+# Home Assistant — configuració base del local.
+# Fase A.7 de docs/domotica/fases.md
+#
+# ⚠️ AQUEST FITXER HA D'ESTAR AL LLOC ABANS QUE EL PRIMER SENSOR ESCRIGUI RES.
+#    El «recorder» purga als 10 dies per defecte. Si HA arrenca amb sensors i
+#    sense aquest bloc, al cap d'un mes només queden els últims 10 dies, i això
+#    no té arreglada a posteriori.
+
+default_config:
+
+homeassistant:
+  name: Local
+  time_zone: Europe/Madrid
+  unit_system: metric
+  temperature_unit: C
+  currency: EUR
+  country: ES
+  # La lògica del punt de rosada viurà a config/packages/rosada.yaml (fase B.4)
+  packages: !include_dir_named packages
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  L'HISTÒRIC — la peça que dona sentit a tot el projecte
+# ─────────────────────────────────────────────────────────────────────────────
+recorder:
+  db_url: sqlite:////config/home-assistant_v2.db
+
+  # 730 dies = dos hiverns. La retenció de les humitats venç el ~09/03/2027 i
+  # el que hi hagi gravat fins llavors és el corpus probatori.
+  purge_keep_days: 730
+  auto_purge: true
+  purge_interval: 1
+
+  # Escriu a disc cada 30 s en comptes de a cada canvi d'estat: menys desgast
+  # del disc (pot ser eMMC soldada) i menys risc en una apagada bruta.
+  commit_interval: 30
+
+  # ⚠️ Exclusions: NOMÉS per llista explícita, mai per «entity_globs».
+  # Un glob que un dia atrapi un sensor nou l'esborra en silenci, i no te
+  # n'assabentes fins que el necessites. Aquesta llista s'omple quan els noms
+  # d'entitat estiguin fixats (fase A.8), no abans.
+  exclude:
+    entities: []
+
+logger:
+  default: warning
+  logs:
+    homeassistant.components.recorder: info

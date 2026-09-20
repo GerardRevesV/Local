@@ -46,6 +46,14 @@ el desglossament del preu.
 | Resums per a la signatura | Checklist del dia de la firma |
 | Correspondència amb l'agència | Posició del venedor sobre les humitats |
 
+### Domòtica
+
+| Font | Què aporta |
+|---|---|
+| **Fotos de les etiquetes de la base del portàtil** (20/09/2026) | Referència, plataforma, tensió d'alimentació, mòdul Wi-Fi i data de fabricació del servidor. Els **números de sèrie** de les mateixes etiquetes **no** entren al repositori: són al fitxer privat |
+| Fitxes de producte i manual del deshumidificador Qlima | Especificacions, rang de funcionament i codis d'error |
+| Especificacions públiques de la família Acer TravelMate B3 `TMB311-32` | El que l'etiqueta no diu (CPU, RAM, disc) **només com a hipòtesi**: marcat com a pendent de confirmar a la màquina, no donat per bo |
+
 ## Converses anteriors
 
 | Sessió | Què aporta |

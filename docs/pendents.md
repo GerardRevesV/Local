@@ -49,6 +49,33 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ## Domòtica
 
+### El portàtil que farà de servidor
+
+Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **suficient**.
+→ [home-assistant.md](domotica/home-assistant.md#el-maquinari-del-servidor)
+
+- [ ] **Confirmar CPU, RAM i tipus de disc** a la pestanya *Information* del BIOS, o amb
+      `lscpu` / `free -h` / `lsblk -d -o NAME,SIZE,MODEL,TRAN` un cop hi hagi Mint.
+- [ ] ⚠️ **Si el disc és eMMC** (`mmcblk0`): **res de fitxer d'intercanvi** — `zram` i
+      `vm.swappiness` baix. Si són només 64 GB, vigilar l'espai des del primer dia.
+- [ ] ⚠️ **Verificar al BIOS si existeix *restore on AC power loss*.** `decisio-stack.md` ho
+      dona per fet, i **en portàtils sovint no hi és**. Si no hi és, decidir la mitigació
+      (apagada ordenada al 20 % de bateria, o `Wake on LAN`).
+- [x] ~~Activar **`F12 Boot Menu`** al BIOS per poder arrencar del pen drive.~~ ✅ **Resolt el
+      20/09/2026.** Era això: ve desactivat de fàbrica. Mint arrenca.
+- [ ] Un cop Mint estigui instal·lat, **tornar a posar el disc intern a dalt** de l'ordre
+      d'arrencada, perquè un llapis oblidat al local no deixi el servidor sense arrencar.
+- [ ] Buscar al BIOS un **límit de càrrega de bateria**: dos anys al 100 % la degraden i la
+      poden inflar.
+- [ ] Desactivar la **suspensió** i posar `HandleLidSwitch=ignore` abans de deixar-lo tancat.
+- [ ] ⚠️ **Decidir un SAI petit (~40–60 €) per al router i el hub H100.** La bateria del
+      portàtil només manté viu el portàtil: en un tall, els sensors deixen d'arribar igualment
+      i la sèrie de dades fa un forat.
+- [ ] **Col·locar-lo a la planta baixa, no al soterrani** (humitat sobre l'electrònica), en un
+      lloc airejat i, si es pot, amb **cable Ethernet**.
+
+### Muntatge
+
 - [ ] Acabar d'instal·lar **Linux Mint** al portàtil secundari.
 - [ ] **Decidir el mètode d'instal·lació** de Home Assistant (Docker sobre Mint vs. Debian +
       Supervised vs. HA OS). Decidir-ho *abans* d'instal·lar Mint si es vol canviar de base.
