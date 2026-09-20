@@ -46,6 +46,8 @@ docs/
     acces-remot.md     Proposta d'accés des de fora del local
     monitoritzacio.md  Proposta de registre, retenció i visualització de dades
     control-punt-rosada.md  Proposta de lògica de control, helpers i maquinari
+    desplegament.md    Flux casa → GitHub → local, i com es desplega
+    publicacio-dades.md Com pugen les dades i on s'arxiven
     home-assistant.md  Muntatge del servidor i registre d'instal·lació
     inventari.md       Aparells existents i candidats
   privat/              (IGNORAT per git — mai commitar)

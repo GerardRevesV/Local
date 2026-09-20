@@ -68,7 +68,8 @@ com a segon camí independent. Port forwarding descartat.
 | Mètode d'accés remot | **Proposat** → [acces-remot.md](acces-remot.md) |
 | Si l'operadora del local dona IP pública o hi ha CGNAT | **Resolt de fet: Internet per SIM → CGNAT quasi segur** |
 | Interfície al mòbil (app d'HA vs navegador) | **Obert** |
-| Publicació de dades i còpia externa per GitHub | **Proposat** → [acces-remot.md](acces-remot.md) |
+| Publicació de dades i còpia externa | **Proposat** → [publicacio-dades.md](publicacio-dades.md) |
+| Flux de desenvolupament i desplegament | **Decidit: casa → GitHub → local, amb SSH per Tailscale** → [desplegament.md](desplegament.md) |
 
 ## Maquinari encara per decidir
 

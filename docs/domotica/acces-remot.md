@@ -95,6 +95,10 @@ cal triar.
    d'ordres per GitHub si tens Tailscale: afegeix complexitat per resoldre una cosa ja
    resolta.
 
+> **Nota:** el detall de com pugen les dades —i que **no cal** que sigui `git push` al
+> repositori— és a [publicacio-dades.md](publicacio-dades.md). El flux de desplegament és a
+> [desplegament.md](desplegament.md).
+
 ## ⚠️ Condicions per a la via de GitHub
 
 - **El repositori de dades ha de ser PRIVAT.** Aquest repositori de documentació és públic;

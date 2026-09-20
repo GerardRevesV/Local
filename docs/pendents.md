@@ -73,8 +73,17 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 - [ ] **Decidir el mètode d'accés remot.** Proposta actualitzada: **Tailscale** per
       administrar + **GitHub/Pages** per publicar dades i fer còpia externa.
       → [acces-remot.md](domotica/acces-remot.md)
+- [x] ~~Decidir si cal SSH.~~ ✅ **Sí: Tailscale.** El flux és casa → GitHub → portàtil del
+      local, i desplegar necessita shell. → [desplegament.md](domotica/desplegament.md)
 - [ ] Crear un **repositori separat i privat només per a les dades**, amb un *fine-grained
       token* limitat.
+- [ ] **Decidir la via de l'arxiu de dades:** GitHub Releases (no toca l'historial de git) o
+      emmagatzematge d'objectes R2/B2 (immutabilitat forta).
+      → [publicacio-dades.md](domotica/publicacio-dades.md)
+- [ ] Escriure el **script de desplegament** amb validació de configuració abans del reinici.
+- [ ] **Fixar les versions** al `docker-compose.yml` — res de `:latest`.
+- [ ] Definir els **helpers i automatismes en YAML**, no per interfície: el que es crea des
+      de la UI viu a `.storage/` i no es pot versionar.
 - [ ] Muntar un **avís de caiguda** (Healthchecks.io / UptimeRobot) i una **còpia de
       l'històric fora del local**. Sense això l'accés remot no serveix de res.
 - [ ] Valorar un **endoll intel·ligent de rearmada** per al portàtil i el router,
