@@ -19,7 +19,7 @@
       instància en calent: falta la comprovació per `/api/config` amb el testimoni.*
 - [ ] **Esborrar la integració `bluetooth` d'HA** — vegeu el parany del
       [runbook](runbook-servidor.md#-el-bluetooth-torna-encara-que-el-servei-estigui-aturat).
-- [ ] Emparellar el hub H100 al **router SIM** i després afegir la integració `tplink`.
+- [ ] Emparellar el hub H110 al **router SIM** i després afegir la integració `tplink`.
 - [ ] Decidir la ubicació física definitiva dins del local.
 
 > **Auditoria del 20/09/2026, feta per SSH contra la màquina en marxa.** El que ja hi és:
@@ -57,7 +57,7 @@ descàrregues i tot el que obligui a tenir el portàtil al davant.
 
 | | |
 |---|---|
-| **HA no veu cap sensor fins que no comparteix xarxa amb el hub** | La integració `tplink` consulta el **H100 per IP local**. Mentre el hub i Home Assistant siguin a xarxes diferents no es grava ni una lectura, i el rellotge dels **28 dies de la Fase B encara no ha començat** |
+| **HA no veu cap sensor fins que no comparteix xarxa amb el hub** | La integració `tplink` consulta el **H110 per IP local**. Mentre el hub i Home Assistant siguin a xarxes diferents no es grava ni una lectura, i el rellotge dels **28 dies de la Fase B encara no ha començat** |
 | **La integració es configura un cop i es guarda la IP** | Afegir-la sobre la xarxa de casa obliga a refer-la després. Per això el [runbook](runbook-servidor.md) diu de no tocar-la fins que el hub sigui al **Wi-Fi definitiu** |
 | **El calendari** | Del 20/09/2026 al 09/03/2027 hi caben els 28 dies de la Fase B, la Fase C i el dossier: **un cop cadascun**. Cada setmana que s'ajorna la SIM és una setmana d'hivern que no es mesura |
 
@@ -113,7 +113,7 @@ i com s'entra al BIOS és més avall, a [Entrar al BIOS](#entrar-al-bios).
 | 2 | **Reserva DHCP** per al portàtil i per al hub | Que una IP nova no trenqui la integració ni l'àlies d'SSH |
 | 3 | `tailscale status` i `tailscale ping local-ha` des de casa | **Si diu `via DERP` en comptes de directe**, el CGNAT està relegant el trànsit: funciona, però amb latència i consum |
 | 4 | Deixar-ho **72 h** i llegir `vnstat -d` i `vnstat -m` | El consum en repòs, abans d'afegir-hi sensors. És el número que decideix el pla de dades |
-| 5 | Emparellar el **H100 al Wi-Fi de la SIM** | — |
+| 5 | Emparellar el **H110 al Wi-Fi de la SIM** | — |
 | 6 | **Només llavors**, afegir la integració `tplink` a HA i renombrar les entitats | A partir d'aquí comença a gravar-se l'històric: els noms ja no es toquen |
 
 ## El maquinari del servidor
@@ -234,7 +234,7 @@ quatre anys de desgast— i amb ~10 W de consum surten **unes 4 hores** de marge
 | Aparell | Què passa |
 |---|---|
 | Portàtil | ✅ Segueix viu 4–5 h |
-| **Hub Tapo H100** | ❌ Mor a l'instant → **deixen d'arribar lectures dels sensors** |
+| **Hub Tapo H110** | ❌ Mor a l'instant → **deixen d'arribar lectures dels sensors** |
 | **Router de la SIM** | ❌ Mor a l'instant → sense Tailscale, sense avís i sense pujada a GitHub |
 
 Per tant, avui, el que la bateria compra **no** és continuïtat de dades: és que la màquina no

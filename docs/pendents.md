@@ -65,7 +65,7 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
 - [x] ~~Desactivar la **suspensió** i posar `HandleLidSwitch=ignore`.~~ ✅ Fet i **verificat
       després d'un reinici real**: `sleep`/`suspend`/`hibernate` emmascarats, la tapa ignorada,
       i HA torna sol amb HTTP 200. Queda oberta la meitat de maquinari (BIOS).
-- [ ] ⚠️ **Decidir un SAI petit (~40–60 €) per al router i el hub H100.** La bateria del
+- [ ] ⚠️ **Decidir un SAI petit (~40–60 €) per al router i el hub H110.** La bateria del
       portàtil només manté viu el portàtil: en un tall, els sensors deixen d'arribar igualment
       i la sèrie de dades fa un forat.
 - [ ] **Col·locar-lo a la planta baixa, no al soterrani** (humitat sobre l'electrònica), en un
@@ -94,7 +94,7 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
 
 ### ⏭️ El pas a la SIM — el següent moviment
 
-Decidit el 20/09/2026: **es fa aviat, no s'ajorna.** Fins que HA i el hub H100 no comparteixin
+Decidit el 20/09/2026: **es fa aviat, no s'ajorna.** Fins que HA i el hub H110 no comparteixin
 xarxa no es grava ni una lectura, i el rellotge dels 28 dies de la Fase B no ha començat.
 Llista completa i ordre a
 [home-assistant.md](domotica/home-assistant.md#el-pas-a-la-sim--lassaig-general-de-debò).

@@ -241,8 +241,17 @@ template:
                  'fons':   states('sensor.soterrani_fons_punt_de_rosada'),
                  'centre': states('sensor.soterrani_centre_punt_de_rosada'),
                  'gran':   states('sensor.soterrani_gran_punt_de_rosada') } %}
-            {% set v = d.items() | selectattr('1', 'is_number') | list %}
-            {{ (v | sort(attribute='1', reverse=true) | first)[0] if v else 'cap' }}
+            {# ⚠️ Res de `sort(attribute='1')`: states() torna CADENES i Jinja les
+               ordena alfabèticament. Amb 9.50 i 10.20 deia «9.50» perquè '9' > '1'.
+               Just el rang d'un soterrani a l'hivern, i just l'afirmació més
+               pericial del sistema: quin racó és el dolent. Es compara en float. #}
+            {% set ns = namespace(nom='cap', td=-999.0) %}
+            {% for k, s in d.items() %}
+              {% if s | is_number and (s | float) > ns.td %}
+                {% set ns.nom = k %}{% set ns.td = s | float %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.nom }}
           dispersio: >
             {% set v = [ states('sensor.soterrani_fons_punt_de_rosada'),
                          states('sensor.soterrani_centre_punt_de_rosada'),
