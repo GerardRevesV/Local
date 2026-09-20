@@ -195,7 +195,7 @@
 **Fitxers que editaràs de debò: onze.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~1.670 línies**):* `packages/rosada.yaml` (**566**), `tools/replica.py` (276), `scripts/prepara-host.sh` (240), `scripts/comprova.sh` (180), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (50), `docker-compose.yml` (**94**).
+- *Ja escrits (**~1.870 línies**):* `packages/rosada.yaml` (**577**), `scripts/comprova.sh` (288), `tools/replica.py` (276), `scripts/prepara-host.sh` (270), `scripts/inicia-serie.sh` (167), `docker-compose.yml` (**141**), `tools/valida_yaml.py` (100), `config/configuration.yaml` (50).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
 **~2.090 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies

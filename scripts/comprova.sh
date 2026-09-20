@@ -59,15 +59,57 @@ done
 grep -qh "^HandleLidSwitch=ignore" /etc/systemd/logind.conf.d/*.conf 2>/dev/null \
   && ok "la tapa no suspèn" || mal "la tapa SUSPÈN — tancar-la aturaria el registre"
 
+# ──────────────────────────────────────────────────────── els contenidors ───
+t "Els contenidors — TOTS ELS QUE HI HA D'HAVER"
+
+# ⚠️ Aquí hi havia el forat més car del guió: es mirava
+#       docker compose ps --format '{{.Status}}' | head -1
+#    i es donava per bo. Amb UN contenidor passava; des que n'hi ha DOS, això
+#    comprovava un i callava sobre l'altre. Si el matter-server queia, el
+#    guió deia «Tot correcte» i el hub deixava d'enviar lectures en silenci.
+#
+# ⚠️ I el «head -1» era pitjor del que sembla: «docker compose ps» SENSE «-a»
+#    només llista els que corren. Un contenidor aturat no surt a la llista:
+#    desapareix. O sigui que si el primer queia i el segon seguia viu, el
+#    «head -1» agafava l'estat del SEGON i l'imprimia com si fos del primer.
+#    Un fals verd amb el contenidor mort. Per això va «-a», i per servei.
+#
+# La llista va ESCRITA i no surt de «docker compose config --services»: si
+# algú treu un servei del compose, volem que això ho canti, no que s'adapti
+# en silenci. Que l'stack passés d'un contenidor a dos sense que el guió se
+# n'adonés és exactament l'error que estem arreglant.
+ESPERATS="homeassistant matter-server"
+
+for s in $ESPERATS; do
+  estat=$(docker compose ps -a --format '{{.Status}}' "$s" 2>/dev/null | head -1)
+  case "$estat" in
+    Up*)         ok "$s: $estat" ;;
+    Restarting*) mal "$s EN BUCLE DE REINICI: $estat" ;;
+    # 137 = mort pel kernel per memòria. Vegeu «Quan el sostre es toca» a
+    # docs/domotica/home-assistant.md.
+    "Exited (137)"*) mal "$s ATURAT PER MEMÒRIA (codi 137): $estat" ;;
+    Exited*)     mal "$s ATURAT: $estat" ;;
+    Created*)    mal "$s creat però mai arrencat: $estat" ;;
+    Paused*)     mal "$s EN PAUSA: $estat" ;;
+    "")          mal "$s no existeix — ni aturat" ;;
+    *)           mal "$s en estat inesperat: $estat" ;;
+  esac
+done
+
+# I a l'inrevés: un servei nou al compose que ningú no hagi afegit a la
+# llista de dalt. És com va començar tot això.
+reals=$(docker compose config --services 2>/dev/null)
+if [ -n "$reals" ]; then
+  for s in $reals; do
+    case " $ESPERATS " in
+      *" $s "*) ;;
+      *) mal "«$s» és al docker-compose.yml i NO es comprova — afegeix-lo a ESPERATS" ;;
+    esac
+  done
+fi
+
 # ─────────────────────────────────────────────────────── home assistant ─────
 t "Home Assistant"
-estat=$(docker compose ps --format '{{.Status}}' 2>/dev/null | head -1)
-case "$estat" in
-  Up*)         ok "contenidor: $estat" ;;
-  Restarting*) mal "contenidor EN BUCLE DE REINICI: $estat" ;;
-  "")          mal "el contenidor no corre" ;;
-  *)           mal "contenidor en estat inesperat: $estat" ;;
-esac
 codi=$(curl -s -o /dev/null -w '%{http_code}' -m 10 http://127.0.0.1:8123 2>/dev/null)
 [ "$codi" = 200 ] && ok "respon a 8123" || mal "8123 no respon (codi $codi)"
 
