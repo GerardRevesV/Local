@@ -11,7 +11,20 @@
 # No toca res. Només mira.
 
 set -uo pipefail
-cd "$(dirname "$0")/.."
+
+# Situar-se a l'arrel del repositori. Si no es pot, s'ha de plantar aquí:
+# un guió de salut que no troba els fitxers informaria de fallades falses,
+# i això és pitjor que no comprovar res.
+ARREL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null && pwd)"
+if [ ! -f "${ARREL:-}/docker-compose.yml" ]; then
+  ARREL="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel 2>/dev/null || true)"
+fi
+if [ ! -f "${ARREL:-}/docker-compose.yml" ]; then
+  echo "No trobo l'arrel del repositori (hi falta docker-compose.yml)." >&2
+  echo "Executa'l des de dins del repositori: bash scripts/comprova.sh" >&2
+  exit 2
+fi
+cd "$ARREL"
 
 t(){ printf '\n\033[1;34m── %s\033[0m\n' "$*"; }
 ok(){   printf '  \033[32m✓\033[0m %s\n' "$*"; }
