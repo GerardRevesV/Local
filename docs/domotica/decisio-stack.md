@@ -190,12 +190,12 @@
 > no es volia, i es paga a canvi de treure'n una altra que no es comptava: **el núvol de Tapo
 > i les credencials del compte**, que eren un punt de fallada fora del local i amb caducitat.
 
-**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (94 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
+**Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (141 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
 **Fitxers que editaràs de debò: onze.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~1.870 línies**):* `packages/rosada.yaml` (**577**), `scripts/comprova.sh` (288), `tools/replica.py` (276), `scripts/prepara-host.sh` (270), `scripts/inicia-serie.sh` (167), `docker-compose.yml` (**141**), `tools/valida_yaml.py` (100), `config/configuration.yaml` (50).
+- *Ja escrits (**~1.885 línies**):* `packages/rosada.yaml` (**577**), `scripts/comprova.sh` (288), `tools/replica.py` (276), `scripts/prepara-host.sh` (270), `scripts/inicia-serie.sh` (167), `docker-compose.yml` (**141**), `tools/valida_yaml.py` (100), `config/configuration.yaml` (66).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
 **~2.090 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
