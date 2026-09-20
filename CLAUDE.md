@@ -32,6 +32,33 @@ que contradigui el que ja hi ha escrit.
 porten una capçalera que diu què en queda superat; es conserven pel raonament. Si una decisió
 nova supera `decisio-stack.md`, s'edita allà i s'hi deixa constància.
 
+## Flux de treball amb git
+
+**Res va directament a `main`.** Tot canvi passa per una branca i un *pull request*, encara
+que el repositori sigui d'una sola persona.
+
+```bash
+git switch -c nom-de-la-branca
+# … canvis …
+git add -A && git commit
+git push -u origin nom-de-la-branca
+gh pr create --base main
+```
+
+**Per què, en un repositori d'un sol autor:**
+
+- El PR és **l'únic moment en què es veu tot el canvi junt** abans de publicar-lo. En un
+  repositori públic amb dades d'una finca real, aquesta última mirada és la barana de
+  privacitat: és quan es repassa que no hi hagi adreça, noms, cadastre ni imports.
+- Deixa **constància escrita del perquè** de cada canvi, separada del *què* dels commits.
+  D'aquí a un any, davant d'un pèrit o davant d'un mateix, això val molt.
+- `main` queda sempre desplegable, que és el que el servidor del local fa `git pull`.
+
+**Excepció única:** una correcció urgent amb el servidor caigut. Es fa, i es documenta després.
+
+**Abans d'obrir el PR**, repassar el `git diff` sencer buscant adreça, noms propis, referència
+cadastral, números de sèrie i imports. Vegeu *Dades personals*.
+
 ## Estructura
 
 ```
@@ -55,6 +82,7 @@ docs/
     desplegament.md    Flux casa → GitHub → local, i com es desplega
     publicacio-dades.md Com pugen les dades i on s'arxiven
     home-assistant.md  Muntatge del servidor i registre d'instal·lació
+    runbook-servidor.md  Refer el servidor de zero: ordres, versions i paranys
     inventari.md       Aparells existents i candidats
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE

@@ -77,9 +77,10 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
 
 ### Muntatge
 
-- [ ] Acabar d'instal·lar **Linux Mint** al portàtil secundari.
-- [ ] **Decidir el mètode d'instal·lació** de Home Assistant (Docker sobre Mint vs. Debian +
-      Supervised vs. HA OS). Decidir-ho *abans* d'instal·lar Mint si es vol canviar de base.
+- [x] ~~Acabar d'instal·lar **Linux Mint** al portàtil secundari.~~ ✅ **Mint 22.3 instal·lat**
+      el 20/09/2026.
+- [x] ~~**Decidir el mètode d'instal·lació** de Home Assistant.~~ ✅ **HA Container sobre
+      Docker**, ja en marxa amb la versió **2026.9.3** fixada.
       → [home-assistant.md](domotica/home-assistant.md)
 - [ ] Decidir **on viu físicament el servidor** i com s'hi accedeix de forma remota.
 - [ ] Configurar la **retenció llarga de l'històric** (el `recorder` purga als 10 dies per
@@ -98,8 +99,8 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
 - [ ] Muntar el **ritual mensual** d'exportació CSV + SHA-256 fora del local.
 - [ ] Valorar un **sensor de temperatura superficial de paret** (DS18B20 via ESPHome) a cada
       punt humit: és l'únic que discrimina directament condensació de capil·laritat.
-- [ ] **Decidir el mètode d'accés remot.** Proposta actualitzada: **Tailscale** per
-      administrar + **GitHub/Pages** per publicar dades i fer còpia externa.
+- [x] ~~**Decidir el mètode d'accés remot.**~~ ✅ **Tailscale, instal·lat i connectat** el
+      20/09/2026, amb l'**expiració de clau desactivada**. Connexió directa entre nodes.
       → [acces-remot.md](domotica/acces-remot.md)
 - [x] ~~Decidir si cal SSH.~~ ✅ **Sí: Tailscale.** El flux és casa → GitHub → portàtil del
       local, i desplegar necessita shell. → [desplegament.md](domotica/desplegament.md)
@@ -115,7 +116,8 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
 - [ ] Fixar l'**estructura de fitxers del panell** (`latest.json` + `index.json` +
       `daily/*.json`) i que les marques de temps siguin **ISO 8601 amb zona horària**.
 - [ ] Escriure el **script de desplegament** amb validació de configuració abans del reinici.
-- [ ] **Fixar les versions** al `docker-compose.yml` — res de `:latest`.
+- [x] ~~**Fixar les versions** al `docker-compose.yml` — res de `:latest`.~~ ✅ **2026.9.3**,
+      congelada fins al 10/03/2027.
 - [ ] Definir els **helpers i automatismes en YAML**, no per interfície: el que es crea des
       de la UI viu a `.storage/` i no es pot versionar.
 - [ ] Muntar un **avís de caiguda** (Healthchecks.io / UptimeRobot) i una **còpia de

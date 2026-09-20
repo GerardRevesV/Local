@@ -1,19 +1,32 @@
 # Home Assistant — muntatge del servidor
 
-## Estat actual (20 de setembre de 2026)
+## Estat actual (20 de setembre de 2026, vespre)
 
-**En curs:** preparant un **pen drive amb Linux Mint** per instal·lar-lo en un **portàtil
-secundari**, que farà de servidor de Home Assistant.
+**Home Assistant ja corre.** El servidor està muntat i s'hi entra des de fora del local.
 
 - [x] Decidit: el servidor serà un portàtil que ja es té, no un Raspberry Pi ni un NUC nou.
 - [x] Decidit: sistema operatiu base **Linux Mint**.
-- [ ] Gravar el pen drive amb l'ISO de Linux Mint.
-- [ ] Arrencar el portàtil des del pen drive i instal·lar Mint.
-- [ ] Instal·lar Home Assistant (mètode per decidir, veure sota).
-- [ ] Accés a la interfície i primer arrencada.
-- [ ] Decidir on viu el servidor físicament (casa o local) i com s'hi accedeix.
+- [x] Pen drive gravat i **Mint 22.3 instal·lat** al portàtil.
+- [x] **Docker CE** del repositori oficial.
+- [x] **HA Container 2026.9.3** en marxa, amb la versió fixada.
+- [x] `check_config` net.
+- [x] **SSH amb clau** des del portàtil de casa.
+- [x] **Tailscale connectat**, amb l'**expiració de clau desactivada**.
+- [ ] Crear el compte d'HA i un testimoni de llarga durada.
+- [ ] **Verificar `purge_keep_days: 730` contra la instància en calent** (Porta A).
+- [ ] Emparellar el hub H100 al **router SIM** i després afegir la integració `tplink`.
+- [ ] Decidir la ubicació física definitiva dins del local.
 
-> Aquesta llista s'ha d'anar marcant a mesura que avanci.
+### On és cada cosa ara mateix
+
+Tot el maquinari és **a casa**, no al local: s'hi està fent l'assaig general abans de
+portar-ho. La idea és muntar-ho tot sobre el **router SIM** —el mateix que hi haurà al
+local— perquè el que es provi aquí sigui exactament el que hi correrà: CGNAT, Tailscale,
+reserves DHCP i el Wi-Fi del hub, tot igual.
+
+> ⚠️ **Les descàrregues grosses es fan per la fibra de casa, no per la SIM.** La imatge d'HA
+> sola són **3,43 GB**. Es va baixar abans de passar el portàtil al router SIM, i per això
+> allà l'arrencada no gastarà dades.
 
 ## El maquinari del servidor
 
@@ -265,3 +278,8 @@ Aquí s'anirà anotant què s'ha fet realment, amb data.
 | 20/09/2026 | **Esquelet de la instal·lació escrit al repositori** (fase A.5/A.6/A.7): `.gitattributes`, `docker-compose.yml` amb la versió per fixar i `config/configuration.yaml` amb `purge_keep_days: 730` i `commit_interval: 30` |
 | 20/09/2026 | **`scripts/prepara-host.sh`** (fase A.2): SSH, zona horària i NTP, cap suspensió, tapa ignorada, Docker CE oficial i sostre al journal. Existeix perquè **només calgui teclejar una línia al portàtil**: a partir de l'SSH, tot es fa des de casa |
 | 20/09/2026 | **SSH obert des de casa amb clau dedicada**, i maquinari real llegit per fi: Celeron **N5100 de 4 nuclis**, **4 GB**, **SSD NVMe Samsung de 128 GB**, Mint 22.3. Cau la reserva de l'eMMC |
+| 20/09/2026 | **Docker CE instal·lat** i imatge d'HA **2026.9.3** baixada (3,43 GB) per la fibra de casa, per no gastar dades de la SIM |
+| 20/09/2026 | **Home Assistant arrencat per primer cop.** Port 8123 obert al cap de ~30 s |
+| 20/09/2026 | 🐛 **Error trobat a la primera arrencada:** `history_stats` estava escrit com a clau de primer nivell a `packages/rosada.yaml`. HA fusiona els paquets per domini, i això **feia caure el paquet sencer** —tota la lògica del punt de rosada— en silenci. Va sota `sensor:` amb `platform: history_stats`. Corregit |
+| 20/09/2026 | `purge_interval` tret: obsolet a la 2026.9.3. `check_config` queda **net** |
+| 20/09/2026 | **Tailscale connectat**, connexió directa entre els dos nodes i **expiració de clau desactivada**. L'accés al servidor ja no depèn de compartir xarxa |
