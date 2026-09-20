@@ -242,10 +242,12 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       hi serà, però els **667 MB que ja eren a l'intercanvi** el 21/09 no es mouen sols. Es pot
       ajuntar amb el desplegament dels sostres i amb el pas a `multi-user.target`.
 - [ ] 📝 **Que un OOM deixi rastre permanent.** ⚠️ **No al `desplegaments.log`:** aquell fitxer
-      l'escriu `desplega.sh` i només quan despleguem; un OOM a les 04:00 no hi cauria mai. Va a
-      l'**arxiu nocturn de `nit.py`** (que corre cada dia) i, com a avís, al **cos del ping de
+      l'escriu `desplega.sh` i només quan despleguem; un OOM a les 04:00 no hi cauria mai. Va
+      al **guió nocturn `nit.py`** (que corre cada dia) i, com a avís, al **cos del ping de
       `bategada`**. Cap dels dos guions no existeix encara — quan s'escriguin, han de portar-hi
-      el recompte d'OOM del kernel i els reinicis dels dos contenidors.
+      el recompte d'OOM del kernel i els reinicis dels dos contenidors. *(Des del canvi
+      d'objectiu del 21/09/2026, `nit.py` ja no escriu a `Local-data`: va amb la còpia al
+      disc USB del local.)*
 - [ ] 🔁 **Revisar els sostres després d'emparellar el hub.** Els 512 MB del `matter-server`
       es van triar sobre un pic mesurat amb la **xarxa Matter buida**. El marge és de 5,7× i
       hauria de sobrar, però és una xifra per confirmar, no per donar per bona.

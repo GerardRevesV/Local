@@ -247,8 +247,12 @@ que el kernel comença a matar processos **de tota la màquina**, triats per ell
 nosaltres. Amb els 4 GB **soldats** d'aquest portàtil no hi ha camí d'ampliació: el marge es
 defensa posant-hi sostre, no comprant memòria.
 
-I el que hi ha en joc no és la comoditat. És que l'històric **no tingui forats fins al març de
-2027**. Un forat no és una molèstia: és pèrdua de valor probatori.
+I el que hi ha en joc no és la comoditat, és l'històric. ⚠️ Això es va escriure quan
+l'objectiu era defensar la retenció, i deia «pèrdua de valor probatori». Amb el
+[canvi d'objectiu del 21/09/2026](decisio-stack.md) **l'argument no cau, canvia de motiu**:
+les dades crues i `purge_keep_days: 730` es mantenen expressament —són «l'única cosa
+irreversible»— i un forat es paga igual, perquè sense sèrie no hi ha llindars amb dades
+pròpies i **aquest hivern passa un sol cop**.
 
 | Servei | Pic mesurat | `mem_limit` | `mem_reservation` | Marge sobre el pic |
 |---|---|---|---|---|
@@ -311,17 +315,22 @@ journalctl -k --since "-7 days" | grep -iE 'oom-kill:|Out of memory: Killed proc
 |---|---|---|---|
 | **`scripts/comprova.sh`** | el mateix guió | quan el llances | ✅ **Fet.** Verifica que tots dos sostres hi siguin i **quadrin amb el `docker-compose.yml`**, i llegeix el journal del kernel dels últims 7 dies |
 | **Cos del ping de `bategada`** | `bategada.sh` | cada 30 min | ⏳ El guió **encara no existeix** (fase A.11). Quan s'escrigui, el cos ha de portar-hi el recompte d'OOM i els reinicis dels dos contenidors |
-| **Arxiu diari a `Local-data`** | `nit.py` | cada nit | ⏳ `nit.py` **encara no existeix**. És l'únic dels tres que dona un registre **permanent i datat** |
+| **El guió nocturn** | `nit.py` | cada nit | ⏳ `nit.py` **encara no existeix**. És l'únic dels tres que dona un registre **permanent i datat**. ⚠️ Ja **no** va a `Local-data`, que [va quedar superat el 21/09/2026](decisio-stack.md): va amb la còpia nocturna al disc USB del local |
 
 ⚠️ **Aquí hi havia un error de plantejament que val la pena deixar escrit.** El lloc natural
 semblava el **`desplegaments.log`**, però aquell fitxer és un **registre de desplegaments**:
 l'escriu `desplega.sh` (pas 9) i només corre quan despleguem. Un OOM a les 04:00 no és un
-desplegament i **no hi cauria mai**. Per això el registre permanent va a l'**arxiu nocturn**,
+desplegament i **no hi cauria mai**. Per això el registre permanent va al **guió nocturn**,
 que sí que corre cada dia passi el que passi, i el `desplegaments.log` es queda amb la feina
 que li toca: explicar els forats que **provoquem nosaltres** desplegant.
 
+> ⚠️ **Actualitzat amb el canvi d'objectiu.** El pas 9 original deixava el `desplegaments.log`
+> dins de l'arbre de `Local-data`, que [va quedar superat](decisio-stack.md). El fitxer segueix
+> tenint sentit i el raonament de sobre no canvia gens —un OOM continua sense ser un
+> desplegament—; el que canvia és que **es queda al local**, com la resta de còpies.
+
 Els tres tenen papers diferents i cap no substitueix els altres: `comprova.sh` és el
-diagnòstic **quan vas a mirar**, el ping és l'avís **que et fa anar a mirar**, i l'arxiu
+diagnòstic **quan vas a mirar**, el ping és l'avís **que et fa anar a mirar**, i el guió
 nocturn és el que d'aquí a un any **encara hi serà**.
 
 ### 🔽 `vm.swappiness`: de 60 a 10
