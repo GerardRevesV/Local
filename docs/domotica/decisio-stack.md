@@ -39,7 +39,7 @@
 | **Instal·lació de HA** | **HA Container**, versió fixada, congelada fins al 10/03/2027 | `docker-compose.yml` | Supervised s'actualitza sol i decideix per tu quan reiniciar HA; HA OS et pren el host i amb ell scripts, timers i git |
 | **Stack de contenidors** | **Un. Només `homeassistant`** | YAML de compose (~15 línies) | Sense Postgres no hi ha `depends_on`, ni healthcheck, ni credencials, ni contenidor efímer de restauració |
 | **Base de dades de l'històric** | **SQLite**, `purge_keep_days: 730`, `commit_interval: 30`, `exclude` per **llistes explícites** (mai globs) | recorder d'HA | Amb arxiu CSV diari immutable a git, el motor deixa de ser el dipòsit de la prova i Postgres només compra un mode de fallada silenciós més |
-| **Lògica de control** | **HA natiu.** Un **únic** sensor de plantilla `sensor.decisio_soterrani` és l'únic que avalua; l'automatisme només hi actua. `\| float` **sense valor per defecte** + `availability:` explícit | YAML + Jinja2, 1 fitxer `packages/rosada.yaml` | Un sensor de motiu que reavalua ment; un que decideix no pot mentir, i s'estalvia un subprocés cada 60 s i un fitxer d'estat paral·lel |
+| **Lògica de control** | **HA natiu.** Un **únic** sensor de plantilla `sensor.decisio_del_soterrani` és l'únic que avalua; l'automatisme només hi actua. `\| float` **sense valor per defecte** + `availability:` explícit | YAML + Jinja2, 1 fitxer `packages/rosada.yaml` | Un sensor de motiu que reavalua ment; un que decideix no pot mentir, i s'estalvia un subprocés cada 60 s i un fitxer d'estat paral·lel |
 | **Exportador de dades** | **Un sol script nocturn** a les 03:40 (franja vall): `VACUUM INTO` → guardes → CSV.gz + SHA-256 → segell RFC 3161 → commit+push → disc extern → ping amb estat | Python 3 **stdlib** (`sqlite3`, `csv`, `gzip`, `hashlib`, `urllib`) + `systemd timer` amb `Persistent=true` | La instantània serveix alhora de còpia i de font d'exportació, i l'exportador és el **vigilant** de la base de dades |
 | **Allotjament de les dades** | **GitHub `Local-data` privat**, un commit diari, **clau de desplegament SSH** (mai token) | git | Gratuït, fora del local, i un token que caduqués el gener de 2027 seria una fallada silenciosa just abans del venciment |
 | **Panell web** | **No n'hi ha.** Dashboards natius d'HA + app Companion per Tailscale | cap | Cobreixen 4,5 dels 5 gràfics amb zero codi, zero allotjament i zero credencials; el mig gràfic que falta no val una pàgina, una llibreria i un esquema de fitxers |
@@ -74,7 +74,7 @@
  │                                                                          │
  │   packages/rosada.yaml   ← YAML + Jinja2, ~200 línies, UN fitxer         │
  │     sensor.soterrani_*_td, sensor.delta_td, sensor.marge_superficie      │
- │     sensor.decisio_soterrani   ◀── ÚNIC punt d'avaluació                 │
+ │     sensor.decisio_del_soterrani   ◀── ÚNIC punt d'avaluació                 │
  │     automation manual:  llegeix la decisió → escriu switch → escriu      │
  │                         input_datetime d'estat   (la UI NO pot           │
  │                         reescriure aquest fitxer)                        │
@@ -114,7 +114,7 @@
 ```
 
 **`desplega.sh`, en ordre (cada pas és una barana, no una comoditat):**
-1 avorta si l'arbre és brut o si l'últim CSV té més de 48 h · 2 anota commit i etiquetes actuals · 3 `git pull --ff-only` · 4 `docker compose config -q` i `pull` · 5 **`check_config` contra la imatge NOVA en un contenidor d'un sol ús** (`docker compose run --rm --entrypoint python …`; fer `exec` valida amb la imatge vella) · 6 verifica que tots els `sensor.`/`input_number.` referenciats al YAML existeixen a `/api/states` · 7 `up -d` · 8 **comprova que `sensor.decisio_soterrani` existeix i és fresc** — «esperar que HA respongui» no serveix, HA arrenca perfectament amb un automatisme trencat · 9 escriu una línia al `desplegaments.log` dins de l'arbre de `Local-data` (el commit nocturn se l'endú) · 10 revertir i avisar si falla.
+1 avorta si l'arbre és brut o si l'últim CSV té més de 48 h · 2 anota commit i etiquetes actuals · 3 `git pull --ff-only` · 4 `docker compose config -q` i `pull` · 5 **`check_config` contra la imatge NOVA en un contenidor d'un sol ús** (`docker compose run --rm --entrypoint python …`; fer `exec` valida amb la imatge vella) · 6 verifica que tots els `sensor.`/`input_number.` referenciats al YAML existeixen a `/api/states` · 7 `up -d` · 8 **comprova que `sensor.decisio_del_soterrani` existeix i és fresc** — «esperar que HA respongui» no serveix, HA arrenca perfectament amb un automatisme trencat · 9 escriu una línia al `desplegaments.log` dins de l'arbre de `Local-data` (el commit nocturn se l'endú) · 10 revertir i avisar si falla.
 
 ---
 
@@ -196,7 +196,7 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 3. **Cap panell publicat i cap URL per a tercers.** *Risc acceptat:* cal l'app de Tailscale i no pots passar un enllaç a un pèrit. Quan calgui, es resol amb un correu amb el CSV i un PDF, que és el que un pèrit obrirà.
 4. **Cap CI.** *Risc acceptat:* una regressió d'estil arriba al local; les portes del desplegament, que són més fortes, l'aturen abans de reiniciar res.
 5. **Cap rearmada elèctrica del router.** *Risc acceptat:* un router 4G penjat = un viatge en cotxe. HA segueix gravant: no costa prova.
-6. **Duplicació entre el YAML de decisió i la funció de rèplica offline.** ~3 comparacions escrites dues vegades. *Mitigació que la converteix en invariant comprovable:* la rèplica es passa sobre el període ja gravat i **es compara amb els valors registrats de `sensor.decisio_soterrani`**; qualsevol divergència vol dir que les dues implementacions han derivat. ~20 línies de test.
+6. **Duplicació entre el YAML de decisió i la funció de rèplica offline.** ~3 comparacions escrites dues vegades. *Mitigació que la converteix en invariant comprovable:* la rèplica es passa sobre el període ja gravat i **es compara amb els valors registrats de `sensor.decisio_del_soterrani`**; qualsevol divergència vol dir que les dues implementacions han derivat. ~20 línies de test.
 7. **Cap restauració de prova automàtica.** Una de manual al principi, i prou.
 8. **Punts únics acceptats sense redundància:** portàtil, disc, coordinador Zigbee, compte de Tailscale, compte de GitHub.
 
@@ -224,7 +224,7 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 
 ### Bloc B — Mesurar (setmanes 1–4)
 15. Instal·lar sensors, endoll amb mesura i node ESPHome amb els dos DS18B20 (limita la cadència del mesurador de potència o filtra per delta).
-16. `packages/rosada.yaml`: Td, ΔTd, marge de superfície, `history_stats` + `utility_meter`, i `sensor.decisio_soterrani` **registrant sense actuar**.
+16. `packages/rosada.yaml`: Td, ΔTd, marge de superfície, `history_stats` + `utility_meter`, i `sensor.decisio_del_soterrani` **registrant sense actuar**.
 17. **Els ventiladors segueixen en el règim actual** (deure de la clàusula QUINTA i grup de control alhora).
 18. Dashboards natius + app Companion.
 

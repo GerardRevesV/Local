@@ -68,7 +68,9 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
       d'arrencada, perquè un llapis oblidat al local no deixi el servidor sense arrencar.
 - [ ] Buscar al BIOS un **límit de càrrega de bateria**: dos anys al 100 % la degraden i la
       poden inflar.
-- [ ] Desactivar la **suspensió** i posar `HandleLidSwitch=ignore` abans de deixar-lo tancat.
+- [x] ~~Desactivar la **suspensió** i posar `HandleLidSwitch=ignore`.~~ ✅ Fet i **verificat
+      després d'un reinici real**: `sleep`/`suspend`/`hibernate` emmascarats, la tapa ignorada,
+      i HA torna sol amb HTTP 200. Queda oberta la meitat de maquinari (BIOS).
 - [ ] ⚠️ **Decidir un SAI petit (~40–60 €) per al router i el hub H100.** La bateria del
       portàtil només manté viu el portàtil: en un tall, els sensors deixen d'arribar igualment
       i la sèrie de dades fa un forat.

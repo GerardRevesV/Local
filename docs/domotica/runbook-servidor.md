@@ -210,7 +210,7 @@ sensor:
 
 > Això és exactament el tipus d'error que no es nota: HA arrenca perfectament, la interfície
 > funciona, i simplement no hi ha cap de les entitats de la lògica. Per això `desplega.sh`
-> comprova que `sensor.decisio_soterrani` **existeix i és fresc** després de cada desplegament.
+> comprova que `sensor.decisio_del_soterrani` **existeix i és fresc** després de cada desplegament.
 
 ### 🪤 `purge_interval` està obsolet
 
