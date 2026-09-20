@@ -32,7 +32,6 @@ config/.cloud/
 config/backups/
 config/deps/
 config/tts/
-config/www/
 config/.uuid
 config/*.db
 config/*.db-shm
