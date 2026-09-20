@@ -28,6 +28,10 @@ factura, un document, una dada d'una visita, una decisió tècnica—:
 No cal preguntar abans de documentar. Sí que cal preguntar abans de donar per bona una dada
 que contradigui el que ja hi ha escrit.
 
+**Jerarquia:** `decisio-stack.md` mana sobre les propostes de `docs/domotica/`. Les propostes
+porten una capçalera que diu què en queda superat; es conserven pel raonament. Si una decisió
+nova supera `decisio-stack.md`, s'edita allà i s'hi deixa constància.
+
 ## Estructura
 
 ```
@@ -41,8 +45,10 @@ docs/
     comunitat.md       Junta (per càrrec), derrames, acords
     installacions.md   Ventilació, splits, subministraments
   domotica/
+    decisio-stack.md   ⭐ LA DECISIÓ. Mana sobre qualsevol proposta anterior
+    fases.md           ⭐ Fases, portes de test i repartiment de feina
     objectius.md       Per què es fa i amb quins principis
-    arquitectura.md    Decisions obertes: eines, llenguatges, accés remot
+    arquitectura.md    Índex d'estat de les decisions
     acces-remot.md     Proposta d'accés des de fora del local
     monitoritzacio.md  Proposta de registre, retenció i visualització de dades
     control-punt-rosada.md  Proposta de lògica de control, helpers i maquinari

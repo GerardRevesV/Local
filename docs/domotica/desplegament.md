@@ -1,5 +1,10 @@
 # Flux de desenvolupament i desplegament
 
+> ⚠️ **PARCIALMENT SUPERAT** per [decisio-stack.md](decisio-stack.md), la decisió del 20/09/2026.
+>
+> **Canvis:** l'stack és **un sol contenidor** (`homeassistant`): res de Postgres, Mosquitto ni Zigbee2MQTT. El desplegament és `desplega.sh` amb portes dures, llançat a mà per SSH. El que segueix vigent i reforçat: pull i no push, versions fixades, validació abans de reiniciar, i el parany de `.storage`.
+> Aquest document es conserva pel raonament, no com a guia vigent.
+
 > **Estat: decidit a grans trets, detalls oberts.**
 
 ## El flux

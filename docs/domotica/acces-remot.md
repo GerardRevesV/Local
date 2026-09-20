@@ -1,5 +1,10 @@
 # Accés remot — proposta
 
+> ⚠️ **PARCIALMENT SUPERAT** per [decisio-stack.md](decisio-stack.md), la decisió del 20/09/2026.
+>
+> **Canvis:** **Tailscale és l'única via** d'administració i de consulta. GitHub queda com a destí d'arxiu i còpia, **no** com a panell (res de GitHub Pages). Nabu Casa descartat. El canal d'ordres per `ordres.json` queda mort.
+> Aquest document es conserva pel raonament, no com a guia vigent.
+
 > **Estat: proposta.** Actualitzat amb dos fets nous: Internet serà per **SIM** i s'ha
 > plantejat fer servir **GitHub** com a intermediari.
 

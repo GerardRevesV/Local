@@ -1,5 +1,10 @@
 # Control per punt de rosada — proposta
 
+> ⚠️ **PARCIALMENT SUPERAT** per [decisio-stack.md](decisio-stack.md), la decisió del 20/09/2026.
+>
+> **Canvis:** hi haurà **un únic sensor de decisió** (`sensor.decisio_soterrani`) que avalua, i l'automatisme només hi actua — no un sensor de motiu separat, que podria mentir. L'`input_boolean.mode_prova` desapareix: la Fase 0 és senzillament que l'automatisme d'actuació encara no està desplegat. **Durant la Fase 0 els ventiladors NO s'aturen** (la clàusula QUINTA obliga a mantenir-los operatius). La resta —física, fórmula, histèresi, bloquejos, maquinari— segueix vigent.
+> Aquest document es conserva pel raonament, no com a guia vigent.
+
 > **Estat: proposta, no decidida.**
 
 ## A) La lògica

@@ -22,10 +22,11 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
   ~9 de març de 2027** per determinar-ne l'origen. Vegeu [humitats.md](docs/local/humitats.md).
 - **Domòtica:** fase zero. S'està instal·lant **Home Assistant en un portàtil secundari**
   (ara mateix, preparant un pen drive amb Linux Mint).
-  L'objectiu d'alt nivell ja està definit — **governar els ventiladors cap a l'exterior pel
-  punt de rosada per estalviar deshumidificador, i monitoritzar-ho tot** — però les eines,
-  els llenguatges i l'accés remot encara són decisions obertes.
-  → [objectius.md](docs/domotica/objectius.md) · [arquitectura.md](docs/domotica/arquitectura.md)
+  L'objectiu és **governar els ventiladors cap a l'exterior pel punt de rosada per estalviar
+  deshumidificador, i monitoritzar-ho tot**. L'arquitectura ja **està decidida**: un sol
+  contenidor de Home Assistant sobre SQLite, lògica en YAML natiu, exportació nocturna en
+  Python a un repositori privat, i Tailscale com a única via d'accés. Sense panell web propi.
+  → [decisio-stack.md](docs/domotica/decisio-stack.md) · [fases.md](docs/domotica/fases.md)
 
 ## Privacitat
 

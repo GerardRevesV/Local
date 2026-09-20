@@ -1,5 +1,10 @@
 # Publicació de dades — com pugen, on, i com les llegeix el web
 
+> ⚠️ **PARCIALMENT SUPERAT** per [decisio-stack.md](decisio-stack.md), la decisió del 20/09/2026.
+>
+> **Canvis:** **no hi haurà panell web propi** ni allotjament a R2/Cloudflare Access (incompleix «gratuït» i fica un tercer que desxifra TLS sobre dades amb valor legal). Les dades van a un repositori privat `Local-data` amb un commit nocturn, i es consulten amb els dashboards natius d'HA per Tailscale. El que segueix vigent: el raonament sobre el patró de fitxers de git, ISO 8601 amb zona horària, i els forats explícits.
+> Aquest document es conserva pel raonament, no com a guia vigent.
+
 > **Estat: proposta.** Respon a dues preguntes lligades: si cal `git push`, i com de fàcil
 > serà que el panell web llegeixi les dades.
 
