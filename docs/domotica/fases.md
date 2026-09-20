@@ -41,7 +41,7 @@ invalidar.
 - [ ] Sé **per on entra l'aire de reposició**.
 - [x] ~~Sé si el deshumidificador es reprèn sol.~~ ✅ Sí, i funciona de 5 a 35 °C.
 - [ ] 🔴 Sé si **recorda el llindar d'humitat** després d'un cicle d'alimentació. Si no el recorda, l'arquitectura del deshumidificador canvia.
-- [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. **L'stack és 1 contenidor.**
+- [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. ⚠️ **Però l'stack ha passat a 2 contenidors** el 21/09/2026: `tplink` rebutja el hub i la via és Matter, que demana el seu propi servidor.
 - [x] ~~Sé **quin model és l'endoll**.~~ ✅ **Tapo P110: mesura consum.** És el que fa
       possible el `utility_meter` del deshumidificador i, amb ell, els kWh/dia de la Porta B.
 - [x] ~~Sé **on va cada sensor** i si el de fora estarà protegit de la pluja.~~ ✅ **Assignació

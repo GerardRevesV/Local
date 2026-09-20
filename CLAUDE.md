@@ -92,7 +92,8 @@ docs/
 config/                Configuració de Home Assistant (es desplega al local)
   configuration.yaml   `recorder`: purge_keep_days, commit_interval, exclusions
   packages/rosada.yaml La lògica del punt de rosada — UN sol punt d'avaluació
-docker-compose.yml     HA Container amb la versió fixada
+docker-compose.yml     Els DOS contenidors: HA (versió fixada) i matter-server
+                       (digest fixat). Matter, perquè «tplink» rebutja el hub
 scripts/               Guions per al host del local (bash)
   prepara-host.sh      Deixa el portàtil llest: SSH, NTP, cap suspensió, Docker
   comprova.sh          Verifica d'una passada que tot segueix com ha de ser

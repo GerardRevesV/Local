@@ -72,9 +72,10 @@ Fons 23,5 °C / 62 % · Fora 23,9 °C / 68 % · Gran 22,7 °C / 64 %.
 | Disc | **SSD NVMe Samsung 128 GB** ✅ — no és eMMC |
 | Sistema | Linux Mint 22.3 |
 
-**Veredicte: suficient per a l'stack decidit**, perquè l'stack és d'un sol contenidor sobre
-SQLite. Les especificacions completes, el veredicte raonat i com entrar al BIOS són a
-[home-assistant.md](home-assistant.md#el-maquinari-del-servidor).
+**Veredicte: suficient per a l'stack decidit**, perquè l'stack és petit i va sobre SQLite.
+⚠️ Des del 21/09/2026 són **dos** contenidors (hi entra `matter-server`), i el marge de RAM
+**està per tornar a mesurar**. Les especificacions completes, el veredicte raonat i com entrar
+al BIOS són a [home-assistant.md](home-assistant.md#el-maquinari-del-servidor).
 
 > ⚠️ **Va a la planta baixa, no al soterrani.** I és l'únic aparell de la cadena amb bateria:
 > en un tall de corrent el hub H110 i el router cauen igualment.
@@ -213,13 +214,26 @@ no menys: l'error sistemàtic entre models diferents no es cancel·la sol.
 mediana, i li aplico un *offset* fix a Home Assistant. Cost zero, i permet baixar el llindar
 de decisió de 2,0 °C a ~1,2 °C — que són hores de ventilació gratuïta guanyades.
 
-### 2. 🟡 Credencials de Tapo
+### 2. ~~🟡 Credencials de Tapo~~ → ✅ **resolt, i per un camí millor**
 
-La integració oficial `tplink` de Home Assistant **suporta el hub H110 i els seus sensors
-filles**, i els consulta **localment** per IP. Però la configuració inicial demana el **correu
-i la contrasenya del compte Tapo**, no només un testimoni local.
+> 🔴 **Escrit el 20/09, superat el 21/09.** Deia que la integració oficial `tplink` suporta el
+> hub H110 i el consulta localment per IP, i que el pegat era que la configuració inicial
+> demana **correu i contrasenya del compte Tapo**. Les dues meitats han canviat.
 
-→ Reserva una **IP fixa per al hub** al router abans de configurar res.
+**`tplink` no suporta aquest hub.** El H110 xifra amb **TPAP**, i la biblioteca que porta
+HA 2026.9.3 (`python-kasa` 0.10.2) només coneix KLAP, AES i XOR: el rebutja amb *«Unsupported
+device»*. És un problema obert d'upstream
+([`python-kasa#1590`](https://github.com/python-kasa/python-kasa/issues/1590)), no nostre.
+
+**La via és Matter**, amb el contenidor `matter-server`. I això **tanca la preocupació de les
+credencials en comptes d'esquivar-la**: per Matter no hi ha compte Tapo, ni núvol, ni
+contrasenya, ni res que caduqui. L'emparellament és local i les claus viuen a `./matter-data`.
+
+→ Reserva igualment una **IP fixa per al hub** al router: Matter va per IPv6 i multidifusió,
+  però l'àlies estable segueix estalviant maldecaps.
+→ ⚠️ **`matter-data/` conté les claus dels aparells emparellats.** És al `.gitignore` perquè
+  són secrets, i per això és fàcil oblidar-la **a la còpia de seguretat**. Perdre-la obliga a
+  reemparellar, i reemparellar **parteix les sèries**.
 
 ---
 
@@ -240,8 +254,9 @@ feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una
 > - **Càrrega màxima** del S110E i si està homologat per a **càrrega inductiva** (motor), no
 >   només resistiva. Els motors tenen corrent d'arrencada.
 > - **Instal·lació en cablejat fix → instal·lador autoritzat**, conforme al REBT.
-> - Si el suport a Home Assistant és per la integració `tplink` o per **Matter** (el S110E el
->   suporta, i seria encara més local).
+> - ✅ **Ja resolt a favor de Matter** per al hub, i el S110E també el suporta. Val la pena
+>   emparellar-los **tots dos per Matter** i no barrejar vies: `tplink` ni tan sols accepta el
+>   hub (xifratge TPAP), i Matter és més local —sense núvol ni compte.
 > - Si permeten conservar l'**interruptor físic** com a entrada lògica (l'equivalent del mode
 >   *detached*), que és el que dona el millor control manual.
 

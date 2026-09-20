@@ -30,9 +30,11 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
   haurà al local— abans de portar-ho tot allà.
   → [home-assistant.md](docs/domotica/home-assistant.md) · [runbook-servidor.md](docs/domotica/runbook-servidor.md)
   L'objectiu és **governar els ventiladors cap a l'exterior pel punt de rosada per estalviar
-  deshumidificador, i monitoritzar-ho tot**. L'arquitectura ja **està decidida**: un sol
-  contenidor de Home Assistant sobre SQLite, lògica en YAML natiu, exportació nocturna en
-  Python a un repositori privat, i Tailscale com a única via d'accés. Sense panell web propi.
+  deshumidificador, i monitoritzar-ho tot**. L'arquitectura ja **està decidida**: Home
+  Assistant sobre SQLite, lògica en YAML natiu, exportació nocturna en Python a un repositori
+  privat, i Tailscale com a única via d'accés. Sense panell web propi. ⚠️ **Des del 21/09/2026
+  l'stack són dos contenidors i no un:** el hub Tapo xifra amb TPAP i la integració `tplink`
+  el rebutja, així que la via és **Matter**, que demana el seu propi servidor.
   → [decisio-stack.md](docs/domotica/decisio-stack.md) · [fases.md](docs/domotica/fases.md)
 
 ## Privacitat
