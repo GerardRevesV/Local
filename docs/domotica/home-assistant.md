@@ -12,10 +12,23 @@
 - [x] `check_config` net.
 - [x] **SSH amb clau** des del portàtil de casa.
 - [x] **Tailscale connectat**, amb l'**expiració de clau desactivada**.
-- [ ] Crear el compte d'HA i un testimoni de llarga durada.
+- [x] **Compte d'HA creat** i **dos testimonis de llarga durada** emesos.
 - [ ] **Verificar `purge_keep_days: 730` contra la instància en calent** (Porta A).
+      *Estat 20/09/2026: `check_config --info recorder` el llegeix com a `730 [source
+      /config/configuration.yaml:29]`. Això és el fitxer tal com el llegeix HA, no la
+      instància en calent: falta la comprovació per `/api/config` amb el testimoni.*
+- [ ] **Esborrar la integració `bluetooth` d'HA** — vegeu el parany del
+      [runbook](runbook-servidor.md#-el-bluetooth-torna-encara-que-el-servei-estigui-aturat).
 - [ ] Emparellar el hub H100 al **router SIM** i després afegir la integració `tplink`.
 - [ ] Decidir la ubicació física definitiva dins del local.
+
+> **Auditoria del 20/09/2026, feta per SSH contra la màquina en marxa.** El que ja hi és:
+> Mint 22.3 amb **0 paquets per actualitzar**, la imatge d'HA de 3,43 GB **al disc**, HA
+> responent **HTTP 200** per LAN i per Tailscale, **45 entitats** registrades i el paquet
+> `rosada` carregat sencer (hi són `sensor.decisio_del_soterrani`, els cinc punts de rosada,
+> `input_select.mode_soterrani` i els dos `input_number`). **No falta res de gros per
+> instal·lar**: el que falta és el que encara no hem escrit (`nit.py`, `desplega.sh`), el
+> repositori `Local-data`, i quatre eines petites — vegeu la llista de sota.
 
 ### On és cada cosa ara mateix
 
@@ -76,12 +89,15 @@ ssh local-ha "docker image ls | grep home-assistant"
 
 #### 2. El que demana tenir el portàtil al davant
 
-Un cop sigui al local, **cada casella d'aquestes és un viatge**:
+Hi ha coses que no es poden fer per SSH: el BIOS es toca amb el teclat de la màquina. Un cop
+el portàtil sigui al local, **cada una d'aquestes comprovacions és un viatge**, i n'hi ha una
+—*restore on AC power loss*— que **pot canviar una decisió d'arquitectura**: si l'opció no hi
+és, el pla d'arrencada desatesa de [decisio-stack.md](decisio-stack.md) s'ha de refer amb una
+mitigació, i això val més saber-ho al setembre.
 
-- [ ] ⚠️ **BIOS: *restore on AC power loss*** — la premissa que [decisio-stack.md](decisio-stack.md) dona per feta i que en portàtils sovint no hi és. Si no hi és, decidir la mitigació **ara**, no al gener.
-- [ ] **BIOS: límit de càrrega de bateria**, per no tenir-la al 100 % dos hiverns.
-- [ ] **BIOS: disc intern a dalt** de l'ordre d'arrencada. Un llapis oblidat al local deixaria el servidor sense arrencar.
-- [ ] **SMART del disc**, capacitat real de bateria i **prova de la pila del CMOS**: apagada llarga i, en tornar, mirar `hwclock -r` **abans** que l'NTP ho dissimuli.
+Es fa tot en **una sola tanda**, amb la màquina apagada al davant. La llista viva, per anar-la
+marcant, és a **[pendents.md → 🔧 Tanda física](../pendents.md)**; aquí només hi ha el perquè,
+i com s'entra al BIOS és més avall, a [Entrar al BIOS](#entrar-al-bios).
 
 #### 3. Les caselles de la Porta A que no depenen de la xarxa
 
@@ -229,6 +245,13 @@ inevitable sense un SAI petit per al router i el hub (~40–60 €). **Queda com
 ⚠️ I la lletra petita de la lletra petita: una bateria de liti **endollada al 100 % de manera
 permanent durant dos anys** es degrada i es pot inflar. Convé buscar al BIOS un límit de
 càrrega (vegeu sota).
+
+> **Comprovat el 20/09/2026:** per Linux **no hi ha cap camí**. A
+> `/sys/class/power_supply/BAT*/` no hi ha cap fitxer `charge_control_*_threshold`, que és el
+> que exposen els portàtils on el límit de càrrega es pot posar per programari. Si aquest
+> límit existeix, és **només al BIOS**; si tampoc no hi és, l'única mitigació real és
+> assumir-ho i vigilar que la bateria no s'infli. Estat de la bateria avui: **42,5 Wh de 53
+> Wh de disseny, 80 % de salut, «fully-charged»**.
 
 ## Entrar al BIOS
 
