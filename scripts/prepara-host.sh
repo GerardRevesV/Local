@@ -15,10 +15,15 @@
 #   4. Docker CE oficial   → el de Mint va endarrerit; el de snap trenca els volums
 #   5. Límit als logs      → que el journal no s'empassi el disc
 #
-# El que NO fa encara, i queda per a un segon guió:
+#   6. Tailscale           → l'única via d'entrar-hi quan marxis del local
+#
+# El que NO fa, i queda per a tu:
+#   · Desactivar l'expiració de la clau de Tailscale, que es fa al seu web (A.3).
+#     Si no ho fas, d'aquí a uns mesos la clau caduca i perds l'accés al servidor.
 #   · unattended-upgrades només de seguretat, excloent docker-ce*
-#   · Tailscale (A.3) — la clau va al seu web, és feina teva
-#   · zram, si resulta que el disc és eMMC (ho decidim quan sapiguem què és)
+#
+# Ja resolt i per tant fora del guió:
+#   · zram — el disc va resultar ser un SSD NVMe, no una eMMC
 
 set -euo pipefail
 
@@ -106,6 +111,26 @@ SystemMaxFileSize=20M
 CONF
 sudo systemctl restart systemd-journald
 ok "Journal limitat a 200 MB."
+
+# ─────────────────────────────────────────────────────── 6. Tailscale ───────
+log "Tailscale"
+if ! command -v tailscale >/dev/null 2>&1; then
+  curl -fsSL https://tailscale.com/install.sh | sh
+else
+  ok "Tailscale ja hi era"
+fi
+
+if tailscale status >/dev/null 2>&1; then
+  ok "Ja connectat: $(tailscale ip -4 2>/dev/null | head -1)"
+else
+  avis "Ara sortirà un enllaç. Obre'l i autentica't; sense això no queda connectat."
+  sudo tailscale up --hostname=local-ha
+  ok "Tailscale up. IP: $(tailscale ip -4 2>/dev/null | head -1)"
+fi
+
+avis "PENDENT I IMPORTANT: entra a login.tailscale.com → Machines → local-ha"
+avis "i desactiva-li l'expiració de la clau (Disable key expiry). Si no, caduca"
+avis "sola d'aquí a uns mesos i et quedes sense accés al local."
 
 # ───────────────────────────────────────────────────────── Diagnòstic ────────
 log "Com ha quedat la màquina"

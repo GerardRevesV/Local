@@ -40,21 +40,23 @@ baix. És un perfil que, sense pretendre-ho, encaixa bé amb fer de servidor per
 > per a un aparell que ha d'estar endollat 24/7 durant un hivern sencer, això és una peça de
 > recanvi menys de la qual preocupar-se.
 
-### El que és típic d'aquesta família, però s'ha de confirmar a la màquina
+### La configuració real — ✅ confirmada el 20/09/2026
 
-L'etiqueta **no** diu processador, memòria ni disc: dins d'un mateix `TMB311-32` Acer va
-vendre configuracions diferents. El que és segur de la plataforma i el que no:
+L'etiqueta no diu processador, memòria ni disc: dins d'un mateix `TMB311-32` Acer va vendre
+configuracions diferents. Llegit per SSH des de la màquina ja instal·lada:
 
-| Camp | El que toca en aquesta família | Estat |
+| Camp | Valor real | Vs. el que s'esperava |
 |---|---|---|
-| Processador | **Intel Celeron N4500** (2 nuclis / 2 fils, 1,1–2,8 GHz, 6 W) o **N5100** (4 nuclis). La «C» de `C4JR` indica Celeron | ⏳ A confirmar |
-| Memòria | **4 GB** (alguns SKU, 8 GB), **soldada a la placa — no ampliable** | ⏳ A confirmar |
-| Disc | **64 o 128 GB**, o bé **eMMC soldada** o bé **SSD M.2 2280** segons SKU | ⏳ A confirmar — **la dada que més condiciona** |
+| Processador | **Intel Celeron N5100** — 4 nuclis, 1,1 GHz base (Jasper Lake, 6 W) | 🎉 Millor: se'n temia un N4500 de 2 nuclis |
+| Memòria | **4 GB** (3,6 GiB útils), soldada — **no ampliable** | Com es preveia |
+| Disc | 🎉 **SSD NVMe Samsung MZVLQ128HCHQ (PM991), 119,2 GB** | **No és eMMC.** Era la incògnita que més condicionava |
+| Sistema | Linux Mint 22.3 (base Ubuntu *noble*) | — |
 | Pantalla | 11,6" HD 1366 × 768 | — |
 | Ports | 2× USB-A, 1× USB-C (dades + PD + DisplayPort), HDMI, **RJ-45 gigabit**, lector microSD, jack | ⏳ A confirmar visualment |
-| Bateria | ~48 Wh | ⏳ A confirmar |
+| Bateria | **42,5 Wh reals** de 53 Wh de disseny → **80 % de salut** | Desgast de 4 anys; segueix servint |
+| Disc lliure | 99 GB de 117 | — |
 
-**Com es confirma tot d'una tirada**, un cop hi hagi Linux:
+**Com es torna a comprovar**, si mai cal:
 
 ```bash
 lscpu | grep -E 'Model name|^CPU\(s\)'
@@ -62,13 +64,8 @@ free -h
 lsblk -d -o NAME,SIZE,MODEL,TRAN
 ```
 
-La línia que decideix és la darrera:
-
-- `mmcblk0` → **eMMC soldada**. No es pot canviar, i és lenta en escriptures petites.
-- `sda` amb `TRAN=sata`, o `nvme0n1` → **SSD M.2**, substituïble obrint la tapa inferior.
-
-Sense Linux encara, les mateixes dades surten de la pestanya **Information** del BIOS
-(vegeu [Entrar al BIOS](#entrar-al-bios)).
+La línia que decidia era la darrera: `mmcblk0` hauria estat eMMC soldada; `nvme0n1` és un
+**SSD M.2 substituïble**. Va sortir `nvme0n1`.
 
 ### Serveix per a Home Assistant?
 
@@ -78,9 +75,9 @@ sense Postgres, sense Grafana i sense panell web.
 
 | Recurs | El que hi ha | El que demana l'stack decidit | Veredicte |
 |---|---|---|---|
-| **CPU** | Celeron de 2 nuclis, 6 W | 1 contenidor d'HA amb ~40 entitats + un script de Python de pocs minuts cada nit | ✅ **Sobra** |
-| **RAM** | 4 GB (probable) | HA Container en repòs: 400–700 MB. Mint amb Xfce: ~700 MB | ✅ **Suficient** — *precisament perquè* no hi ha Postgres, ni InfluxDB, ni Grafana |
-| **Disc** | 64 o 128 GB | Mint + Docker ≈ 20 GB. SQLite a 730 dies amb ~40 entitats ≈ **2–4 GB** | ✅ amb 128 GB · ⚠️ **just** amb 64 GB |
+| **CPU** | Celeron **N5100, 4 nuclis**, 6 W | 1 contenidor d'HA amb ~40 entitats + un script de Python de pocs minuts cada nit | ✅ **Sobra** |
+| **RAM** | 4 GB (3,6 útils) | HA Container en repòs: 400–700 MB. Mint amb Xfce: ~700 MB | ✅ **Suficient** — *precisament perquè* no hi ha Postgres, ni InfluxDB, ni Grafana |
+| **Disc** | **SSD NVMe de 128 GB** | Mint + Docker ≈ 20 GB. SQLite a 730 dies amb ~40 entitats ≈ **2–4 GB** | ✅ **De sobres**, i amb escriptura ràpida |
 | **Xarxa** | Wi-Fi 6 **+ RJ-45 gigabit** | Hub Tapo per IP local + Tailscale | ✅ I el **cable** evita que el servidor depengui del Wi-Fi |
 | **Alimentació** | 45 W màx.; en repòs amb la pantalla apagada, **8–12 W** | 24/7 | ✅ ≈ 7 kWh/mes → **menys d'1 €/mes** amb la [tarifa contractada](../local/subministraments.md) |
 
@@ -89,13 +86,13 @@ sense Postgres, sense Grafana i sense panell web.
 > porta pantalla, teclat, bateria i port Ethernet**. Per a aquest projecte, comprar maquinari
 > nou no compraria res.
 
-#### Les dues reserves reals
+#### ~~Les dues reserves reals~~ → només en queda una
 
-**1. Si el disc és eMMC, no hi pot haver *swap*.** L'eMMC té escriptures petites lentes i
-aguanta menys cicles que un SSD. El trànsit d'escriptura de l'stack decidit és ridícul
-(`commit_interval: 30` → dues escriptures per minut), i això no la gastarà en dos anys. El
-que sí que la gastaria —i de pressa— és el sistema fent *swap*. → **`zram` en comptes de
-fitxer d'intercanvi**, i `vm.swappiness` baix.
+**1. ~~Si el disc és eMMC, no hi pot haver *swap*.~~** ✅ **Resolta: el disc és un SSD NVMe.**
+La preocupació era que una eMMC soldada, lenta en escriptures petites i amb menys cicles,
+s'anés gastant amb el trànsit del `recorder` i sobretot amb el *swap*. Amb un NVMe Samsung
+desapareix: no cal `zram`, ni vigilar la vida del disc, i a sobre és **substituïble** obrint
+la tapa. Queda com a bona pràctica mantenir `vm.swappiness` baix, però ja no és crític.
 
 **2. La memòria està soldada.** No hi ha camí d'ampliació: si un dia s'hi volgués afegir
 Postgres, InfluxDB i Grafana, la decisió no seria «instal·lar-ho» sinó «canviar de màquina».
@@ -128,7 +125,8 @@ per estar-hi.
 
 Que el servidor tingui bateria pròpia és un avantatge real i ja recollit: davant d'un tall de
 llum **Home Assistant no cau i pot registrar el tall**, cosa que té valor per a l'expedient de
-les humitats. Amb ~48 Wh i 10 W de consum són **unes 4–5 hores** de marge.
+les humitats. La bateria dona **42,5 Wh reals** —el 80 % dels 53 Wh de disseny, que són
+quatre anys de desgast— i amb ~10 W de consum surten **unes 4 hores** de marge.
 
 ⚠️ **Però el servidor és l'únic aparell de la cadena que té bateria.** En un tall de corrent:
 
@@ -266,3 +264,4 @@ Aquí s'anirà anotant què s'ha fet realment, amb data.
 | 20/09/2026 | **El pen drive no arrencava.** Causa: al BIOS d'Acer cal tocar l'arrencada — `F12 Boot Menu` ve desactivat de fàbrica i l'ordre del `Boot` apunta al disc intern. Resolt: **Mint arrenca** |
 | 20/09/2026 | **Esquelet de la instal·lació escrit al repositori** (fase A.5/A.6/A.7): `.gitattributes`, `docker-compose.yml` amb la versió per fixar i `config/configuration.yaml` amb `purge_keep_days: 730` i `commit_interval: 30` |
 | 20/09/2026 | **`scripts/prepara-host.sh`** (fase A.2): SSH, zona horària i NTP, cap suspensió, tapa ignorada, Docker CE oficial i sostre al journal. Existeix perquè **només calgui teclejar una línia al portàtil**: a partir de l'SSH, tot es fa des de casa |
+| 20/09/2026 | **SSH obert des de casa amb clau dedicada**, i maquinari real llegit per fi: Celeron **N5100 de 4 nuclis**, **4 GB**, **SSD NVMe Samsung de 128 GB**, Mint 22.3. Cau la reserva de l'eMMC |

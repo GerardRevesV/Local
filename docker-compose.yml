@@ -12,7 +12,8 @@
 services:
   homeassistant:
     container_name: homeassistant
-    image: ghcr.io/home-assistant/home-assistant:FIXA-LA-VERSIO
+    # Fixada el 20/09/2026. NO es toca fins al 10/03/2027.
+    image: ghcr.io/home-assistant/home-assistant:2026.9.3
     restart: unless-stopped
 
     # Cal xarxa del host perquè la integració «tplink» descobreixi el hub

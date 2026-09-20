@@ -54,10 +54,11 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **suficient**.
 → [home-assistant.md](domotica/home-assistant.md#el-maquinari-del-servidor)
 
-- [ ] **Confirmar CPU, RAM i tipus de disc** a la pestanya *Information* del BIOS, o amb
-      `lscpu` / `free -h` / `lsblk -d -o NAME,SIZE,MODEL,TRAN` un cop hi hagi Mint.
-- [ ] ⚠️ **Si el disc és eMMC** (`mmcblk0`): **res de fitxer d'intercanvi** — `zram` i
-      `vm.swappiness` baix. Si són només 64 GB, vigilar l'espai des del primer dia.
+- [x] ~~**Confirmar CPU, RAM i tipus de disc.**~~ ✅ **20/09/2026, llegit per SSH:** Celeron
+      **N5100 de 4 nuclis**, **4 GB** soldats (3,6 útils), **SSD NVMe Samsung de 128 GB**,
+      Linux Mint 22.3.
+- [x] ~~⚠️ Si el disc és eMMC: res de fitxer d'intercanvi, `zram`…~~ ✅ **No aplica: és un
+      NVMe.** Cau la reserva principal del veredicte del maquinari, i el disc és substituïble.
 - [ ] ⚠️ **Verificar al BIOS si existeix *restore on AC power loss*.** `decisio-stack.md` ho
       dona per fet, i **en portàtils sovint no hi és**. Si no hi és, decidir la mitigació
       (apagada ordenada al 20 % de bateria, o `Wake on LAN`).

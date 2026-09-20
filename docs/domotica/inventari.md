@@ -67,7 +67,10 @@ Fons 23,5 °C / 62 % · Fora 23,9 °C / 68 % · Gran 22,7 °C / 64 %.
 | Consum en servei | ~8–12 W → **< 1 €/mes** |
 | Bateria | ~48 Wh → **4–5 h** de marge davant un tall |
 | Refrigeració | **Sense ventilador** |
-| CPU / RAM / disc | ⏳ **Pendents de confirmar** (Celeron de 2 o 4 nuclis, 4 GB soldats, 64–128 GB eMMC o SSD) |
+| CPU | **Intel Celeron N5100** — 4 nuclis ✅ |
+| RAM | **4 GB** soldats (3,6 útils) ✅ |
+| Disc | **SSD NVMe Samsung 128 GB** ✅ — no és eMMC |
+| Sistema | Linux Mint 22.3 |
 
 **Veredicte: suficient per a l'stack decidit**, perquè l'stack és d'un sol contenidor sobre
 SQLite. Les especificacions completes, el veredicte raonat i com entrar al BIOS són a
