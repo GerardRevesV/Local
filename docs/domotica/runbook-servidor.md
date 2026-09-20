@@ -227,6 +227,34 @@ s'ha de mantenir, i és la línia més important de tot el projecte.
 `NET_RAW`. Es podrien donar aquestes capacitats, però seria regalar privilegis per una funció
 que no volem: els sensors van per 868 MHz amb el hub. Es desactiva el servei al sistema.
 
+### 🪤 `docker compose ps` amaga els contenidors aturats
+
+Sense `-a`, `docker compose ps` **només llista els que corren**. Un contenidor aturat no hi
+surt com a «aturat»: **desapareix de la llista**.
+
+Això va fer que `comprova.sh` donés un fals verd durant tot el temps que l'stack va tenir dos
+contenidors. El guió feia:
+
+```bash
+docker compose ps --format '{{.Status}}' | head -1
+```
+
+Amb un sol contenidor, passava. Amb dos, comprovava el primer i callava sobre el segon —i si
+el primer queia, com que desapareixia de la llista, el `head -1` **agafava l'estat del segon i
+l'imprimia com si fos del primer**. El pitjor cas: Home Assistant mort i el guió dient «Tot
+correcte».
+
+La correcció és mirar **servei per servei i amb `-a`**:
+
+```bash
+docker compose ps -a --format '{{.Status}}' homeassistant
+```
+
+⚠️ I la lliçó de fons, que és la caduca: **la llista de serveis a comprovar va escrita al
+guió**, no deduïda de `docker compose config --services`. Un guió que s'adapta sol al que hi
+ha no s'adona mai que falta alguna cosa. `comprova.sh` ara compara les dues llistes en tots
+dos sentits i es queixa si no quadren.
+
 ### 🪤 Les descàrregues
 
 Imatge d'HA: **3,43 GB**. Actualitzacions d'una Mint acabada d'instal·lar: **434 paquets**.

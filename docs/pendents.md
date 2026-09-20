@@ -225,10 +225,19 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       → [home-assistant.md](domotica/home-assistant.md#-el-sostre-de-memòria--perquè-una-fuita-no-sendugui-la-màquina)
 - [x] ~~**Decidir `vm.swappiness`.**~~ ✅ **21/09/2026: baixat de 60 a 10**, aplicat per
       `prepara-host.sh` a `/etc/sysctl.d/99-memoria.conf`. Es pot perquè el disc és NVMe.
+- [x] ~~🐛 **`comprova.sh` donava un fals verd sobre els contenidors.**~~ ✅ **21/09/2026:**
+      mirava `docker compose ps … | head -1`, o sigui **un** contenidor d'un stack que en té
+      **dos**. I com que `ps` sense `-a` amaga els aturats, si queia el primer agafava l'estat
+      del segon i l'imprimia com si fos del primer: HA mort i «Tot correcte» a la pantalla.
+      Ara va servei per servei amb `-a`, distingeix `Exited (137)` i canta si al compose hi ha
+      un servei que ningú no comprova.
+      → [runbook-servidor.md](domotica/runbook-servidor.md#-docker-compose-ps-amaga-els-contenidors-aturats)
 - [ ] 🔁 **Desplegar els sostres al local i comprovar-los.** Els sostres són al repositori,
       **no a la màquina**: `mem_limit` només s'aplica **recreant el contenidor**
       (`docker compose up -d`, no un `restart`). Fins llavors `comprova.sh` els marcarà en
-      vermell — que és exactament el que ha de fer.
+      vermell — que és exactament el que ha de fer. ⚠️ **I el `comprova.sh` corregit encara
+      no s'ha corregut mai contra la màquina real:** la lògica nova està provada amb escenaris
+      simulats, que no és el mateix.
 - [ ] 🔁 **Reiniciar la màquina perquè el `swappiness` nou tingui efecte real.** El valor ja
       hi serà, però els **667 MB que ja eren a l'intercanvi** el 21/09 no es mouen sols. Es pot
       ajuntar amb el desplegament dels sostres i amb el pas a `multi-user.target`.
