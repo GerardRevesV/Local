@@ -16,8 +16,9 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 `docs/privat/identificacio.md` (ignorat per git). Regla completa a
 [`CLAUDE.md`](../CLAUDE.md).
 
-- [ ] **Comprovar que `docs/privat/` no s'ha commitat mai**: `git log --all -- docs/privat/`
-      ha de ser buit.
+- [x] ~~**Comprovar que `docs/privat/` no s'ha commitat mai.**~~ ✅ **Verificat el
+      20/09/2026:** `git log --all -- docs/privat/` no retorna res, i la carpeta és al
+      `.gitignore`. Cal **tornar-ho a comprovar** si algun dia es força un `git add -f`.
 - [ ] Abans de pujar **fotos**, netejar-ne les **metadades EXIF de geolocalització** i
       revisar que no s'hi vegin rètols, plaques, números de portal ni documents.
 - [ ] Repassar el `git diff` abans de cada commit buscant adreça, noms propis, referència
@@ -118,21 +119,39 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [x] ~~**Decidir el mètode d'instal·lació** de Home Assistant.~~ ✅ **HA Container sobre
       Docker**, ja en marxa amb la versió **2026.9.3** fixada.
       → [home-assistant.md](domotica/home-assistant.md)
-- [ ] Decidir **on viu físicament el servidor** i com s'hi accedeix de forma remota.
-- [ ] Configurar la **retenció llarga de l'històric** (el `recorder` purga als 10 dies per
-      defecte) i les còpies de seguretat.
+- [ ] Decidir **on viu físicament el servidor** dins del local (planta baixa, aixecat de
+      terra i ventilat). L'**accés remot ja està resolt**: Tailscale.
+- [x] ~~Configurar la **retenció llarga de l'històric**.~~ ✅ **Feta:** `purge_keep_days: 730`
+      i `commit_interval: 30` sobre **SQLite**, a `config/configuration.yaml`. Queda la
+      verificació **en calent** (casella de sota) i les **còpies de seguretat**, que estan
+      decidides però pendents d'escriure `nit.py`.
 - [ ] Confirmar si la **càmera Tapo C200** que es va investigar era per al local.
-- [ ] **Decidir on viu la lògica de control** del punt de rosada (HA natiu, Node-RED,
-      AppDaemon, pyscript o servei propi en Python). → [arquitectura.md](domotica/arquitectura.md)
-- [ ] **Decidir la base de dades i l'eina de visualització.** Hi ha proposta: PostgreSQL +
-      dashboards natius, Grafana més tard. → [monitoritzacio.md](domotica/monitoritzacio.md)
-- [ ] ⚠️ **Configurar `purge_keep_days: 730` ABANS del primer sensor.** No té arreglada a
-      posteriori: el `recorder` purga als 10 dies per defecte.
+- [x] ~~**Decidir on viu la lògica de control** del punt de rosada.~~ ✅ **HA natiu**, i ja
+      **escrita**: `config/packages/rosada.yaml` (566 línies), amb un únic punt d'avaluació,
+      `sensor.decisio_del_soterrani`. Node-RED, AppDaemon, pyscript i el servei propi en
+      Python queden **descartats**. → [decisio-stack.md](domotica/decisio-stack.md)
+- [x] ~~**Decidir la base de dades i l'eina de visualització.**~~ ✅ **SQLite** i els
+      **dashboards natius d'HA** per Tailscale. **PostgreSQL, MariaDB, InfluxDB i Grafana
+      estan descartats**, no ajornats: el dipòsit de la prova és el CSV diari immutable a
+      git, i un segon motor només compraria un mode de fallada silenciós més.
+      → [decisio-stack.md](domotica/decisio-stack.md)
+- [ ] ⚠️ **Verificar `purge_keep_days: 730` contra la instància EN CALENT**, no contra el
+      fitxer. Ja és a `configuration.yaml` i `check_config --info recorder` el llegeix, però
+      això encara és el fitxer: falta `/api/config` amb el testimoni. És l'única línia del
+      projecte que **no té arreglada a posteriori**.
 - [ ] ⚠️ **Convertir l'estat dels ventiladors en sensors numèrics** (`history_stats` +
       `utility_meter`). Els binaris no generen estadístiques a llarg termini, i per tant la
-      prova que la ventilació estava operativa **s'esborra** amb la purga.
-- [ ] Fixar els **noms d'entitat definitius** abans de posar cap sensor en producció.
-- [ ] Muntar el **ritual mensual** d'exportació CSV + SHA-256 fora del local.
+      prova que la ventilació estava operativa **s'esborra** amb la purga. *Estat: el
+      mecanisme ja funciona per al deshumidificador a `rosada.yaml`; els blocs dels
+      ventiladors hi són escrits però **comentats a posta** fins a la Fase C, perquè fins que
+      els S110E no estiguin instal·lats quedarien `unavailable` i embrutarien l'històric.*
+- [ ] Fixar els **noms d'entitat definitius** abans de posar cap sensor en producció. El
+      conveni **ja està escrit** a [noms-entitats.md](domotica/noms-entitats.md); el que falta
+      és **aplicar-lo** en afegir la integració `tplink`, perquè renombrar després parteix la
+      sèrie.
+- [x] ~~Muntar el **ritual mensual** d'exportació CSV + SHA-256 fora del local.~~ ✅
+      **Descartat i substituït:** el fa el **commit nocturn**, cada dia i amb segell RFC 3161,
+      no un cop al mes i a mà. → [decisio-stack.md](domotica/decisio-stack.md)
 - [ ] Valorar un **sensor de temperatura superficial de paret** (DS18B20 via ESPHome) a cada
       punt humit: és l'únic que discrimina directament condensació de capil·laritat.
 - [x] ~~**Decidir el mètode d'accés remot.**~~ ✅ **Tailscale, instal·lat i connectat** el
@@ -140,22 +159,33 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       → [acces-remot.md](domotica/acces-remot.md)
 - [x] ~~Decidir si cal SSH.~~ ✅ **Sí: Tailscale.** El flux és casa → GitHub → portàtil del
       local, i desplegar necessita shell. → [desplegament.md](domotica/desplegament.md)
-- [ ] Crear un **repositori separat i privat només per a les dades**, amb un *fine-grained
-      token* limitat.
-- [ ] ⚠️ **Decidir si les dades del panell web seran privades o públiques.** Les dades de
-      sensors revelen patrons d'ocupació del local. Un panell estàtic no pot llegir un
-      repositori privat sense credencials, i un token dins d'una pàgina web és un token
-      públic. Recomanació: privades, a R2 amb domini propi darrere Cloudflare Access.
-      → [publicacio-dades.md](domotica/publicacio-dades.md)
-- [ ] **Decidir la via de l'arxiu de dades:** GitHub Releases (no toca l'historial de git) o
-      emmagatzematge d'objectes R2/B2 (immutabilitat forta).
-- [ ] Fixar l'**estructura de fitxers del panell** (`latest.json` + `index.json` +
-      `daily/*.json`) i que les marques de temps siguin **ISO 8601 amb zona horària**.
+- [ ] Crear un **repositori separat i privat només per a les dades** (`Local-data`), amb una
+      **clau de desplegament SSH** amb permís d'escriptura. ⚠️ **Mai un token.** Ho mana
+      [decisio-stack.md](domotica/decisio-stack.md): un *fine-grained token* té caducitat, i
+      un que expirés el gener de 2027 aturaria la pujada **en silenci** just abans del
+      venciment de la retenció. Una clau de desplegament no caduca.
+- [x] ~~**Decidir si les dades del panell web seran privades o públiques.**~~ ✅ **La
+      pregunta desapareix: no hi haurà panell web.** Dashboards natius d'HA i app Companion
+      per Tailscale. Amb això les dades no surten mai a cap pàgina, i el dilema del token
+      dins d'una web s'evapora. **Cloudflare R2 + domini propi + Cloudflare Access queden
+      descartats**: incompleixen «gratuït» (~12 €/any) i fiquen un tercer que desxifra TLS
+      sobre dades amb valor legal. **GitHub Pages** també: privat és de pagament i públic
+      seria publicar els patrons d'ocupació.
+- [x] ~~**Decidir la via de l'arxiu de dades:** GitHub Releases o R2/B2.~~ ✅ **Cap de les
+      dues:** un commit diari al repositori privat `Local-data`, amb SHA-256 i **segell
+      RFC 3161**, més còpia a disc USB al local. GitHub Releases resolia un problema que no
+      tenim —tot l'arxiu són ~20–30 MB.
+- [x] ~~Fixar l'**estructura de fitxers del panell**.~~ ✅ **Sense objecte** (no hi ha panell).
+      El que **sí** es manté és el requisit de fons: les marques de temps de l'arxiu van en
+      **ISO 8601 amb zona horària**, i el CSV diari les porta en ISO8601+offset **i** en
+      epoch.
 - [ ] Escriure el **script de desplegament** amb validació de configuració abans del reinici.
 - [x] ~~**Fixar les versions** al `docker-compose.yml` — res de `:latest`.~~ ✅ **2026.9.3**,
       congelada fins al 10/03/2027.
-- [ ] Definir els **helpers i automatismes en YAML**, no per interfície: el que es crea des
-      de la UI viu a `.storage/` i no es pot versionar.
+- [x] ~~Definir els **helpers i automatismes en YAML**, no per interfície.~~ ✅ **Fets**, tots
+      a `config/packages/rosada.yaml`: `input_number`, `input_select`, `timer` i els
+      automatismes sota `automation:` amb la clau **`manual`**, que és el que impedeix que
+      l'editor visual reescrigui el fitxer i bloquegi els desplegaments futurs.
 - [ ] Muntar un **avís de caiguda** (Healthchecks.io / UptimeRobot) i una **còpia de
       l'històric fora del local**. Sense això l'accés remot no serveix de res.
 - [ ] Valorar un **endoll intel·ligent de rearmada** per al portàtil i el router,
@@ -165,21 +195,36 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       condiciona tota l'estratègia de les humitats.
 - [x] ~~Verificar si hi ha IP pública o CGNAT.~~ Internet per **SIM** → CGNAT quasi segur:
       port forwarding i WireGuard directe queden descartats.
-- [ ] **Decidir el protocol dels sensors.** Proposta: Zigbee amb **coordinador en xarxa
-      col·locat al soterrani** (SLZB-06). → [control-punt-rosada.md](domotica/control-punt-rosada.md)
-- [ ] **Prova de cobertura de ràdio** al soterrani, 48 h, abans de comprar res.
+- [x] ~~**Decidir el protocol dels sensors** (Zigbee + coordinador SLZB-06).~~ ✅ **Superat
+      pel maquinari real:** els sensors **ja estan comprats i actius**. Són **Tapo T310/T315
+      amb hub H110** per **868 MHz sub-GHz**, que penetra el formigó millor que el Zigbee de
+      2,4 GHz, amb integració `tplink` i consulta local per IP.
+      → [inventari.md](domotica/inventari.md)
+- [x] ~~**Prova de cobertura de ràdio** al soterrani, 48 h.~~ ✅ **Sense objecte:** no hi ha
+      Zigbee i els sensors ja donen lectures des del soterrani. Queda només confirmar **on és
+      cada sensor** i que el de fora està protegit de la pluja.
 - [ ] **Definir exactament quines dades es registren** (l'usuari ho ha ajornat conscientment).
-- [ ] Inventariar el **deshumidificador**: marca, model, consum nominal, com s'engega.
+- [x] ~~Inventariar el **deshumidificador**.~~ ✅ **Fet:** **Qlima D 825 PA Smart**, 470 W,
+      25 L/dia, bomba de condensats i higròstat propi 40–80 %. El manual oficial n'ha resolt
+      el rang (5–35 °C), el desgebratge automàtic i la protecció de compressor de 5 min, que
+      **ja és a l'aparell**. → [inventari.md](domotica/inventari.md)
 
 ## Verificacions físiques al local (abans de gastar diners)
 
-- [ ] ⚠️ **El deshumidificador arrenca sol després d'un tall de corrent?** Si no, tot el
-      control per endoll intel·ligent és inútil.
+- [x] ~~⚠️ **El deshumidificador arrenca sol després d'un tall de corrent?**~~ ✅ **Sí.** El
+      control per endoll intel·ligent és viable i queda confirmada l'arquitectura (a):
+      l'higròstat propi regula, i el **Tapo P110** el governa i en mesura el consum.
+- [ ] 🔴 **Però: recorda el llindar d'humitat** després d'un cicle d'alimentació? Desendollar
+      i tornar a endollar amb l'higròstat al 45 %. Si torna a fàbrica, l'arquitectura del
+      deshumidificador canvia. *(Tasca 0.2b de [fases.md](domotica/fases.md).)*
 - [ ] ⚠️ **Per on entra l'aire de reposició** quan els extractors funcionen? (Prova de fum.)
       Si entra per fissures en contacte amb el terreny, **el ventilador pot estar empitjorant
       les humitats** i el projecte canvia de naturalesa.
 - [ ] Els ventiladors estan **endollats o cablejats**? Hi ha interruptor de paret?
-- [ ] Placa del deshumidificador: potència, L/dia, temperatura mínima, desguàs per tub.
+- [x] ~~Placa del deshumidificador: potència, L/dia, temperatura mínima, desguàs per tub.~~
+      ✅ **Resolt pel manual oficial:** 470 W, 25 L/dia, 5–35 °C i **bomba de condensats** amb
+      4 m d'altura de bombeig. ⚠️ El desguàs continu és **obligatori**: el dipòsit s'omple en
+      ~4 h. → [inventari.md](domotica/inventari.md)
 - [ ] Quina és la **paret més freda i humida** (termòmetre IR de mà) → allà va el sensor de
       temperatura superficial.
 - [ ] Rang de temperatura del soterrani a l'hivern (per sota de 15 °C un deshumidificador per

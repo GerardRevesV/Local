@@ -18,7 +18,7 @@
       /config/configuration.yaml:29]`. Això és el fitxer tal com el llegeix HA, no la
       instància en calent: falta la comprovació per `/api/config` amb el testimoni.*
 - [ ] **Esborrar la integració `bluetooth` d'HA** — vegeu el parany del
-      [runbook](runbook-servidor.md#-el-bluetooth-torna-encara-que-el-servei-estigui-aturat).
+      [runbook](runbook-servidor.md#-el-bluetooth-omple-el-log).
 - [ ] Emparellar el hub H110 al **router SIM** i després afegir la integració `tplink`.
 - [ ] Decidir la ubicació física definitiva dins del local.
 
@@ -101,7 +101,8 @@ i com s'entra al BIOS és més avall, a [Entrar al BIOS](#entrar-al-bios).
 
 #### 3. Les caselles de la Porta A que no depenen de la xarxa
 
-- [ ] Crear el **compte d'HA** i un **testimoni de llarga durada**.
+- [x] ~~Crear el **compte d'HA** i un **testimoni de llarga durada**.~~ ✅ **Fet el
+      20/09/2026:** compte creat i **dos** testimonis de llarga durada emesos.
 - [ ] ⚠️ **Verificar `purge_keep_days: 730` contra la instància en calent**, no contra el fitxer. És l'única línia del projecte que no té arreglada a posteriori.
 - [ ] **Fixar els noms d'entitat** de [noms-entitats.md](noms-entitats.md) **abans** d'afegir la integració `tplink`: renombrar després parteix la sèrie.
 
@@ -313,53 +314,59 @@ Dues coses que no són al BIOS sinó al sistema, però que van aquí perquè s'o
 
 ```bash
 # Que tancar la tapa NO suspengui la màquina
-sudo sed -i 's/^#*HandleLidSwitch=.*/HandleLidSwitch=ignore/' /etc/systemd/logind.conf
+sudo mkdir -p /etc/systemd/logind.conf.d
+sudo tee /etc/systemd/logind.conf.d/99-servidor.conf >/dev/null <<'CONF'
+[Login]
+HandleLidSwitch=ignore
+HandleLidSwitchDocked=ignore
+HandleLidSwitchExternalPower=ignore
+IdleAction=ignore
+CONF
 sudo systemctl restart systemd-logind
 ```
+
+> ⚠️ **Va en un *drop-in*, no editant `/etc/systemd/logind.conf`.** És el que fa
+> `scripts/prepara-host.sh` i és **l'únic lloc on mira `scripts/comprova.sh`**: si es toca el
+> fitxer principal, la tapa queda ben configurada però el verificador dirà que **suspèn**. El
+> drop-in, a més, sobreviu a una actualització del paquet `systemd`.
 
 I desactivar la suspensió automàtica i l'apagada de pantalla per inactivitat des de la
 configuració d'energia de Mint. **Un servidor que es suspèn és un servidor que no registra
 res** — i, en aquest projecte, una sèrie de dades amb un forat.
 
-## Decisió pendent: com instal·lar Home Assistant
+## Per què HA Container — decisió tancada
 
-Hi ha quatre maneres i **no són equivalents**. Com que la base és Linux Mint, això
-condiciona:
+> ✅ **Decidit i en marxa:** **HA Container** sobre Docker, versió **2026.9.3** fixada i
+> congelada fins al **10/03/2027**. Mana [decisio-stack.md](decisio-stack.md). La taula es
+> conserva perquè explica **per què** van caure les altres tres vies, no perquè quedi res
+> per triar.
 
-| Mètode | Add-ons | Notes |
+| Mètode | Add-ons | Per què no — o per què sí |
 |---|---|---|
-| **HA OS** (bare metal) | Sí | El sistema operatiu *és* Home Assistant. Es menja tot el disc: incompatible amb tenir Mint a sota. |
-| **HA Supervised** | Sí | Oficialment només sobre **Debian** net. Linux Mint **no** és una base suportada. |
-| **HA Container** (Docker) | **No** | Suportat i senzill sobre qualsevol Linux, Mint inclòs. Sense add-ons: cada servei extra (Mosquitto, Zigbee2MQTT, base de dades) es munta com a contenidor a part. |
-| **HA Core** (venv de Python) | No | El més manual. Poc recomanable. |
+| **HA OS** (bare metal) | Sí | El sistema operatiu *és* Home Assistant i es menja el disc sencer: incompatible amb tenir Mint a sota, i amb Mint se'n anirien els scripts, els *timers* i el git de què depèn tot el desplegament |
+| **HA Supervised** | Sí | Oficialment només sobre **Debian** net, i Mint no és base suportada. Pitjor encara: **decideix ell quan reiniciar HA**, i una actualització no planificada és un forat a l'històric |
+| ✅ **HA Container** (Docker) | **No** | Suportat sobre qualsevol Linux i deixa el host de propòsit general. Es perd la botiga d'add-ons, però l'stack decidit és **un sol contenidor** i no en necessita cap |
+| **HA Core** (venv de Python) | No | Tot manual, i sense l'aïllament ni la reproductibilitat d'una imatge fixada |
 
-**Camí recomanat amb Mint: HA Container sobre Docker.** Es perd la botiga d'add-ons, però
-tot el que els add-ons donen es pot muntar com a contenidors amb `docker compose`, que a més
-és més fàcil de versionar en aquest repositori.
+## Les premisses de partida — on ha quedat cadascuna
 
-> Si el que es vol és l'experiència completa amb add-ons, l'alternativa és instal·lar
-> **Debian** al portàtil en comptes de Mint i fer-hi **HA Supervised**, o dedicar el portàtil
-> sencer a **HA OS**. Val la pena decidir-ho *abans* d'instal·lar Mint.
+La llista amb què es va començar el projecte, amb l'estat real a **20/09/2026**. Cap d'elles
+no és ja una decisió oberta: totes remeten a [decisio-stack.md](decisio-stack.md).
 
-⚠️ Aquesta taula s'ha de **verificar contra la documentació oficial actual** abans de
-decidir res: els mètodes d'instal·lació de Home Assistant canvien.
+| Premissa | On ha quedat |
+|---|---|
+| **On viu el servidor** | ✅ **Al local**, amb Internet per SIM i alimentació pròpia. ⏳ Queda la **ubicació exacta** dins del local — planta baixa, mai al soterrani |
+| **Alimentació** | ✅ El portàtil té bateria: fa de SAI per a ell mateix i **registra el tall**, cosa rellevant per demostrar que la ventilació estava operativa. ⚠️ No cobreix ni el hub ni el router — vegeu la lletra petita de la bateria, més amunt |
+| **Arrencada automàtica** | ✅ La meitat de **programari**, verificada amb un reinici real: tornen sols `ssh`, `docker`, `tailscaled` i HA. ⏳ La de **maquinari** (*restore on AC power loss*) és una casella de la tanda física al BIOS |
+| **Accés remot** | ✅ **Tailscale**, connectat el 20/09/2026 amb l'expiració de clau desactivada, i **única via**. Nabu Casa, el *port forwarding* i el WireGuard pur queden descartats pel CGNAT → [acces-remot.md](acces-remot.md) |
+| **Còpies de seguretat** | ✅ Decidides: instantània `VACUUM INTO` + disc USB al local cada nit, i tarball xifrat de `.storage`+`secrets.yaml` a `Local-data` cada diumenge. ⏳ Falta escriure `nit.py` |
+| **Retenció de l'històric** | ✅ Resolta **sense canviar de motor**: `purge_keep_days: 730` sobre **SQLite**, amb `commit_interval: 30` i `exclude` per llistes explícites |
 
-## Coses a tenir resoltes abans de començar a codificar
-
-- **On viu el servidor.** Si el que es vol monitoritzar és el local, el servidor (o com a
-  mínim els sensors i un gateway) ha de ser **al local**, amb Internet i alimentació estable.
-- **Alimentació.** El portàtil té bateria pròpia: fa de SAI improvisat davant talls de llum,
-  i pot **registrar el tall**, cosa rellevant per demostrar que la ventilació estava operativa.
-- **Arrencada automàtica.** El portàtil ha d'arrencar sol després d'un tall (BIOS: *restore
-  on AC power loss*) i no suspendre's en tancar la tapa.
-- **Accés remot.** Sense obrir ports a Internet. Opcions: VPN (WireGuard/Tailscale) o Nabu
-  Casa. **Pendent de decidir.**
-- **Còpies de seguretat.** Les dades històriques són el motiu del projecte; perdre-les és
-  perdre'l. Còpia automàtica fora del portàtil.
-- **Retenció de l'històric.** El `recorder` de Home Assistant purga per defecte al cap de
-  **10 dies**. Per a l'ús d'aquest projecte cal **allargar-ho molt** (mesos o anys) i
-  probablement moure la base de dades a PostgreSQL o afegir **InfluxDB**. És un dels primers
-  ajustos que caldrà fer, no un detall posterior.
+> ⚠️ **PostgreSQL, MariaDB i InfluxDB estan descartats**, no ajornats. El dipòsit de la prova
+> no és el motor de la base de dades sinó el **CSV diari immutable a git**, amb SHA-256 i
+> segell RFC 3161; un segon motor només compraria un mode de fallada silenciós més. El que
+> **sí** queda obert és verificar `purge_keep_days: 730` **contra la instància en calent** —
+> és la Porta A, i és l'única línia del projecte que no té arreglada a posteriori.
 
 ## Registre d'instal·lació
 

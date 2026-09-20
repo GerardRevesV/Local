@@ -52,7 +52,7 @@ el desglossament del preu.
 |---|---|
 | **Fotos de les etiquetes de la base del portàtil** (20/09/2026) | Referència, plataforma, tensió d'alimentació, mòdul Wi-Fi i data de fabricació del servidor. Els **números de sèrie** de les mateixes etiquetes **no** entren al repositori: són al fitxer privat |
 | Fitxes de producte i manual del deshumidificador Qlima | Especificacions, rang de funcionament i codis d'error |
-| Especificacions públiques de la família Acer TravelMate B3 `TMB311-32` | El que l'etiqueta no diu (CPU, RAM, disc) **només com a hipòtesi**: marcat com a pendent de confirmar a la màquina, no donat per bo |
+| Especificacions públiques de la família Acer TravelMate B3 `TMB311-32` | Va servir de **hipòtesi de partida** per a CPU, RAM i disc. ✅ **Ja no fa falta:** el 20/09/2026 es van llegir **de la màquina, per SSH** — Celeron N5100 de 4 nuclis, 4 GB soldats i SSD NVMe Samsung de 128 GB |
 
 ## Converses anteriors
 
