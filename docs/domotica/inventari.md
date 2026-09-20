@@ -213,7 +213,7 @@ no menys: l'error sistemàtic entre models diferents no es cancel·la sol.
 mediana, i li aplico un *offset* fix a Home Assistant. Cost zero, i permet baixar el llindar
 de decisió de 2,0 °C a ~1,2 °C — que són hores de ventilació gratuïta guanyades.
 
-### 3. 🟡 Credencials de Tapo
+### 2. 🟡 Credencials de Tapo
 
 La integració oficial `tplink` de Home Assistant **suporta el hub H110 i els seus sensors
 filles**, i els consulta **localment** per IP. Però la configuració inicial demana el **correu
@@ -354,7 +354,7 @@ l'endoll de pressa, el compressor **arrenca contra pressió** i es fa malbé.
 
 ### Refrigerant R290 (propà)
 
-Són 70 g de gas **inflamable**. No és perillós en una estança normal —i un soterrani de 46 m²
+Són 70 g de gas **inflamable**. No és perillós en una estança normal —i un soterrani de ~46 m²
 ho és de sobres— però:
 
 - No tancar-lo en un armari petit ni en un espai sense ventilació.

@@ -47,7 +47,7 @@
 | **Còpies de seguretat** | Instantània `VACUUM INTO` + `.storage` + `secrets.yaml` → **disc extern USB al local** cada nit; **tarball xifrat de `.storage`+`secrets.yaml` a `Local-data` cada diumenge** (~1 MB) | `gpg --symmetric` + git | Perdre `.storage` obliga a reemparellar-ho tot, i reemparellar **parteix totes les sèries**: ha de tenir còpia fora del local encara que la BD no la tingui |
 | **Supervisió de vida** | **healthchecks.io, dos checks**: `bategada` (host, cada 30 min, marge 3 h) i `nit` (dades, marge 26 h) **amb l'estat al cos del ping** | `curl` | Un sol bit no diu si has d'obrir l'SSH o agafar el cotxe; dos checks i un cos JSON converteixen l'avís en diagnòstic per tres línies |
 | *(Accés remot)* | **Tailscale**, expiració de clau desactivada. Única via d'administració i de consulta | paquet `apt` | Ja decidit i correcte; CGNAT elimina la resta per física de xarxa |
-| *(Ràdio)* | **ZHA + SLZB-06 per TCP**, decidit **abans de comprar i emparellar** | integració d'HA | Migrar ZHA→Z2M obliga a reemparellar i parteix les sèries; ZHA estalvia dos contenidors |
+| *(Ràdio)* | ~~ZHA + SLZB-06 per TCP~~ → **SUPERADA.** **Hub Tapo H110 + sensors T310/T315 per 868 MHz sub-GHz**, ja comprats i actius | integració `tplink` d'HA | El maquinari ja hi era. El sub-GHz penetra millor el formigó que el Zigbee de 2,4 GHz, la consulta és local per IP, i desapareixen alhora la prova de cobertura i l'emparellament irreversible |
 | *(Sensor que decideix el cas)* | **ESP32 + ESPHome + 2× DS18B20**, compilat **al portàtil de casa**, pujat per OTA | YAML d'ESPHome (~40 línies) | És l'únic sensor que discrimina condensació de capil·laritat i n'hi havia **un de sol** |
 
 ---
@@ -55,24 +55,24 @@
 ## Com interactuen
 
 ```
-   ZIGBEE 2,4 GHz                                    Wi-Fi — HTTP local
- ┌───────────────┐                            ┌────────────────────────────┐
- │ 4× T/HR       │                            │ Shelly Plug S  (deshumid.) │
- │ mateix lot    │                            │ Shelly Plus 1PM ×2 (vent.) │
- └──────┬────────┘                            └─────────────┬──────────────┘
-        │ Zigbee                                            │ HTTP (integració nativa)
- ┌──────▼──────┐   socket://ip:6638                         │
- │  SLZB-06    │───────────── TCP ──────────┐               │
- │  (Ethernet) │                            │               │
- └─────────────┘                            │               │
-                                            │               │
- ESP32 + 2×DS18B20 ── API ESPHome (TCP) ────┤               │
- (T superfície paret)                       │               │
-                                            ▼               ▼
+   868 MHz sub-GHz                             Wi-Fi — integració `tplink` local
+ ┌────────────────────┐                      ┌────────────────────────────┐
+ │ 5× T/HR T310/T315  │                      │ Tapo P110      (deshumid.) │
+ │ 1× inundació T300  │                      │ Tapo S110E ×2  (vent.)     │
+ └─────────┬──────────┘                      └─────────────┬──────────────┘
+           │ sub-GHz                                       │ consulta local per IP
+ ┌─────────▼─────────┐                                     │
+ │  Hub Tapo H110    │──────── Wi-Fi ────────┐             │
+ │  (IR + sub-GHz)   │                       │             │
+ └───────────────────┘                       │             │
+                                             │             │
+ ESP32 + 2×DS18B20 ── API ESPHome (TCP) ─────┤             │
+ (T superfície paret)                        │             │
+                                             ▼             ▼
  ┌──────────────────────────────────────────────────────────────────────────┐
  │  CONTENIDOR  homeassistant   (imatge fixada, únic contenidor)            │
  │                                                                          │
- │   packages/rosada.yaml   ← YAML + Jinja2, ~200 línies, UN fitxer         │
+ │   packages/rosada.yaml   ← YAML + Jinja2, ~566 línies, UN fitxer         │
  │     sensor.soterrani_*_td, sensor.delta_td, sensor.marge_superficie      │
  │     sensor.decisio_del_soterrani   ◀── ÚNIC punt d'avaluació                 │
  │     automation manual:  llegeix la decisió → escriu switch → escriu      │
@@ -127,12 +127,26 @@
 | Mínim de la Crítica 1 | 9 | 5 |
 | **AQUESTA DECISIÓ** | **11** | **8** |
 
-**Al local (7):** host Mint+Docker · contenidor HA (únic) · `tailscaled` · coordinador SLZB-06 · node ESPHome · timer+`nit.py` · timer+`bategada.sh`.
+**Al local (7):** host Mint+Docker · contenidor HA (únic) · `tailscaled` · **hub Tapo H110** · node ESPHome · timer+`nit.py` · timer+`bategada.sh`.
 **Fora (4):** GitHub `Local` · GitHub `Local-data`+clau · healthchecks.io (2 checks) · TSA RFC 3161 (sense compte).
+
+> ℹ️ **Per què el total segueix sent 11.** El coordinador **SLZB-06 ja no hi és**, però la
+> peça no desapareix del recompte: la substitueix el **hub H110**, que és igual de crític —si
+> mor, deixen d'arribar les lectures dels sis sensors— i igual de mantenible (reserva DHCP,
+> credencials Tapo, firmware).
 
 **Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (15 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
-**Fitxers que editaràs de debò: cinc.** `packages/rosada.yaml` (~200), `nit.py` (~300), `desplega.sh` (~80), `docker-compose.yml` (~15), `esphome/soterrani.yaml` (~40). **~635 línies en total.**
+**Fitxers que editaràs de debò: deu.** L'estimació original deia cinc i **~635 línies**; el
+recompte real, mesurat el **20/09/2026**, és gairebé el triple:
+
+- *Ja escrits (**~1.450 línies**):* `packages/rosada.yaml` (**566**), `tools/replica.py` (276), `scripts/prepara-host.sh` (240), `scripts/comprova.sh` (180), `tools/valida_yaml.py` (100), `config/configuration.yaml` (48), `docker-compose.yml` (38).
+- *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
+
+**~1.870 línies en total.** La desviació és quasi tota de `rosada.yaml`: les ~200 línies
+estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
+d'`utility_meter` i `history_stats`. Les altres cinc peces són eines de verificació que
+l'estimació no preveia.
 
 Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la diferència és exactament: **SQL** (perquè em nego a vigilar la base de dades des d'una API que no la llegeix) i **ESPHome** (perquè és el sensor que decideix el cas). Contra la suma de les tres propostes: **−19 peces, −4 sintaxis**.
 
@@ -143,7 +157,7 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 **Base de dades i contenidors**
 - **PostgreSQL** (Proposta A, `monitoritzacio.md`) — el seu únic avantatge real és Grafana en viu, i el paga amb vuit artefactes que només existeixen per fer-lo inofensiu.
 - **MariaDB** (`monitoritzacio.md`) — tots els costos de Postgres i cap avantatge tret de més receptes copiables.
-- **Mosquitto i Zigbee2MQTT** (`desplegament.md`) — dos contenidors que ZHA i els Shelly natius fan innecessaris.
+- **Mosquitto i Zigbee2MQTT** (`desplegament.md`) — dos contenidors que el **hub H110 i la integració `tplink`** fan innecessaris. Amb el sub-GHz de Tapo no hi ha ni Zigbee ni MQTT a la casa.
 - **Contenidor d'ESPHome al local** (Proposta A) — només cal per compilar; es compila a casa i es puja per OTA.
 - **Grafana** (`monitoritzacio.md`, A, C) — fora del pla, no «ajornat»: una peça ajornada que justifica una decisió d'avui no és gratuïta. Si cal per al dossier, viu al portàtil de casa contra els CSV.
 - **InfluxDB, VictoriaMetrics, TimescaleDB, `ltss`, Prometheus** — problema equivocat, ja descartats bé al repositori.
@@ -171,7 +185,7 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 - **GitHub Actions** (A, B) — quatre eines per a dos scripts; les portes reals del desplegament són estrictament més fortes i la CI no les pot executar.
 - **Ansible, Makefile, `cron`, `shell_command` d'HA per a l'exportació, contenidor per a l'exportador** — N=1; mnemònics; passades perdudes en silenci; acoblar l'exportació a la salut d'HA just quan menys ho vols.
 - **`psql --csv` amb `subprocess` i psycopg** (Proposta C) — cauen amb Postgres; amb SQLite és `sqlite3` de la stdlib i el codi és més curt.
-- **Endoll Zigbee de rearmada del router** (A) — ajornat: un router penjat costa un viatge, no costa dades. I quan es faci, sense el switch no gestionat de 12 € de la Crítica 2 és decoratiu, perquè el coordinador penja del mateix router.
+- **Endoll intel·ligent de rearmada del router** (A) — ajornat: un router penjat costa un viatge, no costa dades. I quan es faci, sense el switch no gestionat de 12 € de la Crítica 2 és decoratiu, perquè el **hub** penja del mateix router.
 
 ---
 
@@ -198,7 +212,7 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 5. **Cap rearmada elèctrica del router.** *Risc acceptat:* un router 4G penjat = un viatge en cotxe. HA segueix gravant: no costa prova.
 6. **Duplicació entre el YAML de decisió i la funció de rèplica offline.** ~3 comparacions escrites dues vegades. *Mitigació que la converteix en invariant comprovable:* la rèplica es passa sobre el període ja gravat i **es compara amb els valors registrats de `sensor.decisio_del_soterrani`**; qualsevol divergència vol dir que les dues implementacions han derivat. ~20 línies de test.
 7. **Cap restauració de prova automàtica.** Una de manual al principi, i prou.
-8. **Punts únics acceptats sense redundància:** portàtil, disc, coordinador Zigbee, compte de Tailscale, compte de GitHub.
+8. **Punts únics acceptats sense redundància:** portàtil, disc, **hub Tapo H110**, router de la SIM, compte de Tailscale, compte de GitHub.
 
 ---
 
@@ -208,12 +222,12 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 1. **Prova de fum del camí de l'aire de reposició.** Si entra per fissures en contacte amb el terreny, **el ventilador pot estar empitjorant les humitats** i el projecte canvia de naturalesa. Costa un paperet i val més que tot el que segueix.
 2. Comprovar si el **deshumidificador arrenca sol** després d'un tall de corrent, si desguassa per tub, i la seva placa de característiques.
 3. **Paret més freda i humida** amb termòmetre IR de mà → allà van els DS18B20.
-4. **Prova de cobertura Zigbee de 48 h** al soterrani, i confirmar que el **SLZB-06 funciona amb ZHA per TCP** i que tots els sensors de la llista hi estan coberts. **Decideix ZHA vs Z2M ara**: després d'emparellar és irreversible.
+4. ~~**Prova de cobertura Zigbee de 48 h** i decidir ZHA vs Z2M.~~ ✅ **SENSE OBJECTE:** no hi ha Zigbee. Els Tapo van per **868 MHz** amb el hub H110 i la integració `tplink` els consulta localment. Queda només **confirmar on és cada sensor** i que el de fora està protegit de la pluja.
 5. **Salut del portàtil:** SMART del disc, `energy_full` de la bateria, pila CMOS, si té Ethernet. Si la bateria és morta → **SAI de 50 €**, no Postgres.
 6. **Ubicació física del portàtil: planta baixa, aixecat de terra, ventilat.** Mai al soterrani humit.
 
 ### Bloc A — ABANS DE CONNECTAR EL PRIMER SENSOR *(res d'això té arreglada a posteriori)*
-7. Host: sense suspensió (`logind.conf` **i** l'entorn d'escriptori de Mint, més `systemctl mask sleep.target …`), *restore on AC power loss*, `Europe/Madrid`+NTP, `systemctl enable systemd-time-wait-sync`, rotació de logs de Docker, reserves DHCP per al portàtil i el coordinador.
+7. Host: sense suspensió (`logind.conf` **i** l'entorn d'escriptori de Mint, més `systemctl mask sleep.target …`), *restore on AC power loss*, `Europe/Madrid`+NTP, `systemctl enable systemd-time-wait-sync`, rotació de logs de Docker, reserves DHCP per al portàtil i el **hub H110**.
 8. **Tailscale amb l'expiració de clau desactivada.**
 9. Repos: `Local` (públic, ja existeix) i `Local-data` (privat) + **clau de desplegament SSH**. **`.gitattributes` amb `* text=auto eol=lf`** — codifiques des de Windows i un `desplega.sh` amb CRLF peta amb `bad interpreter: /bin/bash^M`.
 10. `docker-compose.yml` amb **versió d'HA fixada** i `recorder` amb **`purge_keep_days: 730`**, `commit_interval` elevat i `exclude` per llistes explícites.
@@ -244,8 +258,7 @@ Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la dife
 |---|---|---|
 | Cadència de la còpia setmanal xifrada i si el frontend d'HA per 4G és car | **Límit mensual del pla de dades de la SIM** (encara sense contractar). És la dada que més val la pena obtenir abans de programar res | Setmanal; si el pla és folgat, res canvia |
 | Si cal SAI de 50 € | **`energy_full` i cicles de la bateria + SMART del disc.** Tota la defensa de SQLite reposa que el portàtil és el seu propi SAI, i **és un actiu que es deprecia en silenci** | Comprar el SAI si la capacitat és < 60 %; monitoritzar `capacity` al cos del ping en tots els casos |
-| Si l'stack són 1 o 2 contenidors | **Si el SLZB-06 exacte funciona amb ZHA per TCP i cobreix tots els sensors.** S'ha de resoldre **abans d'emparellar** | ZHA. Si falla, Z2M el dia 1, assumint dos contenidors més |
-| Si ESPHome hi entra o basta un Zigbee aïllat contra la paret | **Comparació d'un sensor Zigbee enganxat i tapat contra un termòmetre IR de mà** | ESPHome hi entra: és el sensor que decideix el cas i no s'hi val a estalviar |
+| Si ESPHome hi entra o basta un Tapo aïllat contra la paret | **Comparació d'un T310/T315 enganxat i tapat contra un termòmetre IR de mà** | ESPHome hi entra: és el sensor que decideix el cas i no s'hi val a estalviar |
 | Quina TSA RFC 3161 gratuïta es fa servir | **Comprovar quina està viva i accepta POST sense compte** | Si cap no ho estigués: commit diari + correu mensual del `SHA256SUMS` a l'advocat |
 | Marges exactes dels checks i mida del cos del ping | **Límits vigents del pla gratuït de healthchecks.io** | 2 checks, marges 3 h i 26 h, cos JSON curt |
 | Si el `restic`/còpia nativa d'HA Container estalvia codi | **Si HA Container té còpia nativa utilitzable després de la reforma de 2025** | No en depenem: `VACUUM INTO` + `tar` cobreix el cas sencer |

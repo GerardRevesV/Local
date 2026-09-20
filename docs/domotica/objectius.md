@@ -29,8 +29,9 @@ Es concreta en dues coses, i totes dues compten igual:
 ### Accés des de fora
 
 Home Assistant viurà **al local**, però l'usuari no hi és sempre. Cal poder consultar les
-dades i actuar **des de PC i des del mòbil**, des de fora de la xarxa del local. Les opcions
-estan sobre la taula (vegeu [arquitectura.md](arquitectura.md)).
+dades i actuar **des de PC i des del mòbil**, des de fora de la xarxa del local. ✅ **Resolt:
+Tailscale**, connectat el 20/09/2026 i **única via** d'accés — el CGNAT de la SIM descarta la
+resta. → [acces-remot.md](acces-remot.md)
 
 ## El motiu de fons: les humitats
 
@@ -72,6 +73,16 @@ mateixa instrumentació que serveix per a l'automatisme serveix per a això:
 
 ## Estat
 
-**Fase zero.** No hi ha res instal·lat al local ni cap línia de codi escrita. El que s'està
-fent ara és muntar el servidor: vegeu [home-assistant.md](home-assistant.md). Les decisions
-d'eines, llenguatges i interfícies estan obertes: vegeu [arquitectura.md](arquitectura.md).
+**Ja no és fase zero.** A **20 de setembre de 2026**:
+
+- **Hi ha maquinari comprat i actiu:** hub Tapo H110, 5 sensors T/HR, sensor d'inundació,
+  endoll amb mesura de consum i 2 relés encara sense instal·lar. → [inventari.md](inventari.md)
+- **Hi ha codi escrit:** ~1.450 línies, i la lògica del punt de rosada sencera viu a
+  `config/packages/rosada.yaml`. El servidor **corre**: Home Assistant 2026.9.3 sobre Linux
+  Mint, amb la versió fixada. → [home-assistant.md](home-assistant.md)
+- **Les decisions d'eines, llenguatges i interfícies estan preses**, no obertes. Manen a
+  [decisio-stack.md](decisio-stack.md); [arquitectura.md](arquitectura.md) n'és l'índex
+  d'estat i [fases.md](fases.md) el calendari amb les portes de test.
+
+El que queda obert és **físic i de calendari**: portar-ho tot al local, el pas a la SIM, i
+les 4 setmanes de mesura de la Fase B.
