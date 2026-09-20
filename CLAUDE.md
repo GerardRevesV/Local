@@ -101,6 +101,7 @@ scripts/               Guions per al host del local (bash)
 tools/                 Eines que corren a casa, no al local (Python stdlib)
   replica.py           Rèplica offline de la lògica + test de deriva
   valida_yaml.py       Valida el YAML abans de desplegar
+  valida_xifres.py     Comprova les xifres de línies citades als docs, abans del PR
 ```
 
 ## Dades personals — regla dura
