@@ -66,6 +66,11 @@
 >   bomba de condensats, higròstat 40–80 %) **es reprèn sol després d'un tall de corrent**.
 >   L'arquitectura (a) queda confirmada, i **no s'integra per Tuya**: l'higròstat propi regula
 >   i el **Tapo P110** el governa i en mesura el consum.
+>   🔄 ***21/09/2026 — el «no s'integra per Tuya» es reobre.*** `tuya-local` ja no demana
+>   compte de desenvolupador, i el rebuig dels components de tercers ha caigut amb el canvi
+>   d'objectiu. Es **prova**; si reconeix el D825, al principi només per llegir-ne l'estat i
+>   ajustar-ne el llindar. **El P110 es queda** com a mesura i com a actuador de la lògica.
+>   L'arquitectura (a) no canvia.
 >
 > El detall és a **[inventari.md](inventari.md)**.
 

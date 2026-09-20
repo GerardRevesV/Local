@@ -48,7 +48,7 @@ invalidar.
 
 - [ ] Sé **per on entra l'aire de reposició**.
 - [x] ~~Sé si el deshumidificador es reprèn sol.~~ ✅ Sí, i funciona de 5 a 35 °C.
-- [ ] 🔴 Sé si **recorda el llindar d'humitat** després d'un cicle d'alimentació. Si no el recorda, l'arquitectura del deshumidificador canvia.
+- [ ] 🔴 Sé si **recorda el llindar d'humitat** després d'un cicle d'alimentació. Si no el recorda, l'arquitectura del deshumidificador canvia — i la via és `tuya-local` (B.1c).
 - [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. ⚠️ **Però l'stack ha passat a 2 contenidors** el 21/09/2026: `tplink` rebutja el hub i la via és Matter, que demana el seu propi servidor.
 - [x] ~~Sé **quin model és l'endoll**.~~ ✅ **Tapo P110: mesura consum.** És el que fa
       possible el `utility_meter` del deshumidificador i, amb ell, els kWh/dia de la Porta B.
@@ -123,6 +123,7 @@ feina i tu menys.
 | B.0 | 🔴 **La frontera: `scripts/inicia-serie.sh --de-debo`.** Arxiva la base d'experimentació i comença de zero amb una data d'inici escrita. **Es corre un sol cop**, quan els cinc sensors ja siguin a la seva posició definitiva i **abans** que compti cap dels 28 dies | 🤝 Jo l'he escrit, tu l'executes |
 | B.1 | ~~Comprar sensors i endoll, i fixar-ne model i destí.~~ ✅ **Fet:** cinc T/HR comprats i gravant, endoll **P110** amb mesura de consum, i assignació decidida. ⏳ **Queda repartir-los pel local** — avui són a casa | 👤 Tu |
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
+| B.1c | 🆕 **Provar `tuya-local`** amb el deshumidificador: emparellar-lo a la Wi-Fi del router SIM, configuració assistida, i veure si el reconeix. Si sí, noms fixats abans, i al principi **només lectura i llindar**. Opcional, excepte si 0.2b surt malament → [inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local) | 🤝 Tu emparelles, jo configuro |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
 | B.4 | ✅ **Fet** — `packages/rosada.yaml` (577 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
