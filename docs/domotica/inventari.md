@@ -11,14 +11,42 @@
 | Aparell | Model | Ubicació | Estat |
 |---|---|---|---|
 | Hub | **Tapo H100** (?) | corridor | Actiu |
-| Endoll intel·ligent | **Tapo P1xx** ⚠️ | corridor | Actiu — per al deshumidificador |
-| Sensor T/HR | **Tapo T315** | *Centre* | Actiu |
-| Sensor T/HR | **Tapo T315** | *Dalt* | Actiu |
-| Sensor T/HR | **Tapo T315** | *Fons* | Actiu |
-| Sensor T/HR | **Tapo T310** | *Fora* | Actiu |
-| Sensor T/HR | **Tapo T310** | *Gran* | Actiu |
-| Sensor d'inundació | **Tapo T300** (?) | Centre | Actiu |
+| Endoll intel·ligent | **Tapo P110** ✅ *(mesura consum)* | corridor | Actiu — deshumidificador |
+| **Mòduls de relé** | **2× Tapo S110E** | — | ⏳ **Comprats, sense instal·lar** |
+| Sensor T/HR | **Tapo T315** | Soterrani — *Centre* | Actiu |
+| Sensor T/HR | **Tapo T315** | Soterrani — *Fons* | Actiu |
+| Sensor T/HR | **Tapo T310** | Soterrani — *Gran* | Actiu |
+| Sensor T/HR | **Tapo T315** | **Planta baixa** — *Dalt* | Actiu |
+| Sensor T/HR | **Tapo T310** | **Exterior** — *Fora* (protegit ✅) | Actiu |
+| Sensor d'inundació | **Tapo T300** (?) | Soterrani — Centre | Actiu |
 | Càmeres | Tapo | — | N'hi ha |
+
+### Distribució dels sensors
+
+```
+        EXTERIOR                    PLANTA BAIXA              SOTERRANI
+      ┌───────────┐               ┌───────────┐         ┌─────────────────┐
+      │   Fora    │               │   Dalt    │         │   Gran   (dalt  │
+      │   T310    │               │   T315    │         │   T310    delmapa)
+      │ protegit  │               │           │         ├─────────────────┤
+      └───────────┘               └───────────┘         │  Centre  (mig)  │
+       Td exterior                 Td de referència     │  T315           │
+       ← la meitat                 de la planta baixa   ├─────────────────┤
+         del criteri                                    │  Fons    (avall,│
+                                                        │  T315    dona al│
+                                                        │          passadís)
+                                                        └─────────────────┘
+                                                         Td interior
+                                                         ← l'altra meitat
+```
+
+**Per què aquesta distribució va bé:** tres punts al soterrani permeten veure si la humitat és
+uniforme o **localitzada**. Si *Fons* va sistemàticament més humit que *Gran*, això ja apunta
+a una causa local —una paret, una mitgera, el terreny— i no a condensació general per manca de
+ventilació. És informació de diagnòstic que un sol sensor no donaria.
+
+El de *Dalt* serveix de control: si la planta baixa i el soterrani es mouen junts, l'origen és
+ambiental; si el soterrani va pel seu compte, l'origen és del soterrani.
 
 **Lectura de referència (20/09/2026, 16:25):** Centre 22,4 °C / 66 % · Dalt 23,5 °C / 61 % ·
 Fons 23,5 °C / 62 % · Fora 23,9 °C / 68 % · Gran 22,7 °C / 64 %.
@@ -87,17 +115,7 @@ dependre de la gravetat. **El desguàs continu no és opcional: és obligatori.*
 
 ## ⚠️ El que cal verificar, per ordre d'importància
 
-### 1. 🔴 L'endoll és un P110/P115 o un P100/P105?
-
-**Només el P110 i el P115 mesuren consum. El P100 i el P105 no.** A la captura el nom surt
-tallat com a «Tapo P1…».
-
-> Si és un **P100**, l'objectiu «veure el consum del deshumidificador» **no es pot complir**
-> amb aquest endoll i cal canviar-lo. Són uns 15–20 €.
-
-Es veu al lateral de l'aparell o a la fitxa del dispositiu dins l'app.
-
-### 2. 🟠 Temperatura mínima de funcionament
+### 1. 🟠 Temperatura mínima de funcionament
 
 La fitxa de producte només diu «Interval de funcionament: 35 °C», que sembla el **màxim**. El
 mínim no hi consta. Els deshumidificadors per compressor típics treballen de **5 a 35 °C** i
@@ -106,20 +124,7 @@ perden molt rendiment per sota de ~15 °C.
 **Cal mirar-ho al manual** (132 pàgines, l'has de tenir amb l'aparell). Si el soterrani baixa
 de 15 °C al gener, el rendiment real caurà molt per sota dels 25 L/dia de catàleg.
 
-### 3. 🟠 On és cada sensor exactament
-
-Els noms actuals són *Centre, Dalt, Fons, Fora, Gran*. Necessito saber, per a cadascun:
-
-- **A quina planta és** (planta baixa o soterrani).
-- **Si toca una paret humida** o està a l'aire.
-- **«Fora» és realment a l'exterior?** Si ho és, hi ha un problema: el **T310 no és per a
-  intempèrie**. Li cal un **abric de radiació** i estar protegit de la pluja, o les lectures
-  d'HR seran brossa els dies que importen.
-
-Sense aquesta correspondència no puc escriure la lògica: tot el sistema es basa a comparar el
-punt de rosada **interior del soterrani** amb l'**exterior**.
-
-### 4. 🟡 Calibratge creuat
+### 2. 🟡 Calibratge creuat
 
 Tens **models barrejats** (3× T315 i 2× T310). Això fa el pas de calibratge **més important**,
 no menys: l'error sistemàtic entre models diferents no es cancel·la sol.
@@ -128,7 +133,7 @@ no menys: l'error sistemàtic entre models diferents no es cancel·la sol.
 mediana, i li aplico un *offset* fix a Home Assistant. Cost zero, i permet baixar el llindar
 de decisió de 2,0 °C a ~1,2 °C — que són hores de ventilació gratuïta guanyades.
 
-### 5. 🟡 Credencials de Tapo
+### 3. 🟡 Credencials de Tapo
 
 La integració oficial `tplink` de Home Assistant **suporta el hub H100 i els seus sensors
 filles**, i els consulta **localment** per IP. Però la configuració inicial demana el **correu
@@ -138,17 +143,39 @@ i la contrasenya del compte Tapo**, no només un testimoni local.
 
 ---
 
+## Els 2× Tapo S110E són els relés dels ventiladors
+
+Un **S110E** és un **mòdul de relé** que va darrere l'interruptor o en línia, amb dos modes:
+
+- **Contacte humit** — commuta directament la càrrega. És el mode per als ventiladors si estan
+  cablejats a la xarxa.
+- **Contacte sec** — contacte lliure de tensió, per governar equips que tenen la seva pròpia
+  entrada de comandament.
+
+I, el que aquí importa més, **mesuren consum**. Amb això es compleix la regla de
+[monitoritzacio.md](monitoritzacio.md): *mesura watts, no relés*. «El relé estava tancat» és
+feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una prova.**
+
+> ⚠️ **Verificar abans d'instal·lar-los:**
+> - **Càrrega màxima** del S110E i si està homologat per a **càrrega inductiva** (motor), no
+>   només resistiva. Els motors tenen corrent d'arrencada.
+> - **Instal·lació en cablejat fix → instal·lador autoritzat**, conforme al REBT.
+> - Si el suport a Home Assistant és per la integració `tplink` o per **Matter** (el S110E el
+>   suporta, i seria encara més local).
+> - Si permeten conservar l'**interruptor físic** com a entrada lògica (l'equivalent del mode
+>   *detached*), que és el que dona el millor control manual.
+
 ## 🔧 El que encara falta
 
 | Què | Per a què | Estat |
 |---|---|---|
-| **Commutació dels 2 ventiladors** | Governar-los pel punt de rosada | ❓ Depèn de si estan endollats o cablejats |
 | **ESP32 + 2× DS18B20** | **Temperatura superficial de la paret freda** | Per comprar (~15 €) |
-| **Abric de radiació** per al sensor exterior | Que les lectures de fora siguin fiables | Per comprar o fer (~10 €) |
 
-> El **DS18B20 a la paret** segueix sent el component que més val per euro de tot el projecte:
-> és l'únic sensor que **discrimina directament** condensació de capil·laritat. Els Tapo diuen
-> com està l'aire; només aquest diu com està **la paret**.
+**I això és tot.** El maquinari del projecte està pràcticament complet.
+
+> El **DS18B20 a la paret** segueix sent el component que més val per euro: és l'únic sensor
+> que **discrimina directament** condensació de capil·laritat. Els Tapo diuen com està
+> **l'aire**; només aquest diu com està **la paret**.
 
 ---
 
@@ -173,6 +200,67 @@ i saber què gasta— **sense cap dependència de núvol nova ni cap llicència 
 > es posi un cop i no es toqui, no cal.
 
 ---
+
+## 🛰️ Validar el sensor exterior contra dades oficials
+
+**Idea teva, i és bona.** Comparar el sensor de *Fora* amb les dades d'un centre
+meteorològic oficial serveix per a **tres coses alhora**, i costa una integració gratuïta:
+
+### 1. Saber si el sensor és fiable
+
+Es crea un sensor de **residu**:
+
+```
+residu = Td_fora(sensor propi) − Td_estacio(oficial)
+```
+
+En condicions normals el residu ha de ser petit i **estable**. Quan comenci a **derivar**,
+vol dir que el sensor s'ha mullat, s'ha embrutat o s'està morint — i això es detecta
+**setmanes abans** que faci prendre una decisió equivocada. És un vigilant de salut que no
+costa cap maquinari.
+
+> **Per què el punt de rosada i no la temperatura:** una estació a 3 km tindrà una temperatura
+> diferent de la teva (illa de calor urbana, altitud, orientació) i una HR diferent. Però el
+> **punt de rosada és una propietat de la massa d'aire** i varia molt poc a escala de
+> quilòmetres. És l'única de les tres magnituds que es pot comparar honestament a distància —
+> i és, casualment, la que ja fèiem servir per decidir.
+
+### 2. El sensor de pluja que ens faltava
+
+La lògica necessita **bloquejar la ventilació quan plou** (un sensor exterior mullat dona HR
+falsa durant hores). Les integracions oficials donen **precipitació**, així que aquest bloqueig
+surt de franc en comptes d'haver de comprar un sensor de pluja.
+
+### 3. Reforçar el valor probatori
+
+Això és el que crec que val més. Davant d'un pèrit, hi ha molta diferència entre:
+
+> *«El meu sensor deia que fora hi havia 17,5 °C de punt de rosada.»*
+
+i
+
+> *«El meu sensor va seguir l'estació oficial de l'AEMET amb una desviació mitjana de 0,4 °C
+> durant sis mesos, i aquí hi ha les dues sèries superposades.»*
+
+La segona converteix un aparell de 15 € en **un instrument calibrat contra una referència
+pública**. Per a la defensa de les humitats, això val molt més que el que costa muntar-ho.
+
+### Quines fonts
+
+| Font | Què dona | Com |
+|---|---|---|
+| **AEMET OpenData** | Integració **oficial** de Home Assistant. Dona `dew_point` directament, a més de temperatura, HR, pressió i precipitació, d'una estació concreta, actualitzat cada hora | Cal una **clau d'API gratuïta** a `opendata.aemet.es` i triar l'estació més propera |
+| **Meteocat — XEMA** | Xarxa d'estacions automàtiques de la Generalitat, amb estacions **dins de Barcelona** i dades cada 30 min | No té integració oficial a HA; caldria consultar-ne l'API des de `nit.py` |
+| **Met.no** | Integració gratuïta i sense clau | ⚠️ És un **model de predicció**, no una observació. Serveix de reserva, no per validar |
+
+**Recomanació:** començar amb **AEMET OpenData** (oficial, gratuïta, dona el punt de rosada
+ja calculat i la precipitació). Si l'estació més propera queda lluny, afegir **Meteocat XEMA**
+com a segona referència des de `nit.py`, que ja fa una connexió diària.
+
+> ⚠️ **La font oficial és per validar i per detectar pluja, no per decidir.** La decisió de
+> ventilar la pren **sempre el sensor local**: l'aire que entra per la reixa és el del carrer,
+> no el de l'estació. Si algun dia el sensor local cau, el sistema **s'atura** (fallada
+> segura); no passa a decidir amb dades d'una estació a quilòmetres.
 
 ## ⚡ Dos avisos operatius
 
