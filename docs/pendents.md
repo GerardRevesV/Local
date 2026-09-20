@@ -186,6 +186,8 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [x] ~~Muntar el **ritual mensual** d'exportació CSV + SHA-256 fora del local.~~ ✅
       **Descartat i substituït:** el fa el **commit nocturn**, cada dia i amb segell RFC 3161,
       no un cop al mes i a mà. → [decisio-stack.md](domotica/decisio-stack.md)
+      *(⚠️ 21/09/2026: el commit nocturn a `Local-data` i el segell també han caigut, amb el
+      canvi d'objectiu.)*
 - [ ] Valorar un **sensor de temperatura superficial de paret** (DS18B20 via ESPHome) a cada
       punt humit: és l'únic que discrimina directament condensació de capil·laritat.
 - [x] ~~**Decidir el mètode d'accés remot.**~~ ✅ **Tailscale, instal·lat i connectat** el
@@ -193,11 +195,12 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       → [acces-remot.md](domotica/acces-remot.md)
 - [x] ~~Decidir si cal SSH.~~ ✅ **Sí: Tailscale.** El flux és casa → GitHub → portàtil del
       local, i desplegar necessita shell. → [desplegament.md](domotica/desplegament.md)
-- [ ] Crear un **repositori separat i privat només per a les dades** (`Local-data`), amb una
-      **clau de desplegament SSH** amb permís d'escriptura. ⚠️ **Mai un token.** Ho mana
-      [decisio-stack.md](domotica/decisio-stack.md): un *fine-grained token* té caducitat, i
-      un que expirés el gener de 2027 aturaria la pujada **en silenci** just abans del
-      venciment de la retenció. Una clau de desplegament no caduca.
+- [x] ~~Crear un **repositori separat i privat només per a les dades** (`Local-data`), amb una
+      **clau de desplegament SSH** amb permís d'escriptura.~~ ✅ **Sense objecte** des del
+      21/09/2026: el canvi d'objectiu deixa les còpies «sense repositori a part» →
+      [decisio-stack.md](domotica/decisio-stack.md). *(La lliçó de fons segueix valent per a
+      qualsevol pujada automàtica que es munti: **clau de desplegament, mai un token**, perquè
+      un token caduca i atura la pujada en silenci.)*
 - [x] ~~**Decidir si les dades del panell web seran privades o públiques.**~~ ✅ **La
       pregunta desapareix: no hi haurà panell web.** Dashboards natius d'HA i app Companion
       per Tailscale. Amb això les dades no surten mai a cap pàgina, i el dilema del token
@@ -208,7 +211,8 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [x] ~~**Decidir la via de l'arxiu de dades:** GitHub Releases o R2/B2.~~ ✅ **Cap de les
       dues:** un commit diari al repositori privat `Local-data`, amb SHA-256 i **segell
       RFC 3161**, més còpia a disc USB al local. GitHub Releases resolia un problema que no
-      tenim —tot l'arxiu són ~20–30 MB.
+      tenim —tot l'arxiu són ~20–30 MB. *(⚠️ **Superat el 21/09/2026:** cauen el repositori,
+      el SHA-256 diari i el segell; es queda la còpia a disc USB al local.)*
 - [x] ~~Fixar l'**estructura de fitxers del panell**.~~ ✅ **Sense objecte** (no hi ha panell).
       El que **sí** es manté és el requisit de fons: les marques de temps de l'arxiu van en
       **ISO 8601 amb zona horària**, i el CSV diari les porta en ISO8601+offset **i** en
@@ -260,25 +264,37 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       fàcil oblidar-la justament a la còpia: perdre-la obliga a **reemparellar**, i
       reemparellar **parteix totes les sèries**. Va al mateix sac que `config/.storage` —al
       `nit.py` i al tarball xifrat setmanal.
+- [ ] 📦 **Decidir on va el tarball xifrat setmanal** (`.storage`, `secrets.yaml`,
+      `matter-data/`, ~1 MB). Anava a `Local-data`, que el canvi d'objectiu del 21/09/2026
+      deixa sense objecte. **L'exigència de treure'l del local es manté**, perquè el seu motiu
+      no era probatori: és el de just a sobre. L'històric, en canvi, es queda només al disc
+      USB. → [decisio-stack.md](domotica/decisio-stack.md)
 - [ ] **Emparellar el hub H110 per Matter** i comprovar que apareixen els sis sensors i que
       graven. ⚠️ **No per `tplink`**: el rebutja amb *«Unsupported device»* pel xifratge TPAP
       ([`python-kasa#1590`](https://github.com/python-kasa/python-kasa/issues/1590)).
-- [ ] **Congelar també el `matter-server`** fins al 10/03/2027. Ja va fixat per **digest** i no
-      per etiqueta, perquè la imatge no publica versions i `stable` es mou sota els peus.
+- [x] ~~**Congelar també el `matter-server`** fins al 10/03/2027.~~ ✅ **Sense objecte** des del
+      21/09/2026: la congelació de versions va caure amb el canvi d'objectiu. El que **es
+      manté** és que va **fixat per digest** i no per etiqueta, perquè la imatge no publica
+      versions i `stable` es mou sota els peus; s'actualitza només a posta.
 - [ ] Escriure el **script de desplegament** amb validació de configuració abans del reinici.
 - [x] ~~**Fixar les versions** al `docker-compose.yml` — res de `:latest`.~~ ✅ **2026.9.3**,
-      congelada fins al 10/03/2027.
+      fixada. *(Deia també «congelada fins al 10/03/2027»: la congelació va caure el
+      21/09/2026; la versió fixada es manté i s'actualitza només a posta.)*
 - [x] ~~Definir els **helpers i automatismes en YAML**, no per interfície.~~ ✅ **Fets**, tots
       a `config/packages/rosada.yaml`: `input_number`, `input_select`, `timer` i els
       automatismes sota `automation:` amb la clau **`manual`**, que és el que impedeix que
       l'editor visual reescrigui el fitxer i bloquegi els desplegaments futurs.
-- [ ] Muntar un **avís de caiguda** (Healthchecks.io / UptimeRobot) i una **còpia de
-      l'històric fora del local**. Sense això l'accés remot no serveix de res.
+- [ ] Muntar un **avís de caiguda** (Healthchecks.io / UptimeRobot). Sense això l'accés
+      remot no serveix de res. *(Hi deia també «i una còpia de l'històric fora del local»:
+      decidit el 21/09/2026 que **no** —l'històric es queda al disc USB del local—. El que sí
+      surt del local és el tarball xifrat dels secrets; vegeu el pendent del seu destí.)*
 - [ ] Valorar un **endoll intel·ligent de rearmada** per al portàtil i el router,
       independent de Home Assistant.
-- [ ] **Consultar amb un professional el valor probatori** d'un històric autogenerat: pot
-      caldre exportació segellada temporalment o un enregistrador independent. Això
-      condiciona tota l'estratègia de les humitats.
+- [ ] ⏸️ **Ajornat el 21/09/2026**, amb la via documental —«amb la porta oberta»,
+      [decisio-stack.md](domotica/decisio-stack.md)—. No és sense objecte: si es reprèn, és
+      el primer que caldrà. **Consultar amb un professional el valor probatori** d'un
+      històric autogenerat: pot caldre exportació segellada temporalment o un enregistrador
+      independent. Això condiciona tota l'estratègia de les humitats.
 - [x] ~~Verificar si hi ha IP pública o CGNAT.~~ Internet per **SIM** → CGNAT quasi segur:
       port forwarding i WireGuard directe queden descartats.
 - [x] ~~**Decidir el protocol dels sensors** (Zigbee + coordinador SLZB-06).~~ ✅ **Superat

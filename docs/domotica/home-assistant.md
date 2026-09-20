@@ -27,8 +27,9 @@
 > responent **HTTP 200** per LAN i per Tailscale, **45 entitats** registrades i el paquet
 > `rosada` carregat sencer (hi són `sensor.decisio_del_soterrani`, els cinc punts de rosada,
 > `input_select.mode_soterrani` i els dos `input_number`). **No falta res de gros per
-> instal·lar**: el que falta és el que encara no hem escrit (`nit.py`, `desplega.sh`), el
-> repositori `Local-data`, i quatre eines petites — vegeu la llista de sota.
+> instal·lar**: el que falta és el que encara no hem escrit (`nit.py`, `desplega.sh`) i
+> quatre eines petites — vegeu la llista de sota. *(Hi deia també el repositori
+> `Local-data`: superat el 21/09/2026 amb el canvi d'objectiu.)*
 
 ### On és cada cosa ara mateix
 
@@ -74,7 +75,7 @@ ssh -t local-ha "sudo apt update && sudo apt full-upgrade -y && sudo apt install
 | **`vnstat`** | **Comptar les dades de la SIM** per dia i per mes des del propi servidor. Sense això només queda el comptador del router, que es perd a cada reinici |
 | `smartmontools` | SMART del disc — tasca **0.5** de [fases.md](fases.md) |
 | `rsync` | La còpia nocturna al disc USB |
-| `gnupg` (+ `openssl`, ja present) | El tarball xifrat setmanal i el segell RFC 3161 |
+| `gnupg` (+ `openssl`, ja present) | El tarball xifrat setmanal *(hi deia també «i el segell RFC 3161»: va caure el 21/09/2026)* |
 | `jq`, `sqlite3` | Mirar `/api/states` i la base de dades sense muntar res |
 
 I confirmar que la imatge d'HA ja és al disc, perquè cap arrencada la torni a baixar:
@@ -362,7 +363,7 @@ manera que un servidor refet de zero el torna a tenir sense que ningú se'n reco
 |---|---|
 | **Frigate o qualsevol NVR** | La detecció d'objectes en vídeo demana CPU, RAM i un flux d'escriptura constant que es menjaria la màquina i el disc. Les càmeres Tapo es queden a la seva app, gravant a la seva pròpia microSD |
 | **Escriptori d'ús diari** | Cada cop que s'hi obrís un navegador «per mirar una cosa» es competiria amb el servidor per la RAM |
-| **Actualitzacions automàtiques** | Ja decidit: `unattended-upgrades` només de seguretat, i **cap actualització d'HA fins al 10/03/2027** |
+| **Actualitzacions automàtiques** | Ja decidit: `unattended-upgrades` només de seguretat, i **cap actualització d'HA que no sigui a posta** —un commit que canvia la versió, desplegat a mà. *(Fins al 21/09/2026 deia «cap fins al 10/03/2027»: la congelació va caure amb el canvi d'objectiu)* |
 
 ### ⚠️ On ha de viure: a la planta baixa, no al soterrani
 
@@ -492,8 +493,9 @@ res** — i, en aquest projecte, una sèrie de dades amb un forat.
 
 ## Per què HA Container — decisió tancada
 
-> ✅ **Decidit i en marxa:** **HA Container** sobre Docker, versió **2026.9.3** fixada i
-> congelada fins al **10/03/2027**. Mana [decisio-stack.md](decisio-stack.md). La taula es
+> ✅ **Decidit i en marxa:** **HA Container** sobre Docker, versió **2026.9.3** fixada.
+> *(Deia també «congelada fins al 10/03/2027»: va caure el 21/09/2026; fixada, sí, i
+> s'actualitza només a posta.)* Mana [decisio-stack.md](decisio-stack.md). La taula es
 > conserva perquè explica **per què** van caure les altres tres vies, no perquè quedi res
 > per triar.
 
@@ -515,7 +517,7 @@ no és ja una decisió oberta: totes remeten a [decisio-stack.md](decisio-stack.
 | **Alimentació** | ✅ El portàtil té bateria: fa de SAI per a ell mateix i **registra el tall**, cosa rellevant per demostrar que la ventilació estava operativa. ⚠️ No cobreix ni el hub ni el router — vegeu la lletra petita de la bateria, més amunt |
 | **Arrencada automàtica** | ✅ La meitat de **programari**, verificada amb un reinici real: tornen sols `ssh`, `docker`, `tailscaled` i HA. ⏳ La de **maquinari** (*restore on AC power loss*) és una casella de la tanda física al BIOS |
 | **Accés remot** | ✅ **Tailscale**, connectat el 20/09/2026 amb l'expiració de clau desactivada, i **única via**. Nabu Casa, el *port forwarding* i el WireGuard pur queden descartats pel CGNAT → [acces-remot.md](acces-remot.md) |
-| **Còpies de seguretat** | ✅ Decidides: instantània `VACUUM INTO` + disc USB al local cada nit, i tarball xifrat de `.storage`+`secrets.yaml` a `Local-data` cada diumenge. ⏳ Falta escriure `nit.py` |
+| **Còpies de seguretat** | ✅ Decidides: instantània `VACUUM INTO` + disc USB al local cada nit, i tarball xifrat de `.storage`+`secrets.yaml` **fora del local** cada diumenge. ⚠️ Anava a `Local-data`, superat el 21/09/2026: **destí per decidir**. ⏳ Falta escriure `nit.py` |
 | **Retenció de l'històric** | ✅ Resolta **sense canviar de motor**: `purge_keep_days: 730` sobre **SQLite**, amb `commit_interval: 30` i `exclude` per llistes explícites |
 
 > ⚠️ **PostgreSQL, MariaDB i InfluxDB estan descartats**, no ajornats. El dipòsit de la prova
@@ -523,6 +525,10 @@ no és ja una decisió oberta: totes remeten a [decisio-stack.md](decisio-stack.
 > segell RFC 3161; un segon motor només compraria un mode de fallada silenciós més. El que
 > **sí** queda obert és verificar `purge_keep_days: 730` **contra la instància en calent** —
 > és la Porta A, i és l'única línia del projecte que no té arreglada a posteriori.
+>
+> ⚠️ **21/09/2026:** el CSV diari i el segell han caigut amb el canvi d'objectiu, així que
+> **la base de dades passa a ser l'única còpia de l'històric**. El descart dels altres motors
+> no s'ha revisat; el motiu que s'hi donava, en canvi, sí que ha desaparegut.
 
 ## Registre d'instal·lació
 

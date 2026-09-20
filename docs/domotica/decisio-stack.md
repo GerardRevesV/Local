@@ -32,6 +32,11 @@
 > - **Noms d'entitat fixats** (fets el 21/09/2026): renombrar més tard parteix les sèries.
 > - **Còpies de seguretat**, simplificades: sense segells ni repositori a part. Perdre la base
 >   de dades costaria també l'optimització, no només el plet.
+>   *Precisat el mateix 21/09/2026:* el **tarball xifrat setmanal** (`.storage`,
+>   `secrets.yaml`, `matter-data/`, ~1 MB) **segueix sortint del local**, perquè el seu motiu
+>   mai no va ser probatori —perdre `matter-data/` obliga a reemparellar, i reemparellar
+>   parteix totes les sèries—. Anava a `Local-data`: **destí per decidir**. L'**històric**, en
+>   canvi, es queda només al disc USB del local.
 >
 > **El que això canvia del calendari:** el ~09/03/2027 deixa de governar cada decisió. Segueix
 > sent rellevant —l'hivern és quan la disjuntiva ventilar/deshumidificar es juga— però una

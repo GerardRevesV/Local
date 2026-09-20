@@ -10,16 +10,24 @@
 #
 #    Les tres sortides eren: esperar upstream (sense data, i el calendari
 #    acaba el març), un component de tercers per HACS (que decisio-stack.md
-#    rebutja expressament dins la finestra probatòria), o Matter.
+#    rebutjava expressament dins la finestra probatòria), o Matter.
 #
 #    Matter costa aquest segon contenidor, i a canvi l'accés al hub passa a
 #    ser **completament local**: sense el núvol de Tapo, sense credencials
-#    de compte i sense res que caduqui. Per al valor probatori és millor que
-#    el pla original.
+#    de compte i sense res que caduqui. És millor que el pla original.
 #
-# ⚠️ LA VERSIÓ ES FIXA I ES CONGELA FINS AL 10/03/2027.
-#    Res de «:latest» i res d'actualitzacions automàtiques: una actualització
-#    no planificada és un forat a l'històric, i l'històric és el projecte.
+#    (Des del 21/09/2026 el rebuig de HACS ja no és vigent —canvi d'objectiu
+#    a decisio-stack.md—, però el que decanta Matter és que és local, i això
+#    no ha canviat.)
+#
+# ⚠️ LA VERSIÓ ES FIXA. Res de «:latest» i res d'actualitzacions automàtiques.
+#    Actualitzar és un acte deliberat: un commit que canvia l'etiqueta o el
+#    digest, amb data, i que es desplega a mà. Una actualització trencada que
+#    arribés sola deixaria el sistema caigut sense haver tocat res.
+#
+#    (Fins al 21/09/2026 deia «ES CONGELA FINS AL 10/03/2027». La congelació
+#    va caure amb el canvi d'objectiu —decisio-stack.md—; la versió fixada no,
+#    perquè el seu primer motiu mai no va ser la finestra probatòria.)
 #
 #    Per saber quina és l'estable d'avui i posar-la a sota:
 #      curl -s https://version.home-assistant.io/stable.json \
@@ -28,7 +36,7 @@
 services:
   homeassistant:
     container_name: homeassistant
-    # Fixada el 20/09/2026. NO es toca fins al 10/03/2027.
+    # Fixada el 20/09/2026. S'actualitza només a posta (vegeu la capçalera).
     image: ghcr.io/home-assistant/home-assistant:2026.9.3
     restart: unless-stopped
 
@@ -96,7 +104,7 @@ services:
     container_name: matter-server
     # Fixada per DIGEST el 21/09/2026, no per etiqueta: la imatge no publica
     # cap etiqueta de versió i «stable» es mou sota els peus. Un digest és
-    # immutable per construcció. NO es toca fins al 10/03/2027.
+    # immutable per construcció. S'actualitza només a posta.
     image: ghcr.io/home-assistant-libs/python-matter-server@sha256:170aa093ce91c76cde4cc390918307590f0f5558fcec93f913af3cb019e6562a
     restart: unless-stopped
 

@@ -4,6 +4,9 @@
 >
 > **Canvis:** l'stack no porta Postgres, Mosquitto ni Zigbee2MQTT. *(Deia «un sol contenidor»: des del **21/09/2026** són **dos**, perquè `tplink` rebutja el hub i la via Matter demana el seu propi servidor.)* El desplegament és `desplega.sh` amb portes dures, llançat a mà per SSH. El que segueix vigent i reforçat: pull i no push, versions fixades, validació abans de reiniciar, i el parany de `.storage`.
 > Aquest document es conserva pel raonament, no com a guia vigent.
+>
+> 🟢 **21/09/2026 — canvi d'objectiu:** queden superats, a més, el repositori `Local-data`. Les versions fixades es mantenen; la congelació fins al 10/03/2027, no. Allà on aquest
+> document digui el contrari, mana [decisio-stack.md](decisio-stack.md).
 
 > **Estat: decidit a grans trets, detalls oberts.**
 

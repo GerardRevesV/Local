@@ -4,6 +4,9 @@
 >
 > **Canvis:** **Tailscale és l'única via** d'administració i de consulta. GitHub queda com a destí d'arxiu i còpia, **no** com a panell (res de GitHub Pages). Nabu Casa descartat. El canal d'ordres per `ordres.json` queda mort.
 > Aquest document es conserva pel raonament, no com a guia vigent.
+>
+> 🟢 **21/09/2026 — canvi d'objectiu:** queden superats, a més, `Local-data` com a destí d'arxiu i el segell RFC 3161. Allà on aquest
+> document digui el contrari, mana [decisio-stack.md](decisio-stack.md).
 
 > ### ✅ IMPLEMENTAT el 20/09/2026
 >
