@@ -32,7 +32,9 @@ recorder:
   #  la purga ja s'executa sola un cop al dia.)
 
   # Escriu a disc cada 30 s en comptes de a cada canvi d'estat: menys desgast
-  # del disc (pot ser eMMC soldada) i menys risc en una apagada bruta.
+  # del disc i menys risc en una apagada bruta. (El disc és un SSD NVMe
+  # Samsung de 128 GB, confirmat per SSH el 20/09/2026: cau la reserva de
+  # l'eMMC soldada, i el disc és substituïble.)
   commit_interval: 30
 
   # ⚠️ Exclusions: NOMÉS per llista explícita, mai per «entity_globs».

@@ -15,8 +15,10 @@
 | Accés remot | ✅ Decidit: **Tailscale**, única via | [acces-remot.md](acces-remot.md) |
 | Desplegament | ✅ Decidit: **`desplega.sh`** a mà per SSH | [desplegament.md](desplegament.md) |
 | Còpies i supervisió | ✅ Decidit: disc USB + tarball xifrat setmanal + 2 checks | [decisio-stack.md](decisio-stack.md) |
-| Ràdio | ✅ Decidit: **ZHA + SLZB-06 per TCP** *(a confirmar abans d'emparellar)* | [decisio-stack.md](decisio-stack.md) |
-| Maquinari | 🔸 Proposat, pendent de les verificacions físiques | [control-punt-rosada.md](control-punt-rosada.md) |
+| Ràdio | ✅ Decidit i **en marxa**: **868 MHz sub-GHz**, hub **Tapo H110** + sensors T310/T315, integració `tplink` amb consulta local. *ZHA i l'SLZB-06 van quedar superats pel maquinari ja comprat.* | [inventari.md](inventari.md) · [decisio-stack.md](decisio-stack.md) |
+| Maquinari | ✅ **Comprat i actiu**, no proposat: hub, endoll amb mesura, 5 sensors T/HR, sensor d'inundació i 2 relés. ⏳ Els relés, sense instal·lar fins a la Fase C | [inventari.md](inventari.md) |
+| Noms d'entitat | ✅ Conveni **escrit**. ⏳ Falta **aplicar-lo** en afegir la integració `tplink`: renombrar després parteix la sèrie | [noms-entitats.md](noms-entitats.md) |
+| Refer el servidor de zero | ✅ Escrit: ordres, versions i paranys | [runbook-servidor.md](runbook-servidor.md) |
 | Fases i portes de test | ✅ [fases.md](fases.md) | |
 
 ## El que encara no es pot decidir

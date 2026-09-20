@@ -30,7 +30,7 @@ invalidar.
 | 0.2 | ~~Deshumidificador: arrenca sol? temperatura mínima?~~ ✅ **Resolt pel manual:** sí, i 5–35 °C | — |
 | 0.2b | 🔴 **PROVA: desendollar-lo i tornar-lo a endollar** amb l'higròstat a 45 %. Recorda el llindar o torna a la configuració de fàbrica? | 👤 Tu |
 | 0.3 | **Paret més freda i humida** amb termòmetre IR de mà | 👤 Tu |
-| 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. Queda dir-me **on és cada sensor** i si «Fora» és realment a l'exterior | 👤 Tu |
+| 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. ✅ **I els cinc sensors ja estan ubicats**, amb el de fora protegit de la pluja | — |
 | 0.5 | **Salut del portàtil:** SMART del disc, capacitat de bateria, pila CMOS, si té Ethernet | 🤝 Tu executes, jo interpreto |
 | 0.5b | 🔧 **Tanda física al BIOS, abans de moure el portàtil:** *restore on AC power loss*, límit de càrrega, disc intern a dalt de l'arrencada, RJ-45 amb cable | 👤 Tu |
 | 0.6 | Ubicació física del portàtil: **planta baixa**, aixecat de terra, ventilat | 👤 Tu |
@@ -42,8 +42,12 @@ invalidar.
 - [x] ~~Sé si el deshumidificador es reprèn sol.~~ ✅ Sí, i funciona de 5 a 35 °C.
 - [ ] 🔴 Sé si **recorda el llindar d'humitat** després d'un cicle d'alimentació. Si no el recorda, l'arquitectura del deshumidificador canvia.
 - [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. **L'stack és 1 contenidor.**
-- [ ] Sé **quin model és l'endoll** (P110/P115 mesuren consum; P100/P105 no).
-- [ ] Sé **on és cada sensor** i si el de fora està protegit de la pluja.
+- [x] ~~Sé **quin model és l'endoll**.~~ ✅ **Tapo P110: mesura consum.** És el que fa
+      possible el `utility_meter` del deshumidificador i, amb ell, els kWh/dia de la Porta B.
+- [x] ~~Sé **on és cada sensor** i si el de fora està protegit de la pluja.~~ ✅ **Ubicats els
+      cinc:** *Centre* (T315), *Fons* (T315) i *Gran* (T310) al soterrani, *Dalt* (T315) a la
+      planta baixa i *Fora* (T310) a l'exterior, **protegit** ✅.
+      → [inventari.md](inventari.md)
 - [ ] Sé si el portàtil necessita **SAI**.
 - [ ] ⚠️ Sé si el BIOS té ***restore on AC power loss***. Si no el té, la mitigació està
       decidida i escrita (apagada ordenada al 20 %, o `Wake on LAN`).
@@ -75,6 +79,8 @@ feina i tu menys.
 | A.11 | Compte de healthchecks.io i els dos checks | 👤 Tu |
 | A.12 | **Restauració de prova manual verificada** | 🤝 Jo escric el procediment, tu l'executes |
 | A.13 | **24 h amb tots els sensors junts** a la mateixa habitació → *offsets* | 👤 Tu |
+| A.14 | ✅ **Fet** — `scripts/comprova.sh` (180 línies): verifica d'una passada el host, la suspensió, la tapa, Docker, HA i Tailscale. És el que es corre **després de cada canvi al host** i abans de donar una porta per tancada | 🤖 Jo |
+| A.15 | ✅ **Fet** — `tools/valida_yaml.py` (100 línies): valida el YAML **des de casa**, abans de desplegar, sense esperar el `check_config` del contenidor | 🤖 Jo |
 
 ### 🚦 Porta A — la més important de totes
 
@@ -96,14 +102,14 @@ feina i tu menys.
 
 | # | Tasca | Qui |
 |---|---|---|
-| B.1 | ~~Instal·lar sensors i endoll.~~ ✅ **Ja fet.** Queda confirmar-ne la ubicació i el model de l'endoll | 👤 Tu |
+| B.1 | ~~Instal·lar sensors i endoll, i confirmar-ne ubicació i model.~~ ✅ **Fet:** cinc T/HR ubicats i endoll **P110** amb mesura de consum | — |
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
-| B.4 | `packages/rosada.yaml`: Td, ΔTd, marge, `history_stats`, `utility_meter`, `sensor.decisio_del_soterrani` | 🤖 Jo |
+| B.4 | ✅ **Fet** — `packages/rosada.yaml` (566 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
-| B.7 | Rèplica offline de la lògica + test de deriva | 🤖 Jo |
+| B.7 | ✅ **Fet** — `tools/replica.py` (276 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
 
 > **Per què els ventiladors no s'aturen:** la clàusula QUINTA obliga a mantenir-los operatius.
 > El deure legal i el grup de control coincideixen — es mesura amb el règim actual i el sensor
