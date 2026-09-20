@@ -28,7 +28,8 @@ recorder:
   # el que hi hagi gravat fins llavors és el corpus probatori.
   purge_keep_days: 730
   auto_purge: true
-  purge_interval: 1
+  # (`purge_interval` era obsolet a 2026.9.3 i HA l'avisava a cada arrencada:
+  #  la purga ja s'executa sola un cop al dia.)
 
   # Escriu a disc cada 30 s en comptes de a cada canvi d'estat: menys desgast
   # del disc (pot ser eMMC soldada) i menys risc en una apagada bruta.
