@@ -77,9 +77,15 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
       local, i desplegar necessita shell. → [desplegament.md](domotica/desplegament.md)
 - [ ] Crear un **repositori separat i privat només per a les dades**, amb un *fine-grained
       token* limitat.
+- [ ] ⚠️ **Decidir si les dades del panell web seran privades o públiques.** Les dades de
+      sensors revelen patrons d'ocupació del local. Un panell estàtic no pot llegir un
+      repositori privat sense credencials, i un token dins d'una pàgina web és un token
+      públic. Recomanació: privades, a R2 amb domini propi darrere Cloudflare Access.
+      → [publicacio-dades.md](domotica/publicacio-dades.md)
 - [ ] **Decidir la via de l'arxiu de dades:** GitHub Releases (no toca l'historial de git) o
       emmagatzematge d'objectes R2/B2 (immutabilitat forta).
-      → [publicacio-dades.md](domotica/publicacio-dades.md)
+- [ ] Fixar l'**estructura de fitxers del panell** (`latest.json` + `index.json` +
+      `daily/*.json`) i que les marques de temps siguin **ISO 8601 amb zona horària**.
 - [ ] Escriure el **script de desplegament** amb validació de configuració abans del reinici.
 - [ ] **Fixar les versions** al `docker-compose.yml` — res de `:latest`.
 - [ ] Definir els **helpers i automatismes en YAML**, no per interfície: el que es crea des
