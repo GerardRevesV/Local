@@ -39,3 +39,8 @@ config/*.db-shm
 config/*.db-wal
 config/home-assistant.log*
 config/known_devices.yaml
+config/.HA_VERSION
+config/.ha_run.lock
+config/.cache/
+config/blueprints/
+config/image/

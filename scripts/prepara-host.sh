@@ -14,13 +14,15 @@
 #   3. Ni suspensió ni tapa→ un servidor que dorm és un forat a l'històric
 #   4. Docker CE oficial   → el de Mint va endarrerit; el de snap trenca els volums
 #   5. Límit als logs      → que el journal no s'empassi el disc
-#
-#   6. Tailscale           → l'única via d'entrar-hi quan marxis del local
+#   6. Bluetooth fora      → HA hi insisteix i omple el log d'excepcions
+#   7. unattended-upgrades → només seguretat, mai Docker, a les 04:30
+#   8. Tailscale           → l'única via d'entrar-hi quan marxis del local
 #
 # El que NO fa, i queda per a tu:
 #   · Desactivar l'expiració de la clau de Tailscale, que es fa al seu web (A.3).
 #     Si no ho fas, d'aquí a uns mesos la clau caduca i perds l'accés al servidor.
-#   · unattended-upgrades només de seguretat, excloent docker-ce*
+#   · Esborrar la integració «Bluetooth» de Home Assistant, que es fa a la seva
+#     interfície: el mòdul ja no hi serà, però l'entrada guardada sí.
 #
 # Ja resolt i per tant fora del guió:
 #   · zram — el disc va resultar ser un SSD NVMe, no una eMMC
@@ -42,9 +44,15 @@ sudo -v
 # ─────────────────────────────────────────────────────────────── 1. SSH ──────
 log "Servidor SSH"
 sudo apt-get update -qq
-sudo apt-get install -y -qq openssh-server git curl ca-certificates
+sudo apt-get install -y -qq openssh-server git curl ca-certificates \
+     vnstat smartmontools sqlite3 jq
 sudo systemctl enable --now ssh
 ok "SSH actiu. A partir d'ara pots entrar-hi des de casa i deixar de teclejar aquí."
+sudo systemctl enable --now vnstat >/dev/null 2>&1 || true
+# vnstat compta les dades que gasta la SIM, per dia i per mes. El comptador del
+# router es perd a cada reinici; aquest no. S'instal·la ARA, per fibra: després
+# de passar a la SIM, cada «apt install» es paga amb dades del pla.
+ok "Eines de diagnòstic: vnstat (dades de la SIM), smartmontools (SMART), sqlite3, jq."
 
 # ───────────────────────────────────────────────────────── 2. Rellotge ───────
 log "Zona horària i sincronització de rellotge"
@@ -126,6 +134,20 @@ else
   ok "No hi ha servei de Bluetooth"
 fi
 
+# ⚠️ Aturar el servei NO n'hi ha prou: el 20/09/2026, amb bluetooth.service
+# desactivat, el contenidor seguia veient l'adaptador «hci0» i deixava una
+# excepció de bleak a cada arrencada. El que el fa desaparèixer de debò és
+# treure'n el mòdul del nucli.
+sudo tee /etc/modprobe.d/99-sense-bluetooth.conf >/dev/null <<'CONF'
+# Aquest portàtil fa de servidor i el Bluetooth no s'usa: els sensors parlen
+# per 868 MHz amb el hub. Sense això, Home Assistant hi insisteix i omple el log.
+blacklist btusb
+blacklist bluetooth
+CONF
+ok "Mòdul de Bluetooth a la llista negra (efectiu al proper reinici)."
+avis "A Home Assistant, esborra també la integració «Bluetooth»: l'entrada guardada"
+avis "seguirà intentant obrir l'adaptador encara que el mòdul ja no hi sigui."
+
 # ──────────────────────── 7. Actualitzacions: només seguretat ───────────────
 log "unattended-upgrades — només seguretat, i mai Docker"
 sudo apt-get install -y -qq unattended-upgrades
@@ -133,6 +155,12 @@ sudo apt-get install -y -qq unattended-upgrades
 sudo tee /etc/apt/apt.conf.d/52-local-ha >/dev/null <<CONF
 // Només seguretat. La resta d'actualitzacions es fan a mà i quan convingui:
 // una actualització no planificada és un forat a l'històric.
+//
+// ⚠️ «#clear» no és un comentari: és la directiva d'apt que BUIDA la llista.
+// Sense ella, aquest bloc no substitueix el de 50unattended-upgrades sinó que
+// s'hi SUMA, i hi queda «\${distro_id}:\${distro_codename}» — que a Mint és el
+// seu propi dipòsit sencer, no pas seguretat. Verificat el 20/09/2026.
+#clear Unattended-Upgrade::Allowed-Origins;
 Unattended-Upgrade::Allowed-Origins {
         "Ubuntu:${UBUNTU_CODENAME}-security";
 };

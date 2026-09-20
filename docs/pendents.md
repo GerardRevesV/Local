@@ -45,7 +45,8 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
       ubicació, forma de control. → [inventari.md](domotica/inventari.md)
 - [ ] Comprovar l'estat de l'**aigua**.
 - [ ] **Contractar la SIM de dades:** operadora, pla i límit mensual; model de router (cal
-      Ethernet per al coordinador Zigbee) i cobertura al local.
+      Ethernet per al servidor) i cobertura al local. El **límit mensual** no es pot triar a
+      cegues: surt de les 72 h de `vnstat` del pas 4 de la llista de sota.
 
 ## Domòtica
 
@@ -59,15 +60,8 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
       Linux Mint 22.3.
 - [x] ~~⚠️ Si el disc és eMMC: res de fitxer d'intercanvi, `zram`…~~ ✅ **No aplica: és un
       NVMe.** Cau la reserva principal del veredicte del maquinari, i el disc és substituïble.
-- [ ] ⚠️ **Verificar al BIOS si existeix *restore on AC power loss*.** `decisio-stack.md` ho
-      dona per fet, i **en portàtils sovint no hi és**. Si no hi és, decidir la mitigació
-      (apagada ordenada al 20 % de bateria, o `Wake on LAN`).
 - [x] ~~Activar **`F12 Boot Menu`** al BIOS per poder arrencar del pen drive.~~ ✅ **Resolt el
       20/09/2026.** Era això: ve desactivat de fàbrica. Mint arrenca.
-- [ ] Un cop Mint estigui instal·lat, **tornar a posar el disc intern a dalt** de l'ordre
-      d'arrencada, perquè un llapis oblidat al local no deixi el servidor sense arrencar.
-- [ ] Buscar al BIOS un **límit de càrrega de bateria**: dos anys al 100 % la degraden i la
-      poden inflar.
 - [x] ~~Desactivar la **suspensió** i posar `HandleLidSwitch=ignore`.~~ ✅ Fet i **verificat
       després d'un reinici real**: `sleep`/`suspend`/`hibernate` emmascarats, la tapa ignorada,
       i HA torna sol amb HTTP 200. Queda oberta la meitat de maquinari (BIOS).
@@ -76,6 +70,46 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
       i la sèrie de dades fa un forat.
 - [ ] **Col·locar-lo a la planta baixa, no al soterrani** (humitat sobre l'electrònica), en un
       lloc airejat i, si es pot, amb **cable Ethernet**.
+
+#### 🔧 Tanda física — mentre el portàtil encara sigui a casa
+
+**Una sola tanda**, amb la màquina apagada i el teclat al davant. Un cop sigui al local,
+**cada casella d'aquestes és un viatge**. Com s'entra al BIOS:
+[home-assistant.md](domotica/home-assistant.md#entrar-al-bios).
+
+- [ ] ⚠️ **BIOS — *restore on AC power loss*: comprovar si l'opció hi és.**
+      `decisio-stack.md` ho dona per fet i **en portàtils sovint no hi és**. Si no hi és,
+      decidir la mitigació en aquell moment: apagada ordenada al 20 % de bateria, o
+      `Wake on LAN`. És l'única casella d'aquesta llista que pot canviar una decisió
+      d'arquitectura.
+- [ ] **BIOS — límit de càrrega de bateria**, si existeix: dos hiverns al 100 % la degraden
+      i la poden inflar.
+- [ ] **BIOS — disc intern a dalt** de l'ordre d'arrencada, perquè un llapis oblidat al local
+      no deixi el servidor sense arrencar.
+- [ ] **Salut del maquinari** (tasca 0.5 de [fases.md](domotica/fases.md)): SMART del disc,
+      capacitat real de la bateria i **prova de la pila del CMOS** — apagada llarga i, en
+      tornar, mirar `hwclock -r` **abans** que l'NTP ho dissimuli.
+- [ ] Confirmar **visualment el port RJ-45** i que dona enllaç: la fitxa el dona per bo, però
+      no s'ha vist mai amb un cable posat, i el servidor no hauria de dependre del Wi-Fi.
+
+### ⏭️ El pas a la SIM — el següent moviment
+
+Decidit el 20/09/2026: **es fa aviat, no s'ajorna.** Fins que HA i el hub H100 no comparteixin
+xarxa no es grava ni una lectura, i el rellotge dels 28 dies de la Fase B no ha començat.
+Llista completa i ordre a
+[home-assistant.md](domotica/home-assistant.md#el-pas-a-la-sim--lassaig-general-de-debò).
+
+**Per fibra, abans de desendollar:**
+
+- [ ] `apt full-upgrade` + instal·lar **`vnstat`**, `smartmontools`, `rsync`, `gnupg`, `jq`,
+      `sqlite3`. Sense `vnstat` no hi ha manera de saber què gasta la SIM.
+- [ ] Confirmar que la imatge d'HA **ja és al disc** (`docker image ls`).
+
+**Amb el portàtil al davant:** la [🔧 tanda física](#-tanda-física--mentre-el-portàtil-encara-sigui-a-casa)
+de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la màquina.**
+
+**Un cop a la SIM:** reserva DHCP → `tailscale ping` (mirar si va **directe o per DERP**) →
+72 h de `vnstat` → emparellar el hub → **i només llavors** la integració `tplink`.
 
 ### Muntatge
 
