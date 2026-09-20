@@ -73,9 +73,11 @@ Fons 23,5 °C / 62 % · Fora 23,9 °C / 68 % · Gran 22,7 °C / 64 %.
 | Sistema | Linux Mint 22.3 |
 
 **Veredicte: suficient per a l'stack decidit**, perquè l'stack és petit i va sobre SQLite.
-⚠️ Des del 21/09/2026 són **dos** contenidors (hi entra `matter-server`), i el marge de RAM
-**està per tornar a mesurar**. Les especificacions completes, el veredicte raonat i com entrar
-al BIOS són a [home-assistant.md](home-assistant.md#el-maquinari-del-servidor).
+✅ **Mesurat el 21/09/2026** amb els **dos** contenidors en marxa: HA 436 MB i `matter-server`
+**88 MB** — el 19 % dels 3.716 MB. El segon contenidor de Matter **no compromet la memòria**;
+qui se la menja és l'escriptori gràfic i un Firefox obert (~1,9 GB entre tots dos). Les
+especificacions completes, el veredicte raonat i les xifres són a
+[home-assistant.md](home-assistant.md#-la-ram-mesurada--i-la-sorpresa-no-és-matter).
 
 > ⚠️ **Va a la planta baixa, no al soterrani.** I és l'únic aparell de la cadena amb bateria:
 > en un tall de corrent el hub H110 i el router cauen igualment.
