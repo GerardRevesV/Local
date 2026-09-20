@@ -56,13 +56,13 @@ sensor.<zona>_<punt>_<magnitud>
 
 | `entity_id` | Què és |
 |---|---|
-| `sensor.soterrani_fons_rosada` *(i `centre`, `gran`)* | Punt de rosada de cada punt |
-| `sensor.baixa_rosada` · `sensor.exterior_rosada` | Punt de rosada |
-| `sensor.soterrani_rosada` | **Referència interior** = la més alta dels tres punts |
-| `sensor.delta_rosada` | `soterrani_rosada − exterior_rosada` — el criteri |
-| `sensor.marge_condensacio` | `paret més freda − soterrani_rosada` — el KPI del fong |
-| `sensor.residu_rosada_exterior` | Sensor propi − estació oficial — **salut del sensor** |
-| `sensor.decisio_soterrani` | **L'únic punt d'avaluació.** Què s'ha de fer i per què |
+| `sensor.soterrani_fons_punt_de_rosada` *(i `centre`, `gran`)* | Punt de rosada de cada punt |
+| `sensor.planta_baixa_punt_de_rosada` · `sensor.exterior_punt_de_rosada` | Punt de rosada |
+| `sensor.soterrani_punt_de_rosada_de_referencia` | **Referència interior** = la més alta dels tres punts |
+| `sensor.dtd_interior_exterior` | `soterrani_rosada − exterior_rosada` — el criteri |
+| `sensor.marge_de_condensacio` | `paret més freda − soterrani_rosada` — el KPI del fong |
+| `sensor.residu_del_punt_de_rosada_exterior` | Sensor propi − estació oficial — **salut del sensor** |
+| `sensor.decisio_del_soterrani` | **L'únic punt d'avaluació.** Què s'ha de fer i per què |
 
 ### Paràmetres ajustables
 
@@ -86,7 +86,7 @@ sensor.<zona>_<punt>_<magnitud>
 
 ## Per què la referència interior és el **màxim** i no la mitjana
 
-`sensor.soterrani_rosada` pren **el punt de rosada més alt dels tres punts del soterrani**, no
+`sensor.soterrani_punt_de_rosada_de_referencia` pren **el punt de rosada més alt dels tres punts del soterrani**, no
 la mitjana. Dues raons:
 
 1. **La condensació és local.** Condensa allà on l'aire més humit troba la superfície més

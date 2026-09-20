@@ -3,7 +3,7 @@
 #  Fase B.4 de docs/domotica/fases.md · Disseny: docs/domotica/control-punt-rosada.md
 #
 #  PRINCIPI D'ARQUITECTURA (decisio-stack.md):
-#    Hi ha UN SOL punt d'avaluació: sensor.decisio_soterrani.
+#    Hi ha UN SOL punt d'avaluació: sensor.decisio_del_soterrani.
 #    Els automatismes NO tornen a avaluar res: llegeixen aquesta decisió i actuen.
 #    Un «sensor de motiu» separat del que decideix pot mentir; aquest no pot.
 #
@@ -226,27 +226,27 @@ template:
         device_class: temperature
         state_class: measurement
         availability: >
-          {{ [ states('sensor.soterrani_fons_rosada'),
-               states('sensor.soterrani_centre_rosada'),
-               states('sensor.soterrani_gran_rosada') ]
+          {{ [ states('sensor.soterrani_fons_punt_de_rosada'),
+               states('sensor.soterrani_centre_punt_de_rosada'),
+               states('sensor.soterrani_gran_punt_de_rosada') ]
              | select('is_number') | list | count > 0 }}
         state: >
-          {{ [ states('sensor.soterrani_fons_rosada'),
-               states('sensor.soterrani_centre_rosada'),
-               states('sensor.soterrani_gran_rosada') ]
+          {{ [ states('sensor.soterrani_fons_punt_de_rosada'),
+               states('sensor.soterrani_centre_punt_de_rosada'),
+               states('sensor.soterrani_gran_punt_de_rosada') ]
              | select('is_number') | map('float') | max | round(2) }}
         attributes:
           punt_mes_humit: >
             {% set d = {
-                 'fons':   states('sensor.soterrani_fons_rosada'),
-                 'centre': states('sensor.soterrani_centre_rosada'),
-                 'gran':   states('sensor.soterrani_gran_rosada') } %}
+                 'fons':   states('sensor.soterrani_fons_punt_de_rosada'),
+                 'centre': states('sensor.soterrani_centre_punt_de_rosada'),
+                 'gran':   states('sensor.soterrani_gran_punt_de_rosada') } %}
             {% set v = d.items() | selectattr('1', 'is_number') | list %}
             {{ (v | sort(attribute='1', reverse=true) | first)[0] if v else 'cap' }}
           dispersio: >
-            {% set v = [ states('sensor.soterrani_fons_rosada'),
-                         states('sensor.soterrani_centre_rosada'),
-                         states('sensor.soterrani_gran_rosada') ]
+            {% set v = [ states('sensor.soterrani_fons_punt_de_rosada'),
+                         states('sensor.soterrani_centre_punt_de_rosada'),
+                         states('sensor.soterrani_gran_punt_de_rosada') ]
                        | select('is_number') | map('float') | list %}
             {{ (v | max - v | min) | round(2) if v | count > 1 else none }}
 
@@ -258,11 +258,11 @@ template:
         unit_of_measurement: "°C"
         state_class: measurement
         availability: >
-          {{ is_number(states('sensor.soterrani_rosada'))
-             and is_number(states('sensor.exterior_rosada')) }}
+          {{ is_number(states('sensor.soterrani_punt_de_rosada_de_referencia'))
+             and is_number(states('sensor.exterior_punt_de_rosada')) }}
         state: >
-          {{ (states('sensor.soterrani_rosada') | float
-              - states('sensor.exterior_rosada') | float) | round(2) }}
+          {{ (states('sensor.soterrani_punt_de_rosada_de_referencia') | float
+              - states('sensor.exterior_punt_de_rosada') | float) | round(2) }}
 
       # ─────────────────────────────────────────────────────────────────────
       #  EL KPI QUE DECIDEIX EL CAS: marge entre la paret més freda i el punt
@@ -275,7 +275,7 @@ template:
         unit_of_measurement: "°C"
         state_class: measurement
         availability: >
-          {{ is_number(states('sensor.soterrani_rosada'))
+          {{ is_number(states('sensor.soterrani_punt_de_rosada_de_referencia'))
              and ([ states('sensor.soterrani_paret_1_superficie'),
                     states('sensor.soterrani_paret_2_superficie') ]
                   | select('is_number') | list | count > 0) }}
@@ -283,7 +283,7 @@ template:
           {% set parets = [ states('sensor.soterrani_paret_1_superficie'),
                             states('sensor.soterrani_paret_2_superficie') ]
                           | select('is_number') | map('float') | list %}
-          {{ (parets | min - states('sensor.soterrani_rosada') | float) | round(2) }}
+          {{ (parets | min - states('sensor.soterrani_punt_de_rosada_de_referencia') | float) | round(2) }}
 
       # ─────────────────────────────────────────────────────────────────────
       #  SALUT DEL SENSOR EXTERIOR — idea de l'usuari (20/09/2026).
@@ -298,10 +298,10 @@ template:
         unit_of_measurement: "°C"
         state_class: measurement
         availability: >
-          {{ is_number(states('sensor.exterior_rosada'))
+          {{ is_number(states('sensor.exterior_punt_de_rosada'))
              and is_number(states('sensor.aemet_dew_point')) }}
         state: >
-          {{ (states('sensor.exterior_rosada') | float
+          {{ (states('sensor.exterior_punt_de_rosada') | float
               - states('sensor.aemet_dew_point') | float) | round(2) }}
 
       # ═════════════════════════════════════════════════════════════════════
@@ -321,8 +321,8 @@ template:
              else 'mdi:help-circle-outline' if s == 'sense_dades'
              else 'mdi:sleep' }}
         state: >
-          {%- set td_int  = states('sensor.soterrani_rosada') -%}
-          {%- set td_ext  = states('sensor.exterior_rosada') -%}
+          {%- set td_int  = states('sensor.soterrani_punt_de_rosada_de_referencia') -%}
+          {%- set td_ext  = states('sensor.exterior_punt_de_rosada') -%}
           {%- set t_int   = states('sensor.soterrani_centre_temperatura') -%}
           {%- set hr_ext  = states('sensor.exterior_humitat') -%}
 
@@ -348,7 +348,7 @@ template:
             {%- set rh_obj = states('input_number.hr_objectiu') | float -%}
             {%- set g_obj = log(rh_obj / 100) + (a * t_int) / (b + t_int) -%}
             {%- set td_objectiu = (b * g_obj) / (a - g_obj) -%}
-            {%- set marge = states('sensor.marge_condensacio') -%}
+            {%- set marge = states('sensor.marge_de_condensacio') -%}
             {%- set marge_ok = (not is_number(marge))
                   or (marge | float >= states('input_number.marge_superficie_min') | float) -%}
 
@@ -369,8 +369,8 @@ template:
           {%- endif -%}
         attributes:
           motiu: >
-            {%- set td_int = states('sensor.soterrani_rosada') -%}
-            {%- set td_ext = states('sensor.exterior_rosada') -%}
+            {%- set td_int = states('sensor.soterrani_punt_de_rosada_de_referencia') -%}
+            {%- set td_ext = states('sensor.exterior_punt_de_rosada') -%}
             {%- set t_int  = states('sensor.soterrani_centre_temperatura') -%}
             {%- set hr_ext = states('sensor.exterior_humitat') -%}
             {%- if not is_number(td_int) -%}
@@ -396,12 +396,12 @@ template:
                 ΔTd = {{ delta | round(2) }} °C, dins de la banda morta
               {%- endif -%}
             {%- endif -%}
-          delta_td: "{{ states('sensor.delta_rosada') }}"
-          td_interior: "{{ states('sensor.soterrani_rosada') }}"
-          td_exterior: "{{ states('sensor.exterior_rosada') }}"
-          marge_condensacio: "{{ states('sensor.marge_condensacio') }}"
+          delta_td: "{{ states('sensor.dtd_interior_exterior') }}"
+          td_interior: "{{ states('sensor.soterrani_punt_de_rosada_de_referencia') }}"
+          td_exterior: "{{ states('sensor.exterior_punt_de_rosada') }}"
+          marge_condensacio: "{{ states('sensor.marge_de_condensacio') }}"
           punt_mes_humit: >
-            {{ state_attr('sensor.soterrani_rosada', 'punt_mes_humit') }}
+            {{ state_attr('sensor.soterrani_punt_de_rosada_de_referencia', 'punt_mes_humit') }}
           mode: "{{ states('input_select.mode_soterrani') }}"
           fase: "B — registra sense actuar"
 

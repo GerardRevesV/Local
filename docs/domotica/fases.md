@@ -97,7 +97,7 @@ feina i tu menys.
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
-| B.4 | `packages/rosada.yaml`: Td, ΔTd, marge, `history_stats`, `utility_meter`, `sensor.decisio_soterrani` | 🤖 Jo |
+| B.4 | `packages/rosada.yaml`: Td, ΔTd, marge, `history_stats`, `utility_meter`, `sensor.decisio_del_soterrani` | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
 | B.7 | Rèplica offline de la lògica + test de deriva | 🤖 Jo |
@@ -109,7 +109,7 @@ feina i tu menys.
 ### 🚦 Porta B
 
 - [ ] **28 dies seguits** de dades sense cap forat superior a 2 h.
-- [ ] `sensor.decisio_soterrani` porta 28 dies registrant, i la **rèplica offline coincideix**
+- [ ] `sensor.decisio_del_soterrani` porta 28 dies registrant, i la **rèplica offline coincideix**
       amb el que va registrar (si divergeixen, les dues implementacions han derivat).
 - [ ] Sé **quantes hores hauria ventilat** amb Δ_ON = 2,0 °C, i amb 1,5 i 2,5.
 - [ ] Sé els **litres/dia i els kWh/dia** reals del deshumidificador.

@@ -7,7 +7,7 @@ PER A QUÈ SERVEIX
    gravades a la Fase B i respon la pregunta que decideix si la Fase C val la
    pena: *quantes hores hauria ventilat amb cada joc de llindars?*
 2. **Test de deriva.** Es compara amb el que va registrar de debò
-   `sensor.decisio_soterrani`. Si divergeixen, les dues implementacions
+   `sensor.decisio_del_soterrani`. Si divergeixen, les dues implementacions
    —aquesta i el YAML— han derivat, i cal saber-ho.
 
 ⚠️ Aquesta funció NO decideix res en producció. La decisió en viu la pren
@@ -84,7 +84,7 @@ class Decisio:
 
 
 def decideix(lectura: Lectura, llindars: Llindars, estat_previ: str = "repos") -> Decisio:
-    """Rèplica exacta de `sensor.decisio_soterrani`.
+    """Rèplica exacta de `sensor.decisio_del_soterrani`.
 
     Qualsevol canvi aquí s'ha de fer també a `config/packages/rosada.yaml`,
     i el test de deriva ho comprovarà sobre dades reals.
