@@ -146,7 +146,7 @@ Ha de sortir només `Testing configuration at /config`. Qualsevol altra línia �
 
 Després, al navegador: **http://LA-IP:8123** → crear el compte.
 
-> ⚠️ **No afegeixis la integració `tplink` fins que el hub H100 no estigui al Wi-Fi
+> ⚠️ **No afegeixis la integració `tplink` fins que el hub H110 no estigui al Wi-Fi
 > definitiu.** La integració guarda la IP del hub; si canvia de xarxa, s'ha de refer.
 
 ---

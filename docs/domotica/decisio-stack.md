@@ -5,7 +5,7 @@
 > El maquinari ja estava comprat quan es va prendre aquesta decisió. Queden **superades** dues
 > files de la taula, i la resta es manté:
 >
-> - **Ràdio: ZHA + SLZB-06 → FORA.** Els sensors són **Tapo T310/T315 amb hub H100**, que
+> - **Ràdio: ZHA + SLZB-06 → FORA.** Els sensors són **Tapo T310/T315 amb hub H110**, que
 >   parlen per **868 MHz sub-GHz**, amb millor penetració en formigó que el Zigbee de 2,4 GHz.
 >   Integració `tplink` oficial, consulta local. Desapareix la prova de cobertura i la decisió
 >   irreversible d'emparellament.

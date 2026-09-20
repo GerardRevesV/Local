@@ -62,14 +62,28 @@ grep -qh "^HandleLidSwitch=ignore" /etc/systemd/logind.conf.d/*.conf 2>/dev/null
 # ─────────────────────────────────────────────────────── home assistant ─────
 t "Home Assistant"
 estat=$(docker compose ps --format '{{.Status}}' 2>/dev/null | head -1)
-[ -n "$estat" ] && ok "contenidor: $estat" || mal "el contenidor no corre"
+case "$estat" in
+  Up*)         ok "contenidor: $estat" ;;
+  Restarting*) mal "contenidor EN BUCLE DE REINICI: $estat" ;;
+  "")          mal "el contenidor no corre" ;;
+  *)           mal "contenidor en estat inesperat: $estat" ;;
+esac
 codi=$(curl -s -o /dev/null -w '%{http_code}' -m 10 http://127.0.0.1:8123 2>/dev/null)
 [ "$codi" = 200 ] && ok "respon a 8123" || mal "8123 no respon (codi $codi)"
 
+# ⚠️ Cal mirar el CODI DE SORTIDA, no només el text. Si `docker compose exec`
+# falla (contenidor mort, dimoni caigut), el missatge no conté «ERROR» ni
+# «Failed», i només buscant text s'imprimiria «check_config net» amb el
+# contenidor apagat. Un fals verd aquí és el més car de tot el guió.
 sortida=$(docker compose exec -T homeassistant python -m homeassistant \
-            --script check_config -c /config 2>&1 | sed -e 's/\x1b\[[0-9;]*m//g')
-if echo "$sortida" | grep -qiE 'ERROR|Failed|Fatal'; then
-  mal "check_config amb errors:"; echo "$sortida" | grep -iE 'ERROR|Failed|Fatal' | head -3 | sed 's/^/      /'
+            --script check_config -c /config 2>&1); codi_cc=$?
+sortida=$(printf '%s' "$sortida" | sed -e 's/\x1b\[[0-9;]*m//g')
+if [ "$codi_cc" -ne 0 ]; then
+  mal "check_config NO s'ha pogut executar (codi $codi_cc):"
+  printf '%s\n' "$sortida" | head -2 | sed 's/^/      /'
+elif printf '%s' "$sortida" | grep -qiE 'ERROR|Failed|Fatal'; then
+  mal "check_config amb errors:"
+  printf '%s\n' "$sortida" | grep -iE 'ERROR|Failed|Fatal' | head -3 | sed 's/^/      /'
 else
   ok "check_config net"
 fi
@@ -90,24 +104,29 @@ if [ ! -r "$TOK" ]; then
   avis "sense ~/.ha_token: em salto la comprovació d'entitats"
 else
   T=$(tr -d '\n\r' < "$TOK")
+  # Noms fixos a /tmp fallarien si el guió el llança un altre usuari (cron,
+  # root): el fitxer ja existiria i seria d'algú altre, i el redirigit petaria
+  # amb un «l'API no respon» que seria mentida.
+  REAL=$(mktemp); REF=$(mktemp)
+  trap 'rm -f "$REAL" "$REF"' EXIT
   curl -s -m 15 -H "Authorization: Bearer $T" http://127.0.0.1:8123/api/states \
     | python3 -c 'import sys,json;print("\n".join(sorted(x["entity_id"] for x in json.load(sys.stdin))))' \
-    > /tmp/_real.txt 2>/dev/null
+    > "$REAL" 2>/dev/null
 
-  if [ ! -s /tmp/_real.txt ]; then
+  if [ ! -s "$REAL" ]; then
     mal "l'API no respon o el testimoni no val"
   else
-    ok "$(wc -l < /tmp/_real.txt) entitats a HA"
+    ok "$(wc -l < "$REAL") entitats a HA"
     grep -oE "(states|state_attr|is_state)\(\s*'[a-z_]+\.[a-z0-9_]+'" config/packages/rosada.yaml \
-      | grep -oE "[a-z_]+\.[a-z0-9_]+" | sort -u > /tmp/_ref.txt
+      | grep -oE "[a-z_]+\.[a-z0-9_]+" | sort -u > "$REF"
     trencades=0; pendents=0
     while read -r e; do
-      grep -qx "$e" /tmp/_real.txt && continue
+      grep -qx "$e" "$REAL" && continue
       case "$e" in
         *_temperatura|*_humitat|*superficie|sensor.aemet_*) pendents=$((pendents+1)) ;;
         *) mal "referència TRENCADA: $e"; trencades=$((trencades+1)) ;;
       esac
-    done < /tmp/_ref.txt
+    done < "$REF"
     [ "$trencades" -eq 0 ] && ok "cap referència trencada a rosada.yaml"
     [ "$pendents" -gt 0 ] && avis "$pendents referències esperen maquinari (Tapo, ESP32, AEMET) — és normal fins a la integració"
 

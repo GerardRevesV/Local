@@ -10,7 +10,7 @@
 
 | Aparell | Model | Ubicació | Estat |
 |---|---|---|---|
-| Hub | **Tapo H100** (?) | corridor | Actiu |
+| Hub | **Tapo H110** ✅ *(hub IR + sub-GHz)* | corridor | Actiu |
 | Endoll intel·ligent | **Tapo P110** ✅ *(mesura consum)* | corridor | Actiu — deshumidificador |
 | **Mòduls de relé** | **2× Tapo S110E** | — | ⏳ **Comprats, sense instal·lar** |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Centre* | Actiu |
@@ -65,7 +65,7 @@ Fons 23,5 °C / 62 % · Fora 23,9 °C / 68 % · Gran 22,7 °C / 64 %.
 | Xarxa per cable | **RJ-45 gigabit** *(a confirmar visualment)* |
 | Alimentació | 45 W: 19 V ⎓ 2,37 A **o USB-C PD** 20 V ⎓ 2,25 A |
 | Consum en servei | ~8–12 W → **< 1 €/mes** |
-| Bateria | ~48 Wh → **4–5 h** de marge davant un tall |
+| Bateria | **42,5 Wh reals** de 53 de disseny (80 % de salut) → **~4 h** de marge |
 | Refrigeració | **Sense ventilador** |
 | CPU | **Intel Celeron N5100** — 4 nuclis ✅ |
 | RAM | **4 GB** soldats (3,6 útils) ✅ |
@@ -77,7 +77,7 @@ SQLite. Les especificacions completes, el veredicte raonat i com entrar al BIOS 
 [home-assistant.md](home-assistant.md#el-maquinari-del-servidor).
 
 > ⚠️ **Va a la planta baixa, no al soterrani.** I és l'únic aparell de la cadena amb bateria:
-> en un tall de corrent el hub H100 i el router cauen igualment.
+> en un tall de corrent el hub H110 i el router cauen igualment.
 
 ### Deshumidificador
 
@@ -215,7 +215,7 @@ de decisió de 2,0 °C a ~1,2 °C — que són hores de ventilació gratuïta gu
 
 ### 3. 🟡 Credencials de Tapo
 
-La integració oficial `tplink` de Home Assistant **suporta el hub H100 i els seus sensors
+La integració oficial `tplink` de Home Assistant **suporta el hub H110 i els seus sensors
 filles**, i els consulta **localment** per IP. Però la configuració inicial demana el **correu
 i la contrasenya del compte Tapo**, no només un testimoni local.
 
