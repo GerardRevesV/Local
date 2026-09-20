@@ -213,6 +213,14 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       El que **sí** es manté és el requisit de fons: les marques de temps de l'arxiu van en
       **ISO 8601 amb zona horària**, i el CSV diari les porta en ISO8601+offset **i** en
       epoch.
+- [x] ~~⚠️ **Comprovar si els 4 GB de RAM aguanten el segon contenidor de Matter.**~~ ✅
+      **Mesurat el 21/09/2026:** sí, i de llarg. HA 436 MB (pic 609) + `matter-server` 88 MB
+      (pic 89) = **19 %** de 3.716 MB, sense pressió de memòria. *(Tornar-ho a mirar després
+      d'emparellar el hub: s'ha mesurat amb la xarxa Matter buida.)*
+- [ ] 🖥️ **Passar el servidor a `multi-user.target`** (sense entorn gràfic). S'administra per
+      SSH i Tailscale, i l'escriptori Cinnamon costa **374 MB** que no fan res. De pas
+      s'acaba el risc que hi quedi un navegador obert: el 21/09 hi havia **Firefox amb
+      1.576 MB**, el 42 % de la màquina.
 - [ ] 🔴 **`matter-data/` ha d'entrar a la còpia de seguretat.** Hi viuen les **claus** dels
       aparells emparellats per Matter. És al `.gitignore` perquè són secrets, i per això és
       fàcil oblidar-la justament a la còpia: perdre-la obliga a **reemparellar**, i
