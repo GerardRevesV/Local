@@ -310,6 +310,12 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       25 L/dia, bomba de condensats i higròstat propi 40–80 %. El manual oficial n'ha resolt
       el rang (5–35 °C), el desgebratge automàtic i la protecció de compressor de 5 min, que
       **ja és a l'aparell**. → [inventari.md](domotica/inventari.md)
+- [ ] 🆕 **Provar `tuya-local` (HACS) amb el deshumidificador** *(obert el 21/09/2026)*. Ja
+      no cal compte de desenvolupador de Tuya: la *local key* s'extreu un cop amb l'app Smart
+      Life. El D825 no és a la llista, però pot encaixar amb la configuració del D820A. Donaria
+      el **llindar d'HR des d'HA** i l'estat (**P1** desgebrant, P2, HR pròpia). ⚠️ Emparellar-lo
+      **a la Wi-Fi del router SIM**: cada reemparellament canvia la clau. El **P110 es queda**.
+      *(Tasca B.1c de [fases.md](domotica/fases.md).)* → [inventari.md](domotica/inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)
 
 ## Verificacions físiques al local (abans de gastar diners)
 
@@ -318,7 +324,8 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       l'higròstat propi regula, i el **Tapo P110** el governa i en mesura el consum.
 - [ ] 🔴 **Però: recorda el llindar d'humitat** després d'un cicle d'alimentació? Desendollar
       i tornar a endollar amb l'higròstat al 45 %. Si torna a fàbrica, l'arquitectura del
-      deshumidificador canvia. *(Tasca 0.2b de [fases.md](domotica/fases.md).)*
+      deshumidificador canvia. *(Tasca 0.2b de [fases.md](domotica/fases.md).)* La sortida,
+      en aquest cas, seria `tuya-local` (vegeu la prova de més amunt).
 - [ ] ⚠️ **Per on entra l'aire de reposició** quan els extractors funcionen? (Prova de fum.)
       Si entra per fissures en contacte amb el terreny, **el ventilador pot estar empitjorant
       les humitats** i el projecte canvia de naturalesa.

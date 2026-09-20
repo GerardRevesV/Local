@@ -194,6 +194,10 @@ va en orris en silenci.
 > **deixar-lo permanentment alimentat** i governar-lo d'una altra manera — segurament sí que
 > caldria la integració Tuya després de tot. **És la prova amb més impacte per minut invertit
 > de tot el projecte.**
+>
+> *21/09/2026:* aquesta «altra manera» ja té nom i és viable: **`tuya-local`**, sense compte
+> de desenvolupador. Vegeu [la decisió reoberta](#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)
+> més avall.
 
 ### 🟠 Rendiment a l'hivern
 
@@ -276,15 +280,55 @@ feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una
 
 ---
 
-## Decisió: NO integrem el deshumidificador per Tuya
+## Decisió: ~~NO integrem el deshumidificador per Tuya~~ → es reobre: provar `tuya-local`
+
+> ### 🔄 Revisió del 21/09/2026 — dos dels tres motius han caigut
+>
+> | Motiu del 20/09 | Ara |
+> |---|---|
+> | `tuya-local` demana un compte de desenvolupador de Tuya IoT que caduca | ❌ **Ja no.** Té una **configuració assistida**: s'entra **un sol cop** amb l'app Smart Life, se n'extreu la *local key* **sense compte de desenvolupador**, i a partir d'aquí tot va en local |
+> | Components de tercers per HACS, rebutjats | ❌ **Superat** pel canvi d'objectiu del mateix 21/09 ([decisio-stack.md](decisio-stack.md)) |
+> | El D825 no és a la llista de `tuya-local` | ✅ **Segueix sent veritat** (hi ha D720, D812 i D820A). Però `tuya-local` reconeix els aparells **per les dades que exposen, no pel nom del model**: és probable que el D825 encaixi amb la configuració del D820A. **No se sabrà sense provar-ho** |
+>
+> **Què guanyaríem sobre el P110 sol:**
+>
+> - **El llindar d'HR des d'HA**, per exemple més baix a la franja vall.
+> - **Engegar-lo i aturar-lo per ordre, sense tallar-li el corrent.** Així la protecció de 5
+>   minuts del compressor **segueix comptant** (vegeu més amunt), i la prova 0.2b de la
+>   memòria del llindar **deixa de ser bloquejant**.
+> - **El seu estat**: l'HR que mesura ell, la velocitat, i els codis **P1** (desgebrant) i
+>   **P2** (dipòsit ple). El P1 és la dada que ens falta per a l'hivern: quanta estona passa
+>   descongelant en comptes d'assecar.
+>
+> **El P110 es queda igualment.** És qui mesura els kWh, i el tall dur si tot l'altre falla.
+>
+> **La prova, i com fer-la sense fer-nos mal:**
+>
+> 1. **Emparellar-lo amb Smart Life a la Wi-Fi del router SIM**, la mateixa que tindrà al
+>    local. ⚠️ Cada cop que es **reemparella**, la *local key* **canvia** i HA el perd fins
+>    que se'n torna a extreure. Emparellar-lo a la Wi-Fi de casa i tornar-ho a fer al local
+>    seria fer la feina dues vegades.
+> 2. **Reserva DHCP** per al deshumidificador, com la resta (A.2).
+> 3. `tuya-local` per HACS, configuració assistida, i mirar **si el reconeix**.
+> 4. Si el reconeix: **fixar-ne els noms a [noms-entitats.md](noms-entitats.md) abans** que
+>    tinguin històric (regla A.8). **Al principi, només lectura i llindar:** l'actuador de la
+>    lògica segueix sent el `switch.deshumidificador` del P110. Dos amos per al mateix aparell
+>    no, fins que es decideixi a posta.
+> 5. Si **no** el reconeix: no hem perdut res i seguim amb el P110 sol, com diu la decisió
+>    original de sota.
+>
+> ⚠️ Si la prova 0.2b surt malament —que torni a la configuració de fàbrica després d'un
+> tall—, això deixa de ser una millora i passa a ser **la via**.
+
+*Decisió original del 20/09, conservada pel raonament:*
 
 El Qlima és un dispositiu **Tuya/Smart Life**. Es podria integrar a Home Assistant de dues
 maneres, i **descartem totes dues de moment**:
 
 | Via | Per què no |
 |---|---|
-| Integració **Tuya oficial** | Passa pel núvol. Hi ha informes d'entitats mal mapades en deshumidificadors Qlima |
-| **tuya-local** (HACS) | Local i millor, però cal extreure la *local key* amb un compte de desenvolupador de Tuya IoT, la llicència del qual **caduca i s'ha de renovar**. Suporta D720, D812 i D820A, **però el D825 no hi és a la llista** |
+| Integració **Tuya oficial** | Passa pel núvol. Hi ha informes d'entitats mal mapades en deshumidificadors Qlima. *(21/09: ara s'hi entra amb un codi QR de l'app, però segueix depenent del núvol — la via, si n'hi ha, és `tuya-local`)* |
+| **tuya-local** (HACS) | Local i millor, però cal extreure la *local key* amb un compte de desenvolupador de Tuya IoT, la llicència del qual **caduca i s'ha de renovar**. Suporta D720, D812 i D820A, **però el D825 no hi és a la llista** *(21/09: el compte ja no cal — vegeu la revisió de dalt)* |
 
 **El que farem:** l'**higròstat propi** del Qlima regula la humitat, i el **Tapo P110** el
 governa i en mesura el consum. Amb això tenim les dues coses que necessitem —engegar-lo o no,
