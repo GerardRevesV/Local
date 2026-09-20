@@ -1,5 +1,21 @@
 # Decisió d'arquitectura — registre autoritzat
 
+> ### 🔄 Revisió del 20/09/2026 — maquinari real
+>
+> El maquinari ja estava comprat quan es va prendre aquesta decisió. Queden **superades** dues
+> files de la taula, i la resta es manté:
+>
+> - **Ràdio: ZHA + SLZB-06 → FORA.** Els sensors són **Tapo T310/T315 amb hub H100**, que
+>   parlen per **868 MHz sub-GHz**, amb millor penetració en formigó que el Zigbee de 2,4 GHz.
+>   Integració `tplink` oficial, consulta local. Desapareix la prova de cobertura i la decisió
+>   irreversible d'emparellament.
+> - **Deshumidificador: verificació resolta.** El **Qlima D 825 PA Smart** (470 W, 25 L/dia,
+>   bomba de condensats, higròstat 40–80 %) **es reprèn sol després d'un tall de corrent**.
+>   L'arquitectura (a) queda confirmada, i **no s'integra per Tuya**: l'higròstat propi regula
+>   i el **Tapo P110** el governa i en mesura el consum.
+>
+> El detall és a **[inventari.md](inventari.md)**.
+
 > **Aquest document mana.** Recull la decisió presa el **20 de setembre de 2026** després d'un
 > procés de tres propostes independents, dues crítiques adversarials (senzillesa i robustesa)
 > i una síntesi arbitral.

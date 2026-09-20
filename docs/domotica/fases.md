@@ -27,9 +27,9 @@ invalidar.
 | # | Tasca | Qui |
 |---|---|---|
 | 0.1 | **Prova de fum del camí de l'aire de reposició** amb els extractors en marxa | 👤 Tu |
-| 0.2 | El **deshumidificador arrenca sol** després d'un tall? Desguassa per tub? Placa de característiques | 👤 Tu |
+| 0.2 | ~~El deshumidificador arrenca sol?~~ ✅ **Resolt: sí.** Queda mirar la **temperatura mínima de funcionament** al manual | 👤 Tu |
 | 0.3 | **Paret més freda i humida** amb termòmetre IR de mà | 👤 Tu |
-| 0.4 | **Prova de cobertura Zigbee de 48 h** al soterrani | 👤 Tu |
+| 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. Queda dir-me **on és cada sensor** i si «Fora» és realment a l'exterior | 👤 Tu |
 | 0.5 | **Salut del portàtil:** SMART del disc, capacitat de bateria, pila CMOS, si té Ethernet | 🤝 Tu executes, jo interpreto |
 | 0.6 | Ubicació física del portàtil: **planta baixa**, aixecat de terra, ventilat | 👤 Tu |
 | 0.7 | Contractar la SIM i saber-ne el **límit de dades** | 👤 Tu |
@@ -37,8 +37,10 @@ invalidar.
 ### 🚦 Porta 0
 
 - [ ] Sé **per on entra l'aire de reposició**.
-- [ ] Sé si el deshumidificador es reprèn sol.
-- [ ] Sé si el Zigbee arriba al soterrani, i per tant si l'stack són **1 o 2 contenidors**.
+- [x] ~~Sé si el deshumidificador es reprèn sol.~~ ✅ Sí.
+- [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. **L'stack és 1 contenidor.**
+- [ ] Sé **quin model és l'endoll** (P110/P115 mesuren consum; P100/P105 no).
+- [ ] Sé **on és cada sensor** i si el de fora està protegit de la pluja.
 - [ ] Sé si el portàtil necessita **SAI**.
 
 > ⚠️ **0.1 pot canviar el projecte de naturalesa.** Si l'aire entra per fissures en contacte
@@ -89,7 +91,8 @@ feina i tu menys.
 
 | # | Tasca | Qui |
 |---|---|---|
-| B.1 | Instal·lar sensors i endoll amb mesura | 👤 Tu |
+| B.1 | ~~Instal·lar sensors i endoll.~~ ✅ **Ja fet.** Queda confirmar-ne la ubicació i el model de l'endoll | 👤 Tu |
+| B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
 | B.4 | `packages/rosada.yaml`: Td, ΔTd, marge, `history_stats`, `utility_meter`, `sensor.decisio_soterrani` | 🤖 Jo |
@@ -195,6 +198,16 @@ Tot el que és **físic, presencial o de compte propi**:
 - Fixar els llindars amb les dades reals de la Fase B.
 - El dossier final.
 
-> **Nota sobre l'accés:** si en algun moment em dones accés SSH al portàtil del local per
-> Tailscale, moltes files de «👤 Tu» passen a «🤖 Jo». Val la pena valorar-ho un cop el
-> sistema estigui muntat i abans de la Fase C.
+## ✅ Acordat el 20/09/2026
+
+- **Accés SSH:** un cop el sistema estigui muntat, tindré accés al portàtil del local per
+  Tailscale. A partir d'aquell moment moltes files de «👤 Tu» passen a «🤖 Jo»: desplegar,
+  mirar logs, diagnosticar i ajustar. Tu et quedes amb el que és físic.
+- **Ordre de treball:** escric tot el codi **ara**, en paral·lel a les teves verificacions de
+  la Fase 0. `nit.py` el provo en aquest portàtil contra una base de dades sintètica abans
+  que toqui el local.
+- **Maquinari:** ja en tens bona part comprat. La llista de maquinari de
+  [control-punt-rosada.md](control-punt-rosada.md) és una proposta, **no una llista de
+  compra**: s'ajustarà al que ja tinguis quan me'l passis.
+- **Repositori:** públic, amb totes les dades identificatives fora, a `docs/privat/`
+  (ignorat per git). L'historial s'ha reescrit perquè mai n'hagi contingut cap.
