@@ -28,6 +28,78 @@ reserves DHCP i el Wi-Fi del hub, tot igual.
 > sola són **3,43 GB**. Es va baixar abans de passar el portàtil al router SIM, i per això
 > allà l'arrencada no gastarà dades.
 
+## El pas a la SIM — l'assaig general de debò
+
+> Escrit el **20/09/2026**, amb el servidor ja en marxa sobre la fibra de casa.
+
+Passar el portàtil al router de la SIM no és un tràmit administratiu: és **la porta que
+desbloqueja la Fase B**, i alhora la prova de tres coses que avui no estan provades —que
+Tailscale entra per darrere del **CGNAT**, que hi ha **cobertura** on anirà el router, i
+**quantes dades gasta tot plegat al mes**.
+
+Per això es fa **aviat**. El que s'ha de fer abans és, només, el que després surt car: les
+descàrregues i tot el que obligui a tenir el portàtil al davant.
+
+### Per què no es pot ajornar
+
+| | |
+|---|---|
+| **HA no veu cap sensor fins que no comparteix xarxa amb el hub** | La integració `tplink` consulta el **H100 per IP local**. Mentre el hub i Home Assistant siguin a xarxes diferents no es grava ni una lectura, i el rellotge dels **28 dies de la Fase B encara no ha començat** |
+| **La integració es configura un cop i es guarda la IP** | Afegir-la sobre la xarxa de casa obliga a refer-la després. Per això el [runbook](runbook-servidor.md) diu de no tocar-la fins que el hub sigui al **Wi-Fi definitiu** |
+| **El calendari** | Del 20/09/2026 al 09/03/2027 hi caben els 28 dies de la Fase B, la Fase C i el dossier: **un cop cadascun**. Cada setmana que s'ajorna la SIM és una setmana d'hivern que no es mesura |
+
+### Abans de desendollar la fibra
+
+#### 1. El que s'ha de baixar per fibra
+
+```bash
+ssh -t local-ha "sudo apt update && sudo apt full-upgrade -y && sudo apt install -y vnstat smartmontools rsync gnupg jq sqlite3"
+```
+
+| Paquet | Per a què |
+|---|---|
+| **`vnstat`** | **Comptar les dades de la SIM** per dia i per mes des del propi servidor. Sense això només queda el comptador del router, que es perd a cada reinici |
+| `smartmontools` | SMART del disc — tasca **0.5** de [fases.md](fases.md) |
+| `rsync` | La còpia nocturna al disc USB |
+| `gnupg` (+ `openssl`, ja present) | El tarball xifrat setmanal i el segell RFC 3161 |
+| `jq`, `sqlite3` | Mirar `/api/states` i la base de dades sense muntar res |
+
+I confirmar que la imatge d'HA ja és al disc, perquè cap arrencada la torni a baixar:
+
+```bash
+ssh local-ha "docker image ls | grep home-assistant"
+```
+
+> ⚠️ **`unattended-upgrades` seguirà baixant seguretat cada nit, ja sobre la SIM.** Són
+> desenes de MB al mes, no GB, però compten contra el pla. El primer mes de `vnstat` dirà
+> la xifra real.
+
+#### 2. El que demana tenir el portàtil al davant
+
+Un cop sigui al local, **cada casella d'aquestes és un viatge**:
+
+- [ ] ⚠️ **BIOS: *restore on AC power loss*** — la premissa que [decisio-stack.md](decisio-stack.md) dona per feta i que en portàtils sovint no hi és. Si no hi és, decidir la mitigació **ara**, no al gener.
+- [ ] **BIOS: límit de càrrega de bateria**, per no tenir-la al 100 % dos hiverns.
+- [ ] **BIOS: disc intern a dalt** de l'ordre d'arrencada. Un llapis oblidat al local deixaria el servidor sense arrencar.
+- [ ] **SMART del disc**, capacitat real de bateria i **prova de la pila del CMOS**: apagada llarga i, en tornar, mirar `hwclock -r` **abans** que l'NTP ho dissimuli.
+
+#### 3. Les caselles de la Porta A que no depenen de la xarxa
+
+- [ ] Crear el **compte d'HA** i un **testimoni de llarga durada**.
+- [ ] ⚠️ **Verificar `purge_keep_days: 730` contra la instància en calent**, no contra el fitxer. És l'única línia del projecte que no té arreglada a posteriori.
+- [ ] **Fixar els noms d'entitat** de [noms-entitats.md](noms-entitats.md) **abans** d'afegir la integració `tplink`: renombrar després parteix la sèrie.
+
+### I un cop a la SIM, en aquest ordre
+
+| # | Pas | Què s'hi comprova |
+|---|---|---|
+| 1 | Portàtil al router de la SIM, **per cable** si el router té RJ-45 | Que el servidor no depengui del Wi-Fi |
+| 2 | **Reserva DHCP** per al portàtil i per al hub | Que una IP nova no trenqui la integració ni l'àlies d'SSH |
+| 3 | `tailscale status` i `tailscale ping local-ha` des de casa | **Si diu `via DERP` en comptes de directe**, el CGNAT està relegant el trànsit: funciona, però amb latència i consum |
+| 4 | Deixar-ho **72 h** i llegir `vnstat -d` i `vnstat -m` | El consum en repòs, abans d'afegir-hi sensors. És el número que decideix el pla de dades |
+| 5 | Emparellar el **H100 al Wi-Fi de la SIM** | — |
+| 6 | **Només llavors**, afegir la integració `tplink` a HA i renombrar les entitats | A partir d'aquí comença a gravar-se l'històric: els noms ja no es toquen |
+
 ## El maquinari del servidor
 
 > Identificat el **20/09/2026** a partir de les etiquetes de la base del portàtil.
