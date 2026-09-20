@@ -1,0 +1,37 @@
+# Home Assistant — el únic contenidor de l'stack.
+# Decisió: docs/domotica/decisio-stack.md · Fase A.6 de docs/domotica/fases.md
+#
+# ⚠️ LA VERSIÓ ES FIXA I ES CONGELA FINS AL 10/03/2027.
+#    Res de «:latest» i res d'actualitzacions automàtiques: una actualització
+#    no planificada és un forat a l'històric, i l'històric és el projecte.
+#
+#    Per saber quina és l'estable d'avui i posar-la a sota:
+#      curl -s https://version.home-assistant.io/stable.json \
+#        | python3 -c "import sys,json; print(json.load(sys.stdin)['homeassistant']['generic-x86-64'])"
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:FIXA-LA-VERSIO
+    restart: unless-stopped
+
+    # Cal xarxa del host perquè la integració «tplink» descobreixi el hub
+    # H100 per difusió a la xarxa local. Amb xarxa pròpia de Docker no el veu.
+    network_mode: host
+
+    environment:
+      - TZ=Europe/Madrid
+
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+
+    # Sense «privileged» i sense /dev: no hi ha cap ràdio USB.
+    # Els sensors parlen amb el hub Tapo, i el hub parla per IP.
+    # Si algun dia entra un coordinador USB, aquesta decisió es reobre.
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
