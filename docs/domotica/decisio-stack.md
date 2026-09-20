@@ -137,16 +137,17 @@
 
 **Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (38 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
-**Fitxers que editaràs de debò: deu.** L'estimació original deia cinc i **~635 línies**; el
-recompte real, mesurat el **20/09/2026**, és gairebé el triple:
+**Fitxers que editaràs de debò: onze.** L'estimació original deia cinc i **~635 línies**; el
+recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~1.450 línies**):* `packages/rosada.yaml` (**566**), `tools/replica.py` (276), `scripts/prepara-host.sh` (240), `scripts/comprova.sh` (180), `tools/valida_yaml.py` (100), `config/configuration.yaml` (48), `docker-compose.yml` (38).
+- *Ja escrits (**~1.620 línies**):* `packages/rosada.yaml` (**566**), `tools/replica.py` (276), `scripts/prepara-host.sh` (240), `scripts/comprova.sh` (180), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (50), `docker-compose.yml` (38).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
-**~1.870 línies en total.** La desviació és quasi tota de `rosada.yaml`: les ~200 línies
+**~2.040 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
 estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
-d'`utility_meter` i `history_stats`. Les altres cinc peces són eines de verificació que
-l'estimació no preveia.
+d'`utility_meter` i `history_stats`. La resta són **eines de verificació i de frontera** que
+l'estimació no preveia perquè no preveia que calguessin: comprovar el host, validar el YAML
+des de casa i tancar l'experimentació abans que comenci la sèrie que val com a prova.
 
 Sóc dues peces i tres sintaxis per sobre del mínim de la Crítica 1, i la diferència és exactament: **SQL** (perquè em nego a vigilar la base de dades des d'una API que no la llegeix) i **ESPHome** (perquè és el sensor que decideix el cas). Contra la suma de les tres propostes: **−19 peces, −4 sintaxis**.
 

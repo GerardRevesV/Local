@@ -30,7 +30,7 @@ invalidar.
 | 0.2 | ~~Deshumidificador: arrenca sol? temperatura mínima?~~ ✅ **Resolt pel manual:** sí, i 5–35 °C | — |
 | 0.2b | 🔴 **PROVA: desendollar-lo i tornar-lo a endollar** amb l'higròstat a 45 %. Recorda el llindar o torna a la configuració de fàbrica? | 👤 Tu |
 | 0.3 | **Paret més freda i humida** amb termòmetre IR de mà | 👤 Tu |
-| 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. ✅ **I els cinc sensors ja estan ubicats**, amb el de fora protegit de la pluja | — |
+| 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. ✅ **I ja està decidit on va cada un** dels cinc, amb el de fora protegit de la pluja | — |
 | 0.5 | **Salut del portàtil:** SMART del disc, capacitat de bateria, pila CMOS, si té Ethernet | 🤝 Tu executes, jo interpreto |
 | 0.5b | 🔧 **Tanda física al BIOS, abans de moure el portàtil:** *restore on AC power loss*, límit de càrrega, disc intern a dalt de l'arrencada, RJ-45 amb cable | 👤 Tu |
 | 0.6 | Ubicació física del portàtil: **planta baixa**, aixecat de terra, ventilat | 👤 Tu |
@@ -44,9 +44,10 @@ invalidar.
 - [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. **L'stack és 1 contenidor.**
 - [x] ~~Sé **quin model és l'endoll**.~~ ✅ **Tapo P110: mesura consum.** És el que fa
       possible el `utility_meter` del deshumidificador i, amb ell, els kWh/dia de la Porta B.
-- [x] ~~Sé **on és cada sensor** i si el de fora està protegit de la pluja.~~ ✅ **Ubicats els
-      cinc:** *Centre* (T315), *Fons* (T315) i *Gran* (T310) al soterrani, *Dalt* (T315) a la
-      planta baixa i *Fora* (T310) a l'exterior, **protegit** ✅.
+- [x] ~~Sé **on va cada sensor** i si el de fora estarà protegit de la pluja.~~ ✅ **Assignació
+      fixada:** *Centre* (T315), *Fons* (T315) i *Gran* (T310) al soterrani, *Dalt* (T315) a la
+      planta baixa i *Fora* (T310) a l'exterior, **protegit** ✅. ⚠️ Això és **on aniran**: ara
+      mateix els cinc són encara **a casa**, junts, fent el calibratge creuat.
       → [inventari.md](inventari.md)
 - [ ] Sé si el portàtil necessita **SAI**.
 - [ ] ⚠️ Sé si el BIOS té ***restore on AC power loss***. Si no el té, la mitigació està
@@ -102,7 +103,8 @@ feina i tu menys.
 
 | # | Tasca | Qui |
 |---|---|---|
-| B.1 | ~~Instal·lar sensors i endoll, i confirmar-ne ubicació i model.~~ ✅ **Fet:** cinc T/HR ubicats i endoll **P110** amb mesura de consum | — |
+| B.0 | 🔴 **La frontera: `scripts/inicia-serie.sh --de-debo`.** Arxiva la base d'experimentació i comença de zero amb una data d'inici escrita. **Es corre un sol cop**, quan els cinc sensors ja siguin a la seva posició definitiva i **abans** que compti cap dels 28 dies | 🤝 Jo l'he escrit, tu l'executes |
+| B.1 | ~~Comprar sensors i endoll, i fixar-ne model i destí.~~ ✅ **Fet:** cinc T/HR comprats i gravant, endoll **P110** amb mesura de consum, i assignació decidida. ⏳ **Queda repartir-los pel local** — avui són a casa | 👤 Tu |
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
@@ -110,6 +112,13 @@ feina i tu menys.
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
 | B.7 | ✅ **Fet** — `tools/replica.py` (276 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
+
+> 🔴 **Per què B.0 va primer.** Els sensors s'han provat a casa gravant amb els noms de debò
+> —`sensor.soterrani_fons_temperatura` damunt d'una taula del menjador—. Aquestes files són a
+> la mateixa base de dades i amb la mateixa etiqueta que les de debò, i davant d'un pèrit això
+> és **contaminació**: trobat per l'altra part, posa en dubte la sèrie sencera. ⚠️ La base
+> d'experimentació **s'arxiva, no s'esborra**: conté el calibratge creuat, que és l'única
+> mesura de la desviació entre sensors i **no es pot repetir** un cop repartits pel local.
 
 > **Per què els ventiladors no s'aturen:** la clàusula QUINTA obliga a mantenir-los operatius.
 > El deure legal i el grup de control coincideixen — es mesura amb el règim actual i el sensor
