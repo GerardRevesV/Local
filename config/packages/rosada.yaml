@@ -15,6 +15,17 @@
 #  PARÀMETRES AJUSTABLES
 #  Es toquen des de la interfície; els valors inicials són els justificats a
 #  control-punt-rosada.md a partir de l'error real dels sensors (±1 °C en ΔTd).
+#
+#  🔴 PENDENT DE PROVA (R2 de docs/domotica/requisits.md, 21/09/2026):
+#     la documentació d'HA diu que amb `initial:` l'helper ARRENCA SEMPRE amb
+#     aquest valor, i que sense `initial:` restaura el que tenia abans de
+#     l'aturada. Si és així, cada reinici esborra l'ajust fet amb les dades de
+#     la Fase B i ningú se n'assabenta. Prova de tres minuts al banc de casa:
+#     posar delta_td_on a 3,0 → reiniciar el contenidor → mirar si hi segueix.
+#     ⚠️ Abans de treure els `initial:` cal saber què val un helper sense estat
+#        previ la primera vegada: si és `unknown`, la decisió cau a
+#        «sense_dades» (fallada segura); si és el mínim, Δ_ON arrencaria a
+#        1,0 °C, que és més agressiu del que volem.
 # ─────────────────────────────────────────────────────────────────────────────
 input_number:
   delta_td_on:

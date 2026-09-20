@@ -20,8 +20,12 @@
 | Noms d'entitat | ✅ Conveni **escrit**. ⏳ Falta **aplicar-lo** en emparellar el hub per Matter: renombrar després parteix la sèrie. ⚠️ El conveni diu «font: integració `tplink`», que ja no val | [noms-entitats.md](noms-entitats.md) |
 | Refer el servidor de zero | ✅ Escrit: ordres, versions i paranys | [runbook-servidor.md](runbook-servidor.md) |
 | Fases i portes de test | ✅ [fases.md](fases.md) | |
+| Filtratge d'espuris, paràmetres per la web i correlació | 🔸 **Requisits oberts**, definits el 21/09/2026: dissenyats, no decidits | [requisits.md](requisits.md) |
 
 ## El que encara no es pot decidir
 
 Vegeu l'apartat final de [decisio-stack.md](decisio-stack.md): cada decisió bloquejada hi té
 la dada concreta que la desbloqueja i una opció per defecte mentrestant.
+
+I [requisits.md](requisits.md) per als requisits que encara no han arribat a ser decisions:
+cadascun hi porta la dada que el desbloqueja i la fase on toca.

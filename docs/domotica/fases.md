@@ -2,6 +2,9 @@
 
 > Basat en [decisio-stack.md](decisio-stack.md). Cada fase té una **porta de sortida
 > verificable**: no es passa a la següent fins que la porta està tancada.
+>
+> Els requisits que encara **no són decisions** —i les tasques que en surten— viuen a
+> [requisits.md](requisits.md).
 
 ## El rellotge
 
@@ -82,6 +85,8 @@ feina i tu menys.
 | A.13 | **24 h amb tots els sensors junts** a la mateixa habitació → *offsets* | 👤 Tu |
 | A.14 | ✅ **Fet** — `scripts/comprova.sh` (180 línies): verifica d'una passada el host, la suspensió, la tapa, Docker, HA i Tailscale. És el que es corre **després de cada canvi al host** i abans de donar una porta per tancada | 🤖 Jo |
 | A.15 | ✅ **Fet** — `tools/valida_yaml.py` (100 línies): valida el YAML **des de casa**, abans de desplegar, sense esperar el `check_config` del contenidor | 🤖 Jo |
+| A.16 | 🔴 **Que els paràmetres sobrevisquin un reinici** ([R2](requisits.md#r2--tocar-els-paràmetres-de-lalgoritme-des-de-la-web)): provar-ho al banc de casa, decidir què es fa amb `initial:` i garantir que els `input_number` **no s'exclouen mai del `recorder`** ni de l'exportació | 🤝 Tu fas la prova de 3 min, jo corregeixo el YAML |
+| A.17 | 🔴 **Gravar la previsió des del primer dia** ([R3](requisits.md#-la-previsió-lúnica-part-que-no-té-arreglada-a-posteriori)): sensors per disparador que materialitzin el Td previst a +3 h, +12 h i +24 h. Una previsió que no es grava **no es pot reconstruir després** | 🤖 Jo |
 
 ### 🚦 Porta A — la més important de totes
 
@@ -93,6 +98,11 @@ feina i tu menys.
 - [ ] He **restaurat** una còpia i he obert la base de dades restaurada.
 - [ ] `desplega.sh` ha **avortat correctament** amb un YAML trencat a posta.
 - [ ] Els noms d'entitat estan fixats i escrits.
+- [ ] 🔴 Un llindar canviat des de la interfície **segueix canviat després de reiniciar HA**, i
+      el seu històric es grava i s'exporta. Si no, al gener no hi haurà manera de dir quin
+      llindar regia el 3 de gener. → [R2](requisits.md#r2--tocar-els-paràmetres-de-lalgoritme-des-de-la-web)
+- [ ] 🔴 La **previsió ja es grava** quan arrenca la sèrie de debò, no després.
+      → [R3](requisits.md#-la-previsió-lúnica-part-que-no-té-arreglada-a-posteriori)
 
 > Aquesta porta és la que no es pot tornar a jugar. Un `purge_keep_days` mal posat descobert
 > al gener són tres mesos de dades crues que no tornen.
@@ -112,6 +122,9 @@ feina i tu menys.
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
 | B.7 | ✅ **Fet** — `tools/replica.py` (276 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
+| B.8 | **Filtratge d'espuris en paral·lel, sense decidir res** ([R1](requisits.md#r1--netejar-les-lectures-espúries-sense-perdre-la-prova)): primer mesurar cadència, soroll base i pendent màxima creïble; després escriure'l. La sèrie crua **no es toca** | 🤖 Jo |
+| B.9 | **Avançar el guió de gràfics del dossier** (era D.1) i fer-hi la **correlació creuada Td soterrani ↔ Td exterior**: és la resposta continuada a *per on entra l'aire* | 🤖 Jo |
+| B.10 | Obrir `diari-de-la-serie.md` i anotar-hi els esdeveniments externs —pluges, visites, un sensor agafat amb la mà— perquè cada pic tingui explicació | 🤝 Tu aportes els fets, jo els munto |
 
 > 🔴 **Per què B.0 va primer.** Els sensors s'han provat a casa gravant amb els noms de debò
 > —`sensor.soterrani_fons_temperatura` damunt d'una taula del menjador—. Aquestes files són a
@@ -132,6 +145,12 @@ feina i tu menys.
 - [ ] Sé **quantes hores hauria ventilat** amb Δ_ON = 2,0 °C, i amb 1,5 i 2,5.
 - [ ] Sé els **litres/dia i els kWh/dia** reals del deshumidificador.
 - [ ] El marge de superfície (paret − Td interior) té 28 dies d'història.
+- [ ] Sé **quantes mostres s'han descartat** per sensor i per dia, i per quin motiu — i el
+      llindar d'alerta de la taxa de descart està fixat amb aquestes dades.
+- [ ] Hi ha **un joc de gràfics fet des dels CSV arxivats** (no captures de la interfície) que
+      correla rosades, potència, decisió i previsió en un mateix eix de temps.
+- [ ] Sé si el **Td del soterrani segueix el de l'exterior**, amb quin retard i quina
+      amortiguació. És la resposta amb dades a la incògnita del camí de l'aire.
 
 > 🎯 **Aquesta porta decideix si la Fase C val la pena.** Si l'automatisme hauria ventilat
 > 40 hores en un mes, l'estalvi no compensa els relés i ens quedem amb la instrumentació,
@@ -169,8 +188,8 @@ feina i tu menys.
 
 | # | Tasca | Qui |
 |---|---|---|
-| D.1 | Gràfics a partir dels CSV arxivats | 🤖 Jo |
-| D.2 | Cronologia anotada (pluges, derrama de façana, incidències) | 🤝 Tu aportes els fets, jo els munto |
+| D.1 | Gràfics a partir dels CSV arxivats — **el guió ja hauria d'estar escrit i rodat des de la B.9**; aquí només es corre sobre la sèrie sencera | 🤖 Jo |
+| D.2 | Cronologia anotada (pluges, derrama de façana, incidències) — surt del `diari-de-la-serie.md` de la B.10 | 🤝 Tu aportes els fets, jo els munto |
 | D.3 | Informe amb la conclusió sobre l'origen de les humitats | 🤝 Jo redacto, tu decideixes què se'n fa |
 | D.4 | Decidir si es dedueix de la retenció i amb quines factures | 👤 Tu |
 
