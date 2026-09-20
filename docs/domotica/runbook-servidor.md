@@ -244,5 +244,8 @@ L'ordre importa, perquè el que no es pot recuperar és l'històric:
 4. `docker compose up -d` i `check_config`.
 5. Comprova que `purge_keep_days` segueix sent **730** *a la instància en calent*, no al fitxer.
 
-> La pèrdua màxima acceptada per disseny és de **24 hores**, perquè el corpus probatori real
-> són els CSV diaris segellats de `Local-data`, no la base de dades.
+> La pèrdua màxima és de **24 hores**, perquè la instantània és nocturna.
+>
+> ⚠️ Fins al 21/09/2026 això es donava per acceptable perquè el corpus real eren els CSV
+> diaris segellats de `Local-data`, no la base de dades. **Amb el canvi d'objectiu ja no n'hi
+> ha:** la base de dades és l'única còpia de l'històric, i el que es perd es perd de debò.

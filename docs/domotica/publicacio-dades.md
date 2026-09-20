@@ -4,6 +4,9 @@
 >
 > **Canvis:** **no hi haurà panell web propi** ni allotjament a R2/Cloudflare Access (incompleix «gratuït» i fica un tercer que desxifra TLS sobre dades amb valor legal). Les dades van a un repositori privat `Local-data` amb un commit nocturn, i es consulten amb els dashboards natius d'HA per Tailscale. El que segueix vigent: el raonament sobre el patró de fitxers de git, ISO 8601 amb zona horària, i els forats explícits.
 > Aquest document es conserva pel raonament, no com a guia vigent.
+>
+> 🟢 **21/09/2026 — canvi d'objectiu:** queden superats, a més, el repositori `Local-data`, i «no hi haurà panell web» es reobre. Allà on aquest
+> document digui el contrari, mana [decisio-stack.md](decisio-stack.md).
 
 > **Estat: proposta.** Respon a dues preguntes lligades: si cal `git push`, i com de fàcil
 > serà que el panell web llegeixi les dades.

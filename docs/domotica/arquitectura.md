@@ -9,12 +9,12 @@
 | Stack de contenidors | ⚠️ **Dos** des del 21/09/2026: `homeassistant` + `matter-server`. Es volia un de sol; el segon el va imposar el xifratge del hub | [decisio-stack.md](decisio-stack.md) |
 | Base de dades de l'històric | ✅ Decidit: **SQLite**, `purge_keep_days: 730` | [decisio-stack.md](decisio-stack.md) |
 | Lògica de control | ✅ Decidit: **HA natiu**, un únic sensor de decisió | [decisio-stack.md](decisio-stack.md) · [control-punt-rosada.md](control-punt-rosada.md) |
-| Exportació i arxiu | ✅ Decidit: **`nit.py`** en Python stdlib, commit nocturn amb segell | [decisio-stack.md](decisio-stack.md) |
-| Allotjament de dades | ✅ Decidit: **`Local-data` privat a GitHub** | [decisio-stack.md](decisio-stack.md) |
-| Panell web | ✅ Decidit: **no n'hi ha.** Dashboards natius per Tailscale | [decisio-stack.md](decisio-stack.md) |
+| Exportació i arxiu | ⚠️ **Canviat el 21/09/2026:** `nit.py` es manté per a la còpia nocturna; el **commit nocturn amb segell cau** amb el canvi d'objectiu | [decisio-stack.md](decisio-stack.md) |
+| Allotjament de dades | ❌ **Superat el 21/09/2026:** ni `Local-data` ni cap repositori a part | [decisio-stack.md](decisio-stack.md) |
+| Panell web | 🔄 **Reobert el 21/09/2026.** Primer taulers natius d'HA; si no hi arriben, panell propi servit per HA des de `config/www/` | [decisio-stack.md](decisio-stack.md) |
 | Accés remot | ✅ Decidit: **Tailscale**, única via | [acces-remot.md](acces-remot.md) |
 | Desplegament | ✅ Decidit: **`desplega.sh`** a mà per SSH | [desplegament.md](desplegament.md) |
-| Còpies i supervisió | ✅ Decidit: disc USB + tarball xifrat setmanal + 2 checks | [decisio-stack.md](decisio-stack.md) |
+| Còpies i supervisió | ✅ Decidit: disc USB + tarball xifrat setmanal **fora del local** + 2 checks. ⚠️ El tarball anava a `Local-data`: **destí per decidir** des del 21/09/2026. L'històric, només al disc USB | [decisio-stack.md](decisio-stack.md) |
 | Ràdio | ✅ **868 MHz sub-GHz**, hub **Tapo H110** + sensors T310/T315. ⚠️ La via cap al hub és **Matter**, no `tplink`: el hub xifra amb TPAP i `python-kasa` el rebutja. *ZHA i l'SLZB-06 van quedar superats pel maquinari ja comprat.* | [inventari.md](inventari.md) · [decisio-stack.md](decisio-stack.md) |
 | Maquinari | ✅ **Comprat i actiu**, no proposat: hub, endoll amb mesura, 5 sensors T/HR, sensor d'inundació i 2 relés. ⏳ Els relés, sense instal·lar fins a la Fase C | [inventari.md](inventari.md) |
 | Noms d'entitat | ✅ Conveni **escrit**. ⏳ Falta **aplicar-lo** en emparellar el hub per Matter: renombrar després parteix la sèrie. ⚠️ El conveni diu «font: integració `tplink`», que ja no val | [noms-entitats.md](noms-entitats.md) |

@@ -4,6 +4,9 @@
 >
 > **Canvis:** la base de dades final és **SQLite**, no PostgreSQL — l'arxiu CSV diari immutable substitueix el motor com a dipòsit de la prova. **Grafana queda fora del pla** (no ajornat). El ritual mensual CSV+SHA-256 el substitueix un **commit nocturn amb segell RFC 3161**. El que segueix plenament vigent: `purge_keep_days: 730`, els `history_stats` i `utility_meter` per a la ventilació, i els noms d'entitat definitius des del dia 1.
 > Aquest document es conserva pel raonament, no com a guia vigent.
+>
+> 🟢 **21/09/2026 — canvi d'objectiu:** queden superats, a més, el CSV diari immutable i el segell RFC 3161. Allà on aquest
+> document digui el contrari, mana [decisio-stack.md](decisio-stack.md).
 
 > **Estat: proposta, no decidida.**
 

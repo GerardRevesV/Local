@@ -12,6 +12,11 @@ Avui és **20 de setembre de 2026**. La retenció venç cap al **9 de març de 2
 **5,5 mesos i un sol hivern**. Això no dona marge per experimentar a mitja carrera, i per
 això el pla és **muntar-ho aviat i congelar-ho**.
 
+> 🟢 **21/09/2026 — canvi d'objectiu** ([decisio-stack.md](decisio-stack.md)): el
+> ~09/03/2027 **deixa de governar cada decisió**. Segueix sent rellevant —l'hivern és quan es
+> juga la disjuntiva ventilar/deshumidificar—, però una setmana de retard ja no és una pèrdua
+> irreparable, i **«congelar-ho» ja no forma part del pla**. La Fase D queda ajornada.
+
 | Fase | Què és | Quan |
 |---|---|---|
 | **0** | Física i decisions irreversibles | Ara |
@@ -73,7 +78,7 @@ feina i tu menys.
 | A.1 | Instal·lar Linux Mint, Docker, Tailscale al portàtil del local | 👤 Tu |
 | A.2 | Host: sense suspensió, *restore on AC power loss*, `Europe/Madrid`+NTP, `systemd-time-wait-sync`, rotació de logs, reserves DHCP | 🤝 Jo escric el guió, tu l'executes |
 | A.3 | **Tailscale amb l'expiració de clau desactivada** | 👤 Tu (és al seu web) |
-| A.4 | Crear `Local-data` privat + clau de desplegament SSH | 👤 Tu |
+| A.4 | ~~Crear `Local-data` privat + clau de desplegament SSH~~ — ✅ **sense objecte** des del 21/09/2026 | 👤 Tu |
 | A.5 | `.gitattributes` amb `* text=auto eol=lf` | 🤖 Jo |
 | A.6 | `docker-compose.yml` amb versió d'HA fixada | 🤖 Jo |
 | A.7 | `recorder` amb `purge_keep_days: 730`, `commit_interval`, `exclude` per llistes | 🤖 Jo |
@@ -92,7 +97,9 @@ feina i tu menys.
 
 - [ ] `purge_keep_days: 730` està **al fitxer desplegat**, verificat mirant la configuració en
       calent, no el repositori.
-- [ ] `nit.py` ha fet **tres nits seguides** de commit correcte a `Local-data`.
+- [ ] `nit.py` ha fet **tres nits seguides** de còpia correcta al disc USB. *(Deia «de commit
+      correcte a `Local-data`»: superat el 21/09/2026. El que es prova —que la còpia nocturna
+      no falla— es manté.)*
 - [ ] Els **dos checks** de healthchecks.io han passat a verd i he provat que **es posen
       vermells** desconnectant el portàtil a posta.
 - [ ] He **restaurat** una còpia i he obert la base de dades restaurada.
@@ -171,7 +178,7 @@ feina i tu menys.
 | C.4 | Selector de mode amb caducitat i override físic | 🤖 Jo |
 | C.5 | Anti-cicle curt **també configurat al dispositiu**, no només a HA | 🤝 Jo indico, tu configures |
 | C.6 | Comportament d'arrencada de cada endoll: deshumidificador ON, ventiladors OFF | 👤 Tu |
-| C.7 | **Congelació total de versions fins al 10/03/2027** | 🤖 Jo |
+| C.7 | ~~Congelació total de versions fins al 10/03/2027~~ — ✅ **sense objecte** des del 21/09/2026. Les versions segueixen fixades i s'actualitzen només a posta | 🤖 Jo |
 
 ### 🚦 Porta C
 
@@ -185,6 +192,10 @@ feina i tu menys.
 ---
 
 ## Fase D — Dossier (gener–febrer 2027)
+
+> ⏸️ **Ajornada el 21/09/2026**, amb la via documental: «amb la porta oberta», i no s'hi
+> inverteix temps ara → [decisio-stack.md](decisio-stack.md). Les dades crues es continuen
+> gravant amb `purge_keep_days: 730` precisament perquè aquesta fase es pugui reprendre.
 
 | # | Tasca | Qui |
 |---|---|---|

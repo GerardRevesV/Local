@@ -26,6 +26,11 @@ recorder:
 
   # 730 dies = dos hiverns. La retenció de les humitats venç el ~09/03/2027 i
   # el que hi hagi gravat fins llavors és el corpus probatori.
+  #
+  # ⚠️ 21/09/2026: la via documental queda ajornada, però AQUEST VALOR ES MANTÉ
+  #    EXPRESSAMENT (decisio-stack.md): és l'única cosa irreversible. Si algun
+  #    dia es reprèn, caldran les dades d'aquest hivern, i aquest hivern passa
+  #    un sol cop. Que ara no hi hagi plet NO és cap motiu per baixar-lo.
   purge_keep_days: 730
   auto_purge: true
   # (`purge_interval` era obsolet a 2026.9.3 i HA l'avisava a cada arrencada:

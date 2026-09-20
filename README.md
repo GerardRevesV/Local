@@ -19,7 +19,7 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
 | [`scripts/`](scripts/) | Guions per al host del local: preparar-lo, comprovar-lo i [tancar l'experimentació](scripts/inicia-serie.sh) quan comença la sèrie que val com a prova |
 | [`tools/`](tools/) | Eines que corren a casa: rèplica offline de la lògica i validació del YAML |
 
-## Estat actual (20 de setembre de 2026)
+## Estat actual (21 de setembre de 2026)
 
 - **Local:** comprat. Escriptura signada el 9 de setembre de 2026. Possessió lliurada.
 - **Tema obert:** humitats al soterrani. Hi ha una **retenció de 3.000 € amb data límit
@@ -30,9 +30,12 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
   haurà al local— abans de portar-ho tot allà.
   → [home-assistant.md](docs/domotica/home-assistant.md) · [runbook-servidor.md](docs/domotica/runbook-servidor.md)
   L'objectiu és **governar els ventiladors cap a l'exterior pel punt de rosada per estalviar
-  deshumidificador, i monitoritzar-ho tot**. L'arquitectura ja **està decidida**: Home
-  Assistant sobre SQLite, lògica en YAML natiu, exportació nocturna en Python a un repositori
-  privat, i Tailscale com a única via d'accés. Sense panell web propi. ⚠️ **Des del 21/09/2026
+  deshumidificador, i monitoritzar-ho tot**. ⚠️ **Des del 21/09/2026 és l'objectiu principal**:
+  documentar les humitats per a la retenció queda **ajornat, amb la porta oberta**, i per això
+  queden superats el repositori privat d'arxiu, el segell de temps i la congelació de
+  versions. L'arquitectura és: Home Assistant sobre SQLite, lògica en YAML natiu, còpia
+  nocturna en Python al disc USB del local, i Tailscale com a única via d'accés. De panell,
+  primer els taulers natius d'HA. ⚠️ **Des del 21/09/2026
   l'stack són dos contenidors i no un:** el hub Tapo xifra amb TPAP i la integració `tplink`
   el rebutja, així que la via és **Matter**, que demana el seu propi servidor.
   → [decisio-stack.md](docs/domotica/decisio-stack.md) · [fases.md](docs/domotica/fases.md)
