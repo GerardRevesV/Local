@@ -1,0 +1,25 @@
+# Dades identificatives (adreça, cadastre, registre, parts, preus) — MAI al repositori
+docs/privat/
+
+# Documents originals (dades personals) — no han d'entrar al repositori
+*.pdf
+*.docx
+*.xlsx
+*.zip
+
+# Secrets de Home Assistant
+secrets.yaml
+.env
+*.key
+*.pem
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
