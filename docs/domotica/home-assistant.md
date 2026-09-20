@@ -173,15 +173,13 @@ La línia que decidia era la darrera: `mmcblk0` hauria estat eMMC soldada; `nvme
 
 **Sí, i amb marge.** La raó no és que el portàtil sigui potent —no ho és— sinó que
 [l'stack decidit](decisio-stack.md) és deliberadament petit: SQLite, sense Postgres, sense
-Grafana i sense panell web. ⚠️ **Des del 21/09/2026 són dos contenidors i no un** —hi entra
-`matter-server`, perquè `tplink` rebutja el hub—, i això menja una part del marge de RAM que
-hi havia. El veredicte es manté, però la xifra de sota **s'ha de tornar a mirar amb Matter en
-marxa**: és una mesura pendent, no una estimació que ja tinguem.
+Grafana i sense panell web. Des del 21/09/2026 són **dos** contenidors —hi entra
+`matter-server`—, i això ja **no** és una estimació: s'ha mesurat amb els dos en marxa.
 
 | Recurs | El que hi ha | El que demana l'stack decidit | Veredicte |
 |---|---|---|---|
-| **CPU** | Celeron **N5100, 4 nuclis**, 6 W | HA amb ~40 entitats + `matter-server` + un script de Python de pocs minuts cada nit | ✅ **Sobra** |
-| **RAM** | 4 GB (3,6 útils) | HA Container en repòs: 400–700 MB. Mint amb Xfce: ~700 MB. **`matter-server`: per mesurar** | 🟡 **Suficient sobre el paper** — *perquè* no hi ha Postgres, ni InfluxDB, ni Grafana— però amb menys marge del que deia el 20/09 |
+| **CPU** | Celeron **N5100, 4 nuclis**, 6 W | HA amb ~40 entitats + `matter-server` + un script de Python de pocs minuts cada nit | ✅ **Sobra** — càrrega mesurada: **0,07** de mitjana |
+| **RAM** | **3.716 MB** útils | **Mesurat el 21/09/2026:** HA **436 MB** (pic **609**) + `matter-server` **88 MB** (pic **89**) = **~700 MB de pic entre els dos** | ✅ **Sobra** — són el **19 %**. El segon contenidor de Matter costa **89 MB**: no és el problema que semblava |
 | **Disc** | **SSD NVMe de 128 GB** | Mint + Docker ≈ 20 GB. SQLite a 730 dies amb ~40 entitats ≈ **2–4 GB** | ✅ **De sobres**, i amb escriptura ràpida |
 | **Xarxa** | Wi-Fi 6 **+ RJ-45 gigabit** | Hub Tapo per IP local + Tailscale | ✅ I el **cable** evita que el servidor depengui del Wi-Fi |
 | **Alimentació** | 45 W màx.; en repòs amb la pantalla apagada, **8–12 W** | 24/7 | ✅ ≈ 7 kWh/mes → **menys d'1 €/mes** amb la [tarifa contractada](../local/subministraments.md) |
@@ -201,9 +199,44 @@ la tapa. Queda com a bona pràctica mantenir `vm.swappiness` baix, però ja no �
 
 **2. La memòria està soldada.** No hi ha camí d'ampliació: si un dia s'hi volgués afegir
 Postgres, InfluxDB i Grafana, la decisió no seria «instal·lar-ho» sinó «canviar de màquina».
-És un argument més a favor de mantenir l'stack petit, no una limitació nova. ⚠️ I el 21/09 ha
-deixat de ser teòric: el segon contenidor de Matter **no era opcional**, i és el recordatori
-que cada peça que entra en aquesta màquina ja no en surt fàcilment.
+És un argument més a favor de mantenir l'stack petit, no una limitació nova.
+
+### 🔬 La RAM, mesurada — i la sorpresa no és Matter
+
+> Mesurat per SSH contra la màquina en marxa el **21/09/2026, 01:06**, amb 3 h 25 min
+> d'*uptime* i els dos contenidors actius.
+
+Quan va entrar el segon contenidor semblava raonable témer pel marge de memòria. **No és
+aquí.** El repartiment real dels 3.716 MB:
+
+| Qui | RAM | % |
+|---|---|---|
+| 🦊 **Firefox** — 14 processos, obert a l'escriptori del servidor | **1.576 MB** | **42 %** |
+| 🖥️ **Escriptori Cinnamon** (`cinnamon` + `Xorg` + `lightdm`) | **374 MB** | 10 % |
+| 🏠 Home Assistant | 436 MB *(pic 609)* | 12 % |
+| 🔗 `matter-server` | **88 MB** *(pic 89)* | **2 %** |
+
+**La feina de debò —els dos contenidors— són ~700 MB de pic: el 19 %.** El que ocupa la
+meitat de la màquina és **un navegador i un escriptori gràfic**, que no tenen cap paper a
+l'stack decidit.
+
+- ✅ **Matter no és el problema.** 89 MB de pic, i pràcticament sense variació. La reserva que
+  s'havia obert en afegir el segon contenidor **queda tancada**.
+- ⚠️ **Però la màquina arrenca a `graphical.target`.** Amb `multi-user.target` —s'administra
+  per SSH i Tailscale, la pantalla no fa res— s'alliberen els **374 MB** de l'escriptori i
+  desapareix el risc que algú hi torni a deixar un navegador obert.
+- 📌 **Firefox, tancat.** No és una fuita ni un error de disseny: és una sessió que algú va
+  deixar oberta. Però en una màquina de 3,6 GB que ha de gravar sense interrupció durant un
+  hivern, 1,5 GB en un navegador és exactament el tipus de cosa que **ningú recorda el dia que
+  peta**.
+- 🟢 **Ara mateix no hi ha pressió.** El PSI de memòria marca `0.00` a 10 s, 60 s i 300 s, i
+  queden **1.473 MB disponibles**. Els 667 MB al *swap* són `vm.swappiness=60` —el valor per
+  defecte d'escriptori— fent la seva feina, no un senyal d'ofec.
+
+> ⚠️ **Amb una reserva honesta:** els 89 MB del `matter-server` s'han mesurat **abans** de
+> tenir la xarxa Matter poblada. Creixerà en emparellar el hub i els sis sensors. L'estat per
+> aparell de Matter és petit i no canvia el veredicte, però **la xifra s'ha de tornar a mirar
+> després d'emparellar**, no donar-la per bona.
 
 ### El que aquest portàtil NO ha de fer
 
@@ -390,4 +423,6 @@ Aquí s'anirà anotant què s'ha fet realment, amb data.
 | 20/09/2026 | 🐛 **Error trobat a la primera arrencada:** `history_stats` estava escrit com a clau de primer nivell a `packages/rosada.yaml`. HA fusiona els paquets per domini, i això **feia caure el paquet sencer** —tota la lògica del punt de rosada— en silenci. Va sota `sensor:` amb `platform: history_stats`. Corregit |
 | 20/09/2026 | `purge_interval` tret: obsolet a la 2026.9.3. `check_config` queda **net** |
 | 20/09/2026 | **Tailscale connectat**, connexió directa entre els dos nodes i **expiració de clau desactivada**. L'accés al servidor ja no depèn de compartir xarxa |
+| 21/09/2026 | **`matter-server` en marxa** com a segon contenidor, fixat per digest. `tplink` rebutja el hub H110 pel xifratge TPAP (`python-kasa#1590`), i Matter és la via local |
+| 21/09/2026 | **RAM mesurada per SSH amb els dos contenidors actius:** HA 436 MB (pic 609), `matter-server` 88 MB (pic 89) — **19 %** dels 3.716 MB. Sense pressió (PSI `0.00`). La sorpresa: **Firefox 1.576 MB i l'escriptori Cinnamon 374 MB**, que no pinten res en un servidor. Queda obert passar a `multi-user.target` |
 | 20/09/2026 | **Prova de reinici superada.** Després d'un reinici complet tornen sols `ssh`, `docker`, `tailscaled` i **Home Assistant** (HTTP 200 al cap de ~36 s), i Tailscale es reconnecta sense intervenció. Bluetooth desactivat, suspensió emmascarada, `unattended-upgrades` només seguretat amb Docker exclòs i passada a les 04:30. Això verifica la meitat de **programari** de l'arrencada desatesa; la de **maquinari** (BIOS, *AC power loss*) segueix oberta |
