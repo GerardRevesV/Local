@@ -169,6 +169,8 @@ Després, al navegador: **http://LA-IP:8123** → crear el compte.
 **Serveis actius a l'arrencada:** `ssh`, `docker`, `tailscaled`.
 **Emmascarats a posta:** `sleep.target`, `suspend.target`, `hibernate.target`.
 **Apagat a posta:** `bluetooth`.
+**Ajustat a posta:** `vm.swappiness=10` (`/etc/sysctl.d/99-memoria.conf`, el posa `prepara-host.sh`).
+**Amb sostre de memòria:** `homeassistant` 1.536 MB i `matter-server` 512 MB, al `docker-compose.yml`.
 
 **Tot el que es versiona viu a `~/Local`**, que és aquest repositori. El servidor **només
 llegeix**: s'edita a casa, es puja a GitHub i el local fa `git pull`. Mai s'edita allà.

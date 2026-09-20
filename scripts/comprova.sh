@@ -97,6 +97,72 @@ dies=$(docker compose exec -T homeassistant \
 db=config/home-assistant_v2.db
 [ -f "$db" ] && ok "base de dades: $(du -h "$db" | cut -f1)" || avis "encara no hi ha base de dades"
 
+# ─────────────────────────────────────────────── el sostre de memòria ───────
+t "El sostre de memòria — 4 GB soldats, sense camí d'ampliació"
+
+# Sostres esperats, en MB. Han de quadrar amb docker-compose.yml: si algú
+# desplega un compose sense sostre, aquí ha de sonar l'alarma i no passar
+# desapercebut. Un contenidor sense sostre pot endur-se la màquina sencera.
+for par in "homeassistant:1536" "matter-server:512"; do
+  c="${par%%:*}"; esperat="${par##*:}"
+  if ! docker inspect "$c" >/dev/null 2>&1; then
+    mal "$c: el contenidor no existeix"
+    continue
+  fi
+  lim=$(docker inspect -f '{{.HostConfig.Memory}}' "$c" 2>/dev/null || echo 0)
+  lim_mb=$(( ${lim:-0} / 1024 / 1024 ))
+  if [ "$lim_mb" -eq 0 ]; then
+    mal "$c SENSE sostre de memòria — una fuita s'enduria tota la màquina"
+  elif [ "$lim_mb" -ne "$esperat" ]; then
+    avis "$c: sostre $lim_mb MB, i el compose en diu $esperat — algú no ha recreat el contenidor"
+  else
+    ok "$c: sostre $lim_mb MB"
+  fi
+
+  # ⚠️ «.State.OOMKilled» NO és prou. Amb «restart: unless-stopped» el
+  # contenidor es torna a aixecar tot sol, i en aixecar-se l'estat es
+  # renova: un OOM de matinada pot tenir OOMKilled=false a les nou del
+  # matí. És útil si el trobes aturat; no serveix com a registre. El rastre
+  # que dura és el del kernel, aquí sota.
+  if [ "$(docker inspect -f '{{.State.OOMKilled}}' "$c" 2>/dev/null)" = true ]; then
+    mal "$c: l'última aturada va ser per MEMÒRIA — hi ha un forat a l'històric"
+  fi
+  rc=$(docker inspect -f '{{.RestartCount}}' "$c" 2>/dev/null)
+  [ "${rc:-0}" -gt 0 ] 2>/dev/null \
+    && avis "$c: $rc reinicis des que es va crear el contenidor" \
+    || true
+done
+
+# El registre que sobreviu al reinici. El journal té sostre de 200 MB
+# (prepara-host.sh), o sigui que 7 dies hi caben de llarg.
+if journalctl -k -n 1 >/dev/null 2>&1; then
+  oom=$(journalctl -k --since "-7 days" 2>/dev/null \
+          | grep -ciE 'oom-kill:|Out of memory: Killed process' || true)
+  [ "${oom:-0}" -eq 0 ] \
+    && ok "cap mort per memòria al kernel en 7 dies" \
+    || mal "$oom mort(s) per memòria al kernel en 7 dies — mira'n l'hora i cerca el forat"
+else
+  avis "no puc llegir el journal del kernel — cal ser del grup «adm» o «systemd-journal»"
+fi
+
+sw=$(cat /proc/sys/vm/swappiness 2>/dev/null || echo "?")
+[ "$sw" = 10 ] && ok "vm.swappiness=10" \
+               || avis "vm.swappiness=$sw — s'espera 10 (vegeu prepara-host.sh)"
+free -m | awk '/^Mem:/{
+  if ($7 < 400) printf "  \033[33m⚠\033[0m RAM: només %s MB disponibles de %s MB\n",$7,$2;
+  else          printf "  \033[32m✓\033[0m RAM: %s MB disponibles de %s MB\n",$7,$2 }'
+
+# PSI: el senyal honest de si la màquina PATEIX per memòria, per sobre del que
+# digui «free». «avg60» per sobre de zero ja vol dir esperes reals.
+if [ -r /proc/pressure/memory ]; then
+  psi=$(awk '/^some/{for(i=1;i<=NF;i++){if($i ~ /^avg60=/){sub(/avg60=/,"",$i); print $i}}}' \
+          /proc/pressure/memory 2>/dev/null | head -1)
+  case "${psi:-0}" in
+    0.00|0|"") ok "sense pressió de memòria (PSI avg60 = ${psi:-0})" ;;
+    *)         avis "PRESSIÓ de memòria: PSI avg60 = $psi" ;;
+  esac
+fi
+
 # ───────────────────────────────────────────────────────────── entitats ─────
 t "Les entitats que la lògica necessita"
 TOK=~/.ha_token
