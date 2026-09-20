@@ -146,8 +146,10 @@ Ha de sortir només `Testing configuration at /config`. Qualsevol altra línia �
 
 Després, al navegador: **http://LA-IP:8123** → crear el compte.
 
-> ⚠️ **No afegeixis la integració `tplink` fins que el hub H110 no estigui al Wi-Fi
-> definitiu.** La integració guarda la IP del hub; si canvia de xarxa, s'ha de refer.
+> ⚠️ **No emparellis el hub fins que no estigui al Wi-Fi definitiu.** L'emparellament queda
+> lligat a la xarxa; si canvia, s'ha de refer. I **no per `tplink`**: el H110 el rebutja pel
+> xifratge TPAP —vegeu [decisio-stack.md](decisio-stack.md)—, la via és **Matter** amb el
+> contenidor `matter-server`.
 
 ---
 
