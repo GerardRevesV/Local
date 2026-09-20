@@ -238,6 +238,115 @@ l'stack decidit.
 > aparell de Matter és petit i no canvia el veredicte, però **la xifra s'ha de tornar a mirar
 > després d'emparellar**, no donar-la per bona.
 
+### 🧱 El sostre de memòria — perquè una fuita no s'endugui la màquina
+
+Que avui sobri RAM no vol dir que en sobri sempre. El 21/09/2026 els dos contenidors corrien
+**sense cap sostre** —`docker inspect` retornava `mem_limit=0` per tots dos—, i això vol dir
+que una fuita de memòria a Home Assistant, o al `matter-server`, no s'atura enlloc: creix fins
+que el kernel comença a matar processos **de tota la màquina**, triats per ell i no per
+nosaltres. Amb els 4 GB **soldats** d'aquest portàtil no hi ha camí d'ampliació: el marge es
+defensa posant-hi sostre, no comprant memòria.
+
+I el que hi ha en joc no és la comoditat. És que l'històric **no tingui forats fins al març de
+2027**. Un forat no és una molèstia: és pèrdua de valor probatori.
+
+| Servei | Pic mesurat | `mem_limit` | `mem_reservation` | Marge sobre el pic |
+|---|---|---|---|---|
+| `homeassistant` | 609 MB | **1.536 MB** | 512 MB | 2,5× |
+| `matter-server` | 89 MB | **512 MB** | 128 MB | 5,7× |
+| | | **2.048 MB sumats** | | **de 3.716 MB** |
+
+**La propietat que importa no és cap dels dos números per separat: és la suma.** Encara que
+els dos contenidors toquessin sostre alhora, a l'amfitrió li quedarien **~1.660 MB**. Dit
+d'una altra manera: el kernel no ha de triar mai entre matar Home Assistant i matar-se ell.
+Un contenidor mort i reiniciat costa un forat d'un minut; un amfitrió mort costa el forat que
+trigui algú a arribar al local.
+
+Els sostres són **generosos a posta**. No hi són per estrènyer el consum —no hi ha cap
+problema de consum— sinó per posar un terra sota el pitjor cas. El `mem_reservation`, en
+canvi, va **just per sobre del règim normal**: és el que el kernel intenta respectar quan
+l'amfitrió va just, i marca qui ha de cedir primer.
+
+#### El que NO s'hi ha posat, i per què
+
+- **`memswap_limit`** — sense declarar-lo, Docker deixa el contenidor arribar a **2× el
+  sostre** comptant l'intercanvi. Això és el que volem: un pic puntual s'aguanta al swap en
+  comptes de morir, i la RAM de l'amfitrió **ja queda protegida pel `mem_limit` tot sol**, que
+  és l'objectiu de tot plegat. Matar HA per un pic de trenta segons seria pagar un forat a
+  l'històric a canvi de res.
+- **`oom_kill_disable`** — mai. En comptes de matar el contenidor el **congela**: HA deixaria
+  de gravar sense arribar a sortir, i per tant `restart: unless-stopped` no el rescataria. És
+  exactament el mode de fallada silenciosa que aquest projecte no es pot permetre.
+
+### Quan el sostre es toca
+
+La seqüència, quan un contenidor arriba al seu `mem_limit`:
+
+1. El kernel mata el procés més gros **de dins del cgroup del contenidor**. La resta de la
+   màquina no se n'assabenta: aquest és tot el propòsit del sostre.
+2. Si el mort és el procés principal, el contenidor **surt amb codi 137**.
+3. `restart: unless-stopped` el torna a aixecar tot sol. HA torna a respondre en ~30 s, que és
+   el que va trigar a la primera arrencada.
+4. A l'històric hi queda **un forat de la durada de l'aturada**.
+
+El pas 4 és el que fa que això no pugui quedar sense rastre.
+
+#### 🪤 El parany: `OOMKilled` s'esborra sol
+
+La temptació és comprovar-ho amb `docker inspect -f '{{.State.OOMKilled}}'`. **No n'hi ha
+prou.** Amb `restart: unless-stopped` el contenidor es torna a aixecar sol, i en aixecar-se
+l'estat es renova: un OOM de matinada pot marcar `false` a les nou del matí. Serveix si el
+trobes aturat; **no serveix com a registre**.
+
+El rastre que dura és el del **kernel**, i el journal el guarda —amb sostre de 200 MB, o sigui
+setmanes:
+
+```bash
+journalctl -k --since "-7 days" | grep -iE 'oom-kill:|Out of memory: Killed process'
+```
+
+#### On ha de quedar escrit
+
+| On | Qui ho escriu | Cada quan | Estat |
+|---|---|---|---|
+| **`scripts/comprova.sh`** | el mateix guió | quan el llances | ✅ **Fet.** Verifica que tots dos sostres hi siguin i **quadrin amb el `docker-compose.yml`**, i llegeix el journal del kernel dels últims 7 dies |
+| **Cos del ping de `bategada`** | `bategada.sh` | cada 30 min | ⏳ El guió **encara no existeix** (fase A.11). Quan s'escrigui, el cos ha de portar-hi el recompte d'OOM i els reinicis dels dos contenidors |
+| **Arxiu diari a `Local-data`** | `nit.py` | cada nit | ⏳ `nit.py` **encara no existeix**. És l'únic dels tres que dona un registre **permanent i datat** |
+
+⚠️ **Aquí hi havia un error de plantejament que val la pena deixar escrit.** El lloc natural
+semblava el **`desplegaments.log`**, però aquell fitxer és un **registre de desplegaments**:
+l'escriu `desplega.sh` (pas 9) i només corre quan despleguem. Un OOM a les 04:00 no és un
+desplegament i **no hi cauria mai**. Per això el registre permanent va a l'**arxiu nocturn**,
+que sí que corre cada dia passi el que passi, i el `desplegaments.log` es queda amb la feina
+que li toca: explicar els forats que **provoquem nosaltres** desplegant.
+
+Els tres tenen papers diferents i cap no substitueix els altres: `comprova.sh` és el
+diagnòstic **quan vas a mirar**, el ping és l'avís **que et fa anar a mirar**, i l'arxiu
+nocturn és el que d'aquí a un any **encara hi serà**.
+
+### 🔽 `vm.swappiness`: de 60 a 10
+
+El valor de fàbrica, **60**, és un valor d'escriptori: assumeix que hi ha algú davant la
+pantalla i que canviar de finestra pot esperar una mica de disc. Aquí no hi ha ningú davant la
+pantalla —i si tot va bé, aviat no hi haurà ni pantalla—; hi ha un `recorder` escrivint a
+SQLite cada pocs segons durant dos anys.
+
+Es pot baixar perquè **la reserva que ho impedia ja va caure**: el 20/09/2026 el disc va
+resultar ser un **SSD NVMe** i no una eMMC soldada. Amb eMMC, tocar l'intercanvi era gastar
+cicles d'escriptura d'un disc no substituïble; amb NVMe, no.
+
+Queda a **10**, aplicat per `scripts/prepara-host.sh` a `/etc/sysctl.d/99-memoria.conf`, de
+manera que un servidor refet de zero el torna a tenir sense que ningú se'n recordi.
+
+⚠️ **Dos matisos, que és el que sol fallar:**
+
+- **No és treure l'intercanvi.** Els 4 GB de swap segueixen sent la xarxa de seguretat sota els
+  sostres del `docker-compose.yml`. Amb `swappiness=10` el kernel hi recorre **menys**, no
+  deixa de recórrer-hi.
+- **No buida el que ja hi ha a dins.** Els 667 MB que hi havia el 21/09 no es mouran sols:
+  `swappiness` és la política d'ara endavant. Es netegen amb un **reinici** —no amb
+  `swapoff -a`, que exigeix encabir-ho tot a la RAM i aquí val més no jugar-hi.
+
 ### El que aquest portàtil NO ha de fer
 
 | Cosa | Per què no |
@@ -425,4 +534,6 @@ Aquí s'anirà anotant què s'ha fet realment, amb data.
 | 20/09/2026 | **Tailscale connectat**, connexió directa entre els dos nodes i **expiració de clau desactivada**. L'accés al servidor ja no depèn de compartir xarxa |
 | 21/09/2026 | **`matter-server` en marxa** com a segon contenidor, fixat per digest. `tplink` rebutja el hub H110 pel xifratge TPAP (`python-kasa#1590`), i Matter és la via local |
 | 21/09/2026 | **RAM mesurada per SSH amb els dos contenidors actius:** HA 436 MB (pic 609), `matter-server` 88 MB (pic 89) — **19 %** dels 3.716 MB. Sense pressió (PSI `0.00`). La sorpresa: **Firefox 1.576 MB i l'escriptori Cinnamon 374 MB**, que no pinten res en un servidor. Queda obert passar a `multi-user.target` |
+| 21/09/2026 | **Sostre de memòria posat als dos contenidors** (`mem_limit` 1.536 MB i 512 MB, `mem_reservation` 512 MB i 128 MB): corrien amb `mem_limit=0`, i una fuita s'hauria endut la màquina sencera. La suma dels sostres deixa **~1.660 MB** a l'amfitrió encara que tots dos toquin sostre alhora. `comprova.sh` ara verifica que hi siguin i que quadrin amb el compose |
+| 21/09/2026 | **`vm.swappiness` baixat de 60 a 10** a `prepara-host.sh` (`/etc/sysctl.d/99-memoria.conf`). Es pot fer perquè el disc és un **NVMe** i no una eMMC. ⚠️ No buida el que ja hi ha a l'intercanvi: això demana un reinici |
 | 20/09/2026 | **Prova de reinici superada.** Després d'un reinici complet tornen sols `ssh`, `docker`, `tailscaled` i **Home Assistant** (HTTP 200 al cap de ~36 s), i Tailscale es reconnecta sense intervenció. Bluetooth desactivat, suspensió emmascarada, `unattended-upgrades` només seguretat amb Docker exclòs i passada a les 04:30. Això verifica la meitat de **programari** de l'arrencada desatesa; la de **maquinari** (BIOS, *AC power loss*) segueix oberta |
