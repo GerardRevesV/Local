@@ -44,3 +44,8 @@ config/.ha_run.lock
 config/.cache/
 config/blueprints/
 config/image/
+
+# Dades del servidor Matter: hi ha les CLAUS dels aparells emparellats.
+# No es versiona (són secrets), però SÍ que ha d'entrar a la còpia de
+# seguretat: perdre-ho obliga a reemparellar, i reemparellar parteix les sèries.
+matter-data/

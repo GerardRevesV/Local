@@ -1,5 +1,21 @@
-# Home Assistant — el únic contenidor de l'stack.
+# L'stack del local: Home Assistant i el servidor Matter.
 # Decisió: docs/domotica/decisio-stack.md · Fase A.6 de docs/domotica/fases.md
+#
+# ⚠️ AQUÍ HI HA DOS CONTENIDORS, I DECISIO-STACK.MD EN DEIA UN.
+#    El motiu no és una preferència, és que el camí previst es va tancar:
+#    el hub Tapo H110 fa servir el xifratge TPAP, i la biblioteca que porta
+#    Home Assistant (python-kasa 0.10.2) només coneix KLAP, AES i XOR. La
+#    integració «tplink» rebutja el hub amb «Unsupported device», i és un
+#    problema obert d'upstream (python-kasa#1590), no una configuració nostra.
+#
+#    Les tres sortides eren: esperar upstream (sense data, i el calendari
+#    acaba el març), un component de tercers per HACS (que decisio-stack.md
+#    rebutja expressament dins la finestra probatòria), o Matter.
+#
+#    Matter costa aquest segon contenidor, i a canvi l'accés al hub passa a
+#    ser **completament local**: sense el núvol de Tapo, sense credencials
+#    de compte i sense res que caduqui. Per al valor probatori és millor que
+#    el pla original.
 #
 # ⚠️ LA VERSIÓ ES FIXA I ES CONGELA FINS AL 10/03/2027.
 #    Res de «:latest» i res d'actualitzacions automàtiques: una actualització
@@ -16,8 +32,8 @@ services:
     image: ghcr.io/home-assistant/home-assistant:2026.9.3
     restart: unless-stopped
 
-    # Cal xarxa del host perquè la integració «tplink» descobreixi el hub
-    # H100 per difusió a la xarxa local. Amb xarxa pròpia de Docker no el veu.
+    # Cal xarxa del host per al descobriment a la xarxa local (mDNS i difusió).
+    # Amb xarxa pròpia de Docker, HA no veu ni el hub ni el servidor Matter.
     network_mode: host
 
     environment:
@@ -30,6 +46,46 @@ services:
     # Sense «privileged» i sense /dev: no hi ha cap ràdio USB.
     # Els sensors parlen amb el hub Tapo, i el hub parla per IP.
     # Si algun dia entra un coordinador USB, aquesta decisió es reobre.
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  #  SERVIDOR MATTER — la via local cap al hub H110
+  #
+  #  Home Assistant no parla Matter tot sol: necessita aquest servei a part,
+  #  que és qui manté la xarxa Matter i les claus dels aparells emparellats.
+  # ───────────────────────────────────────────────────────────────────────────
+  matter-server:
+    container_name: matter-server
+    # Fixada per DIGEST el 21/09/2026, no per etiqueta: la imatge no publica
+    # cap etiqueta de versió i «stable» es mou sota els peus. Un digest és
+    # immutable per construcció. NO es toca fins al 10/03/2027.
+    image: ghcr.io/home-assistant-libs/python-matter-server@sha256:170aa093ce91c76cde4cc390918307590f0f5558fcec93f913af3cb019e6562a
+    restart: unless-stopped
+
+    # Matter fa servir IPv6 i multidifusió a la xarxa local: sense xarxa del
+    # host no pot ni descobrir ni emparellar res.
+    network_mode: host
+
+    # Requisit documentat del projecte: sense això, el dimoni no pot fer
+    # algunes operacions de xarxa sota AppArmor.
+    security_opt:
+      - apparmor=unconfined
+
+    volumes:
+      # ⚠️ Aquí hi viuen les CLAUS dels aparells emparellats. Perdre-ho
+      #    obliga a reemparellar, i reemparellar parteix les sèries.
+      #    Ha d'entrar a la còpia de seguretat igual que config/.storage.
+      - ./matter-data:/data
+      - /etc/localtime:/etc/localtime:ro
+
+    # Sense /run/dbus a posta: només caldria per emparellar per Bluetooth, i
+    # aquí no cal —el hub ja és a la xarxa— i a més el Bluetooth del portàtil
+    # està desactivat expressament (vegeu scripts/prepara-host.sh).
 
     logging:
       driver: json-file
