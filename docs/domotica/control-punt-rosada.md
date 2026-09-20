@@ -21,11 +21,11 @@ Cas típic de Barcelona a l'agost:
 | | T | HR | Punt de rosada | Vapor (g/kg) |
 |---|---|---|---|---|
 | Soterrani | 20 °C | 75 % | **15,4 °C** | ~11,0 |
-| Exterior | 30 °C | 65 % | **22,6 °C** | ~17,4 |
+| Exterior | 30 °C | 65 % | **22,7 °C** | ~17,4 |
 
 L'exterior *sembla* més sec (65 % < 75 %) i en realitat porta **un 60 % més d'aigua**. Si
 ventiles, aquell aire entra, es refreda fins a 20 °C, la seva HR puja a ~90 %, i qualsevol
-paret per sota de 22,6 °C —totes, en un soterrani— **condensa**. És l'error clàssic que
+paret per sota de 22,7 °C —totes, en un soterrani— **condensa**. És l'error clàssic que
 empitjora els soterranis a l'estiu.
 
 **Per què el punt de rosada i no la humitat absoluta:** els g/m³ **no** són conservatius

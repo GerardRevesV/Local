@@ -51,8 +51,8 @@ ambiental; si el soterrani va pel seu compte, l'origen és del soterrani.
 **Lectura de referència (20/09/2026, 16:25):** Centre 22,4 °C / 66 % · Dalt 23,5 °C / 61 % ·
 Fons 23,5 °C / 62 % · Fora 23,9 °C / 68 % · Gran 22,7 °C / 64 %.
 
-> Amb aquestes lectures, el punt de rosada interior ronda els **15–16 °C** i l'exterior els
-> **17,5 °C**: ara mateix **ventilar afegiria aigua**. És exactament el cas que l'automatisme
+> Amb aquestes lectures, el punt de rosada interior de referència és **15,80 °C** (el punt
+> *Fons*, el més humit dels tres) i l'exterior **17,64 °C** — ΔTd = **−1,83 °C**: ara mateix **ventilar afegiria aigua**. És exactament el cas que l'automatisme
 > ha d'evitar, i es veu ja al primer cop d'ull.
 
 ### Servidor de Home Assistant
