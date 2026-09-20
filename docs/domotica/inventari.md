@@ -113,18 +113,74 @@ dependre de la gravetat. **El desguàs continu no és opcional: és obligatori.*
 
 ---
 
-## ⚠️ El que cal verificar, per ordre d'importància
+## Del manual oficial (`UM_Dehumidifier_D_825_PA_SMART`)
 
-### 1. 🟠 Temperatura mínima de funcionament
+Baixat de `assets.pvg.eu`. Això resol gairebé totes les preguntes obertes.
 
-La fitxa de producte només diu «Interval de funcionament: 35 °C», que sembla el **màxim**. El
-mínim no hi consta. Els deshumidificadors per compressor típics treballen de **5 a 35 °C** i
-perden molt rendiment per sota de ~15 °C.
+| Qüestió | Resposta del manual |
+|---|---|
+| **Rang de funcionament** | **Mínim 5 °C / 35 % HR · Màxim 35 °C / 90 % HR** |
+| **Descongelació automàtica** | ✅ Sí. En ambients freds es glaça i entra sol en mode desgebratge, amb l'indicador **P1** |
+| **Protecció del compressor** | ✅ **5 minuts** entre aturada i nova arrencada, **implementada a l'aparell** |
+| **Altura màxima de bombeig** | **4 metres** |
+| **Dipòsit ple** | Indicador + **10 xiulets** + aturada automàtica (codi **P2**). En buidar-lo, el compressor torna al cap de 5 min |
+| **Manteniment** | Missatge a la pantalla a les **360 hores** de funcionament |
+| **Indicador lluminós d'HR** | Vermell ≥ 80 % · Groc 56–78 % · Blau ≤ 54 % |
+| **Codis d'error** | **C1/C2/C8** = termistor o sensor obert/curtcircuitat, o **fuita de refrigerant** → servei tècnic. **P1** = desgebrant. **P2** = dipòsit ple |
+| Altres funcions | Bloqueig per a nens, assecat interior, temporitzador 0–9 h |
 
-**Cal mirar-ho al manual** (132 pàgines, l'has de tenir amb l'aparell). Si el soterrani baixa
-de 15 °C al gener, el rendiment real caurà molt per sota dels 25 L/dia de catàleg.
+### 🎉 La protecció del compressor ja és a l'aparell
 
-### 2. 🟡 Calibratge creuat
+El manual ho diu: **«el compresor dispone de un periodo de cinco minutos entre el inicio del
+funcionamiento y el apagado»**. És una segona capa de seguretat per sota de la nostra.
+
+> ⚠️ **Però no ens estalvia la nostra.** Aquesta protecció viu al microcontrolador de
+> l'aparell i necessita que **l'aparell tingui corrent** per comptar. Si Home Assistant li
+> talla l'alimentació, el comptador probablement es perd. **El temps mínim d'aturada de 5
+> minuts s'ha d'implementar igualment a la lògica.**
+
+### 🔴 Una contradicció al manual que cal provar
+
+El manual diu dues coses que no encaixen:
+
+> **MEMÒRIA:** *«El aparato memorizará la última configuración cuando esté conectado a la toma
+> de corriente […] El aparato funcionará con la **configuración predeterminada** cuando se
+> haya **desconectado** de la toma de corriente.»*
+>
+> **REINICI AUTOMÀTIC:** *«El aparato se encenderá automáticamente y funcionará según la
+> **última configuración** cuando vuelva la corriente.»*
+
+Un tall de llum i un endoll intel·ligent que obre el circuit **són elèctricament
+indistingibles**: l'aparell no pot saber la diferència. Però si el comportament real fos el
+primer —tornar a la configuració de fàbrica— **cada cop que Home Assistant l'apagués i el
+tornés a encendre perdria el llindar d'humitat configurat**, i tota l'arquitectura (a) se'n
+va en orris en silenci.
+
+**🧪 Prova concreta, cinc minuts:**
+
+1. Posa l'higròstat a un valor inconfusible, per exemple **45 %**.
+2. Desendolla'l de la paret. Espera un minut.
+3. Torna'l a endollar.
+4. **Mira si torna a 45 % o si torna a la configuració per defecte.**
+
+> Si torna a 45 %, endavant amb el disseny previst. Si torna a la de fàbrica, haurem de
+> **deixar-lo permanentment alimentat** i governar-lo d'una altra manera — segurament sí que
+> caldria la integració Tuya després de tot. **És la prova amb més impacte per minut invertit
+> de tot el projecte.**
+
+### 🟠 Rendiment a l'hivern
+
+Funciona fins als **5 °C**, o sigui que no s'aturarà. Però amb desgebratge automàtic: per sota
+d'uns 15 °C passarà una part del temps descongelant-se en comptes d'assecar, i els 25 L/dia de
+catàleg (mesurats a 30 °C / 80 % HR) no s'hi assemblaran gens.
+
+**Conseqüència per a la Fase B:** cal registrar **litres/dia i kWh/dia junt amb la temperatura
+del soterrani**. El rendiment real a 12 °C és una dada que no tenim i que canvia el càlcul
+d'estalvi.
+
+## ⚠️ El que encara cal verificar
+
+### 1. 🟡 Calibratge creuat
 
 Tens **models barrejats** (3× T315 i 2× T310). Això fa el pas de calibratge **més important**,
 no menys: l'error sistemàtic entre models diferents no es cancel·la sol.

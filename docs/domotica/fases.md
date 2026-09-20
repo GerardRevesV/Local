@@ -27,7 +27,8 @@ invalidar.
 | # | Tasca | Qui |
 |---|---|---|
 | 0.1 | **Prova de fum del camí de l'aire de reposició** amb els extractors en marxa | 👤 Tu |
-| 0.2 | ~~El deshumidificador arrenca sol?~~ ✅ **Resolt: sí.** Queda mirar la **temperatura mínima de funcionament** al manual | 👤 Tu |
+| 0.2 | ~~Deshumidificador: arrenca sol? temperatura mínima?~~ ✅ **Resolt pel manual:** sí, i 5–35 °C | — |
+| 0.2b | 🔴 **PROVA: desendollar-lo i tornar-lo a endollar** amb l'higròstat a 45 %. Recorda el llindar o torna a la configuració de fàbrica? | 👤 Tu |
 | 0.3 | **Paret més freda i humida** amb termòmetre IR de mà | 👤 Tu |
 | 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. Queda dir-me **on és cada sensor** i si «Fora» és realment a l'exterior | 👤 Tu |
 | 0.5 | **Salut del portàtil:** SMART del disc, capacitat de bateria, pila CMOS, si té Ethernet | 🤝 Tu executes, jo interpreto |
@@ -37,7 +38,8 @@ invalidar.
 ### 🚦 Porta 0
 
 - [ ] Sé **per on entra l'aire de reposició**.
-- [x] ~~Sé si el deshumidificador es reprèn sol.~~ ✅ Sí.
+- [x] ~~Sé si el deshumidificador es reprèn sol.~~ ✅ Sí, i funciona de 5 a 35 °C.
+- [ ] 🔴 Sé si **recorda el llindar d'humitat** després d'un cicle d'alimentació. Si no el recorda, l'arquitectura del deshumidificador canvia.
 - [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. **L'stack és 1 contenidor.**
 - [ ] Sé **quin model és l'endoll** (P110/P115 mesuren consum; P100/P105 no).
 - [ ] Sé **on és cada sensor** i si el de fora està protegit de la pluja.
