@@ -17,6 +17,7 @@
 #   6. Bluetooth fora      → HA hi insisteix i omple el log d'excepcions
 #   7. unattended-upgrades → només seguretat, mai Docker, a les 04:30
 #   8. Tailscale           → l'única via d'entrar-hi quan marxis del local
+#   9. vm.swappiness=10    → el disc és NVMe i la RAM és poca: val més no moure-la
 #
 # El que NO fa, i queda per a tu:
 #   · Desactivar l'expiració de la clau de Tailscale, que es fa al seu web (A.3).
@@ -208,6 +209,35 @@ fi
 avis "PENDENT I IMPORTANT: entra a login.tailscale.com → Machines → local-ha"
 avis "i desactiva-li l'expiració de la clau (Disable key expiry). Si no, caduca"
 avis "sola d'aquí a uns mesos i et quedes sense accés al local."
+
+# ────────────────────────────────────── 9. Memòria: menys intercanvi ────────
+log "Baixar vm.swappiness de 60 a 10"
+# 60 és el valor per defecte d'escriptori: assumeix que canviar de finestra
+# pot esperar. Aquí no hi ha ningú davant la pantalla; hi ha un «recorder»
+# escrivint a SQLite cada pocs segons durant dos anys, i el que interessa és
+# que el conjunt de treball es quedi a la RAM.
+#
+# Es pot fer perquè el disc va resultar ser un SSD NVMe i no una eMMC: la
+# reserva que hi havia contra tocar l'intercanvi va caure el 20/09/2026.
+#
+# ⚠️ NO és treure l'intercanvi. Els 4 GB de swap segueixen sent la xarxa de
+#    seguretat sota els sostres del docker-compose.yml: amb «swappiness=10»
+#    el kernel hi recorre menys, no deixa de recórrer-hi.
+sudo mkdir -p /etc/sysctl.d
+sudo tee /etc/sysctl.d/99-memoria.conf >/dev/null <<'CONF'
+# Servidor sense escriptori, RAM soldada de 4 GB, disc SSD NVMe.
+vm.swappiness=10
+CONF
+sudo sysctl --system >/dev/null 2>&1 || sudo sysctl -p /etc/sysctl.d/99-memoria.conf >/dev/null
+ok "vm.swappiness = $(cat /proc/sys/vm/swappiness)"
+# ⚠️ Això canvia la POLÍTICA d'ara endavant; NO buida el que ja hi ha a
+#    l'intercanvi. El que hi hagués abans hi seguirà fins que algú el toqui.
+#    Si vols la foto neta, cal un reinici (o «swapoff -a && swapon -a», que
+#    necessita prou RAM lliure per encabir-ho tot i aquí val més no jugar-hi).
+usat=$(awk '/^SwapTotal/{t=$2} /^SwapFree/{f=$2} END{print int((t-f)/1024)}' /proc/meminfo)
+if [ "${usat:-0}" -gt 0 ] 2>/dev/null; then
+  avis "hi ha $usat MB ja a l'intercanvi: no es mouran fins a un reinici"
+fi
 
 # ───────────────────────────────────────────────────────── Diagnòstic ────────
 log "Com ha quedat la màquina"

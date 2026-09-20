@@ -217,6 +217,29 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       **Mesurat el 21/09/2026:** sí, i de llarg. HA 436 MB (pic 609) + `matter-server` 88 MB
       (pic 89) = **19 %** de 3.716 MB, sense pressió de memòria. *(Tornar-ho a mirar després
       d'emparellar el hub: s'ha mesurat amb la xarxa Matter buida.)*
+- [x] ~~⚠️ **Posar sostre de memòria als contenidors.**~~ ✅ **21/09/2026:** corrien tots dos
+      amb `mem_limit=0`, o sigui que una fuita s'enduia l'amfitrió i, amb ell, l'històric.
+      Posats `mem_limit` **1.536 MB** (HA) i **512 MB** (`matter-server`) amb `mem_reservation`
+      de 512 i 128. Sumen 2.048 dels 3.716: encara que tots dos toquin sostre alhora, a
+      l'amfitrió li queden **~1.660 MB**. `comprova.sh` ho verifica.
+      → [home-assistant.md](domotica/home-assistant.md#-el-sostre-de-memòria--perquè-una-fuita-no-sendugui-la-màquina)
+- [x] ~~**Decidir `vm.swappiness`.**~~ ✅ **21/09/2026: baixat de 60 a 10**, aplicat per
+      `prepara-host.sh` a `/etc/sysctl.d/99-memoria.conf`. Es pot perquè el disc és NVMe.
+- [ ] 🔁 **Desplegar els sostres al local i comprovar-los.** Els sostres són al repositori,
+      **no a la màquina**: `mem_limit` només s'aplica **recreant el contenidor**
+      (`docker compose up -d`, no un `restart`). Fins llavors `comprova.sh` els marcarà en
+      vermell — que és exactament el que ha de fer.
+- [ ] 🔁 **Reiniciar la màquina perquè el `swappiness` nou tingui efecte real.** El valor ja
+      hi serà, però els **667 MB que ja eren a l'intercanvi** el 21/09 no es mouen sols. Es pot
+      ajuntar amb el desplegament dels sostres i amb el pas a `multi-user.target`.
+- [ ] 📝 **Que un OOM deixi rastre permanent.** ⚠️ **No al `desplegaments.log`:** aquell fitxer
+      l'escriu `desplega.sh` i només quan despleguem; un OOM a les 04:00 no hi cauria mai. Va a
+      l'**arxiu nocturn de `nit.py`** (que corre cada dia) i, com a avís, al **cos del ping de
+      `bategada`**. Cap dels dos guions no existeix encara — quan s'escriguin, han de portar-hi
+      el recompte d'OOM del kernel i els reinicis dels dos contenidors.
+- [ ] 🔁 **Revisar els sostres després d'emparellar el hub.** Els 512 MB del `matter-server`
+      es van triar sobre un pic mesurat amb la **xarxa Matter buida**. El marge és de 5,7× i
+      hauria de sobrar, però és una xifra per confirmar, no per donar per bona.
 - [ ] 🖥️ **Passar el servidor a `multi-user.target`** (sense entorn gràfic). S'administra per
       SSH i Tailscale, i l'escriptori Cinnamon costa **374 MB** que no fan res. De pas
       s'acaba el risc que hi quedi un navegador obert: el 21/09 hi havia **Firefox amb

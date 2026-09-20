@@ -32,6 +32,39 @@ services:
     image: ghcr.io/home-assistant/home-assistant:2026.9.3
     restart: unless-stopped
 
+    # ── Sostre de memòria ───────────────────────────────────────────────────
+    # Mesurat el 21/09/2026: 436 MB en règim, **pic 609 MB**.
+    #
+    # El sostre NO hi és per estrènyer, hi és perquè una fuita d'HA no pugui
+    # endur-se la màquina sencera —i amb ella el matter-server i l'històric.
+    # Amb 4 GB soldats no hi ha camí d'ampliació: el marge es defensa aquí.
+    #
+    #   1.536 + 512 = 2.048 MB de sostre sumat, de 3.716 MB de RAM.
+    #
+    # Encara que els DOS contenidors toquessin sostre alhora, a l'amfitrió li
+    # quedarien ~1.660 MB. Aquesta és la propietat que importa: el kernel mai
+    # no ha de triar entre matar Home Assistant i matar-se ell.
+    #
+    # 1.536 MB són 2,5× el pic mesurat. Hi cap el creixement previsible —la
+    # xarxa Matter poblada i dos anys de «recorder»— amb marge de sobres.
+    #
+    # ⚠️ NO hi posem «memswap_limit» A POSTA. Sense ell, Docker deixa el
+    #    contenidor arribar a 2× el sostre comptant l'intercanvi, i per tant
+    #    un pic puntual s'aguanta al swap en comptes de morir. La RAM de
+    #    l'amfitrió ja queda protegida pel «mem_limit» tot sol, que és
+    #    l'objectiu; matar HA per un pic de 30 segons seria pagar un forat a
+    #    l'històric per res.
+    #
+    # ⚠️ I MAI «oom_kill_disable». Congela el contenidor en comptes de matar-lo:
+    #    HA deixaria de gravar sense sortir, i «restart» no el rescataria.
+    #
+    # Quan el toqui: el kernel mata el procés dins del cgroup, el contenidor
+    # surt amb codi 137 i «restart: unless-stopped» el torna a aixecar. Què
+    # n'ha de quedar escrit → docs/domotica/home-assistant.md, «Quan el sostre
+    # es toca». Verificació: scripts/comprova.sh.
+    mem_limit: 1536m
+    mem_reservation: 512m
+
     # Cal xarxa del host per al descobriment a la xarxa local (mDNS i difusió).
     # Amb xarxa pròpia de Docker, HA no veu ni el hub ni el servidor Matter.
     network_mode: host
@@ -66,6 +99,20 @@ services:
     # immutable per construcció. NO es toca fins al 10/03/2027.
     image: ghcr.io/home-assistant-libs/python-matter-server@sha256:170aa093ce91c76cde4cc390918307590f0f5558fcec93f913af3cb019e6562a
     restart: unless-stopped
+
+    # ── Sostre de memòria ───────────────────────────────────────────────────
+    # Mesurat el 21/09/2026: 88 MB en règim, pic 89 MB —pràcticament pla.
+    #
+    # ⚠️ Però mesurat amb la XARXA MATTER BUIDA: el hub encara no està
+    #    emparellat. Els 512 MB (5,7× el pic) són justament per no haver de
+    #    tornar a tocar aquest fitxer quan hi entrin el hub i els sis sensors.
+    #    La xifra de consum, en canvi, SÍ que s'ha de tornar a mesurar
+    #    després d'emparellar.
+    #
+    # Té sostre propi perquè és un procés a part amb la seva pròpia xarxa
+    # Matter: si algun dia fuita, ha de caure ell sol i no arrossegar HA.
+    mem_limit: 512m
+    mem_reservation: 128m
 
     # Matter fa servir IPv6 i multidifusió a la xarxa local: sense xarxa del
     # host no pot ni descobrir ni emparellar res.
