@@ -28,12 +28,15 @@ sistemes de ventilació i de cada split. És el primer que necessita el projecte
 
 | Servei | Estat |
 |---|---|
-| Electricitat | El venedor tenia previst **tallar el subministrament**. **Cal verificar l'estat del contracte i donar-lo d'alta a nom de la propietat** si cal. |
+| Electricitat | ✅ **Contractada: Naturgy Tarifa Noche** (discriminació horària en 3 trams) |
+| Internet | ✅ Decidit: **router amb targeta SIM** |
 | Aigua | Sense dades |
-| Internet / fibra | Sense dades — **imprescindible** per al projecte de domòtica |
 
-> ⚠️ **Prioritari:** sense llum els sistemes de ventilació no funcionen, i la clàusula de
-> l'escriptura fa recaure sobre la part compradora la condensació causada per manca de
+→ Franges horàries, preus i conseqüències per al codi a
+[subministraments.md](subministraments.md).
+
+> **Per què importa la llum:** sense subministrament els sistemes de ventilació no funcionen,
+> i la clàusula QUINTA fa recaure sobre la part compradora la condensació causada per manca de
 > ventilació posterior al lliurament de la possessió. Mantenir la ventilació operativa i
 > **poder demostrar-ho** és la primera línia de defensa.
 

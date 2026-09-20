@@ -6,9 +6,8 @@ Llista única de coses obertes. **Actualitzar-la cada cop que entri informació 
 
 - [ ] **Determinar l'origen de les humitats abans del ~9 de març de 2027** (venciment de la
       retenció de 3.000 €). → [humitats.md](local/humitats.md)
-- [ ] **Verificar l'estat del subministrament elèctric** del local i donar-lo d'alta si cal.
-      Sense llum no hi ha ventilació, i la clàusula QUINTA ho fa recaure sobre el comprador.
-      → [installacions.md](local/installacions.md)
+- [x] ~~Verificar l'estat del subministrament elèctric.~~ ✅ **Contractada Naturgy Tarifa
+      Noche.** → [subministraments.md](local/subministraments.md)
 
 ## Privacitat del repositori
 
@@ -44,7 +43,9 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 - [ ] **Inventariar** els 2 sistemes de ventilació forçada i els splits: marca, model,
       ubicació, forma de control. → [inventari.md](domotica/inventari.md)
-- [ ] Comprovar l'estat de l'**aigua** i si hi ha o es pot tenir **Internet** al local.
+- [ ] Comprovar l'estat de l'**aigua**.
+- [ ] **Contractar la SIM de dades:** operadora, pla i límit mensual; model de router (cal
+      Ethernet per al coordinador Zigbee) i cobertura al local.
 
 ## Domòtica
 
@@ -69,8 +70,11 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 - [ ] Muntar el **ritual mensual** d'exportació CSV + SHA-256 fora del local.
 - [ ] Valorar un **sensor de temperatura superficial de paret** (DS18B20 via ESPHome) a cada
       punt humit: és l'únic que discrimina directament condensació de capil·laritat.
-- [ ] **Decidir el mètode d'accés remot.** Hi ha proposta: Tailscale + Nabu Casa.
+- [ ] **Decidir el mètode d'accés remot.** Proposta actualitzada: **Tailscale** per
+      administrar + **GitHub/Pages** per publicar dades i fer còpia externa.
       → [acces-remot.md](domotica/acces-remot.md)
+- [ ] Crear un **repositori separat i privat només per a les dades**, amb un *fine-grained
+      token* limitat.
 - [ ] Muntar un **avís de caiguda** (Healthchecks.io / UptimeRobot) i una **còpia de
       l'històric fora del local**. Sense això l'accés remot no serveix de res.
 - [ ] Valorar un **endoll intel·ligent de rearmada** per al portàtil i el router,
@@ -78,8 +82,25 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 - [ ] **Consultar amb un professional el valor probatori** d'un històric autogenerat: pot
       caldre exportació segellada temporalment o un enregistrador independent. Això
       condiciona tota l'estratègia de les humitats.
-- [ ] **Verificar si l'operadora del local dona IP pública** o hi ha CGNAT — condiciona l'accés remot.
-- [ ] **Decidir el protocol dels sensors** (Zigbee, Wi-Fi, ESPHome) i comprovar la cobertura
-      de ràdio al soterrani.
+- [x] ~~Verificar si hi ha IP pública o CGNAT.~~ Internet per **SIM** → CGNAT quasi segur:
+      port forwarding i WireGuard directe queden descartats.
+- [ ] **Decidir el protocol dels sensors.** Proposta: Zigbee amb **coordinador en xarxa
+      col·locat al soterrani** (SLZB-06). → [control-punt-rosada.md](domotica/control-punt-rosada.md)
+- [ ] **Prova de cobertura de ràdio** al soterrani, 48 h, abans de comprar res.
 - [ ] **Definir exactament quines dades es registren** (l'usuari ho ha ajornat conscientment).
 - [ ] Inventariar el **deshumidificador**: marca, model, consum nominal, com s'engega.
+
+## Verificacions físiques al local (abans de gastar diners)
+
+- [ ] ⚠️ **El deshumidificador arrenca sol després d'un tall de corrent?** Si no, tot el
+      control per endoll intel·ligent és inútil.
+- [ ] ⚠️ **Per on entra l'aire de reposició** quan els extractors funcionen? (Prova de fum.)
+      Si entra per fissures en contacte amb el terreny, **el ventilador pot estar empitjorant
+      les humitats** i el projecte canvia de naturalesa.
+- [ ] Els ventiladors estan **endollats o cablejats**? Hi ha interruptor de paret?
+- [ ] Placa del deshumidificador: potència, L/dia, temperatura mínima, desguàs per tub.
+- [ ] Quina és la **paret més freda i humida** (termòmetre IR de mà) → allà va el sensor de
+      temperatura superficial.
+- [ ] Rang de temperatura del soterrani a l'hivern (per sota de 15 °C un deshumidificador per
+      compressor rendeix malament).
+- [ ] Horaris de soroll admissibles per als veïns.

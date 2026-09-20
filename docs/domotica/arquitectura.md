@@ -26,23 +26,17 @@
 
 **Pregunta:** on viu la lògica del punt de rosada?
 
-Opcions sobre la taula: automatitzacions natives de Home Assistant amb plantilles Jinja,
-**Node-RED**, **AppDaemon**, **pyscript**, o un servei propi en Python que parli amb HA per
-API.
-
-Criteris que importen:
-- Poder canviar llindars **sense tocar codi** (helpers `input_number` / `input_boolean`).
-- Poder **forçar** un aparell a mà sense que l'automatisme hi lluiti.
-- Depurabilitat: veure per què una decisió s'ha pres.
-- Robustesa: què passa si el component que porta la lògica cau.
+→ **Hi ha proposta: [control-punt-rosada.md](control-punt-rosada.md).** Recomanació:
+**automatitzacions natives de Home Assistant**, traient les matemàtiques cap a sensors de
+plantilla. pyscript com a següent graó si la lògica creix.
 
 | Decisió | Estat |
 |---|---|
-| Llenguatge i entorn de la lògica de control | **Obert** |
-| Patró de llindars ajustables | **Obert** |
-| Patró de mode manual / forçat | **Obert** |
-| Fórmula i implementació del punt de rosada | **Obert** |
-| Histèresi i proteccions del relé | **Obert** |
+| Llenguatge i entorn de la lògica de control | **Proposat: HA natiu** → [control-punt-rosada.md](control-punt-rosada.md) |
+| Patró de llindars ajustables | **Proposat: helpers `input_number`** |
+| Patró de mode manual / forçat | **Proposat: `input_select` + `timer` que caduca** |
+| Fórmula del punt de rosada | **Proposat: Magnus (Alduchov & Eskridge)** |
+| Histèresi i proteccions del relé | **Proposat: Δ_ON 2,0 °C / Δ_OFF 0,8 °C** |
 
 ## 2. Monitorització i visualització
 
@@ -72,16 +66,19 @@ com a segon camí independent. Port forwarding descartat.
 | Decisió | Estat |
 |---|---|
 | Mètode d'accés remot | **Proposat** → [acces-remot.md](acces-remot.md) |
-| Si l'operadora del local dona IP pública o hi ha CGNAT | **Per verificar** |
+| Si l'operadora del local dona IP pública o hi ha CGNAT | **Resolt de fet: Internet per SIM → CGNAT quasi segur** |
 | Interfície al mòbil (app d'HA vs navegador) | **Obert** |
+| Publicació de dades i còpia externa per GitHub | **Proposat** → [acces-remot.md](acces-remot.md) |
 
 ## Maquinari encara per decidir
 
+→ **Hi ha proposta: [control-punt-rosada.md](control-punt-rosada.md), apartat D.**
+Pressupost del nucli funcional: **~220–240 €**.
+
 | Decisió | Estat |
 |---|---|
-| Protocol dels sensors (Zigbee, Z-Wave, Wi-Fi, ESPHome/ESP32) | **Obert** |
-| Sensors de T i HR: quants i on | **Obert** |
-| Sensor exterior | **Obert** |
-| Endoll o relé amb **mesura de consum** per al deshumidificador | **Obert** |
-| Commutació dels dos ventiladors cap a l'exterior | **Obert** |
-| Cobertura de ràdio al soterrani | **Per verificar** |
+| Protocol dels sensors | **Proposat: Zigbee amb coordinador en xarxa al soterrani** |
+| Sensors de T i HR: quants i on | **Proposat: 3 interiors + 1 exterior, mateix model i lot** |
+| Endoll amb mesura per al deshumidificador | **Proposat: Shelly Plug S Gen3** |
+| Commutació dels ventiladors | **Proposat: relé darrere l'interruptor, mode *detached*** |
+| Cobertura de ràdio al soterrani | **Per verificar amb una prova de 48 h** |
