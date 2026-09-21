@@ -100,6 +100,7 @@ config/                Configuració de Home Assistant (es desplega al local)
   packages/rosada.yaml La física: punts de rosada, ΔTd, HR màxima, marge, calibratge
   packages/control.yaml  La decisió v2 —UN sol punt d'avaluació—, paràmetres i modes
   packages/consum.yaml W, kWh i euros de l'endoll, amb els trams de la factura
+  packages/deshumidificador.yaml  Estat real pels watts, hores, filtre i avisos
   custom_templates/tarifa.jinja  El calendari de trams i els preus — l'ÚNIC lloc
   custom_templates/decisio.jinja La lògica v2, en una macro que només crida la decisió
 docker-compose.yml     Els DOS contenidors: HA (versió fixada) i matter-server
@@ -116,6 +117,7 @@ tools/                 Eines que corren a casa, no al local (Python stdlib)
   calibratge.py        Calcula els desplaçaments de calibratge des de l'històric
   tarifa.py            El calendari de trams per segona vegada: tests i festius
   prova_deshumidificador.py  Ordre per tuya-local → watts al P110M, de punta a punta
+  analisi.py           L'històric: dipòsits, ventilació, rebot, dispersió, cost, marge
 ```
 
 ## Dades personals — regla dura

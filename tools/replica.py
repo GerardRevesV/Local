@@ -797,16 +797,22 @@ def reprodueix(files: list[dict], parametres_hist: dict[str, list[tuple[datetime
     return comprovades, diferents, exemples
 
 
+def historic(hores: float, entitats, *opcions: str) -> list:
+    """/api/history de les últimes «hores». ⚠️ Amb el final explícit: sense
+    «end_time», HA en torna només 24 h des de l'inici, calli el que calli
+    (trobat el 22/09/2026). El primer punt de cada sèrie és l'estat vigent a
+    l'inici, o sigui que un paràmetre que no ha canviat també hi surt."""
+    ara = datetime.now(timezone.utc)
+    des = urllib.parse.quote((ara - timedelta(hours=hores)).strftime("%Y-%m-%dT%H:%M:%S+00:00"))
+    fins = urllib.parse.quote(ara.strftime("%Y-%m-%dT%H:%M:%S+00:00"))
+    return json.loads(_crida(f"/api/history/period/{des}?end_time={fins}"
+                             f"&filter_entity_id={','.join(entitats)}"
+                             + "".join(f"&{o}" for o in opcions), temps=300))
+
+
 def deriva(hores: float) -> int:
-    des = (datetime.now(timezone.utc) - timedelta(hours=hores)).strftime("%Y-%m-%dT%H:%M:%S")
-    base = f"/api/history/period/{urllib.parse.quote(des)}"
-    decisio = json.loads(_crida(f"{base}?filter_entity_id=sensor.decisio_del_soterrani"
-                                "&significant_changes_only=0"))
-    # Els paràmetres des d'una setmana abans: cal el valor vigent a l'inici.
-    des_p = (datetime.now(timezone.utc) - timedelta(hours=hores + 24 * 7)).strftime("%Y-%m-%dT%H:%M:%S")
-    ents = ",".join(f"input_number.{k}" for k in PARAMETRES_DE_PARTIDA)
-    cru = json.loads(_crida(f"/api/history/period/{urllib.parse.quote(des_p)}"
-                            f"?filter_entity_id={ents}&minimal_response"))
+    decisio = historic(hores, ["sensor.decisio_del_soterrani"], "significant_changes_only=0")
+    cru = historic(hores, [f"input_number.{k}" for k in PARAMETRES_DE_PARTIDA], "minimal_response")
     params: dict[str, list[tuple[datetime, str]]] = {}
     for serie in cru:
         if serie and serie[0].get("entity_id"):
