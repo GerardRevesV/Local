@@ -103,6 +103,9 @@ docker-compose.yml     Els DOS contenidors: HA (versió fixada) i matter-server
 scripts/               Guions per al host del local (bash)
   prepara-host.sh      Deixa el portàtil llest: SSH, NTP, cap suspensió, Docker
   comprova.sh          Verifica d'una passada que tot segueix com ha de ser
+                       (amb --breu, és el cos del ping de la bategada)
+  bategada.sh          L'avís de caiguda: ping a healthchecks.io cada 30 min, per
+                       cron d'usuari. L'URL és secreta: ~/.bategada_url, MAI al repo
   inicia-serie.sh      Tanca l'experimentació i comença la sèrie probatòria
   instala-tuya-local.sh  tuya-local en una versió fixada per suma, sense HACS
 tools/                 Eines que corren a casa, no al local (Python stdlib)

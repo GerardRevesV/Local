@@ -109,10 +109,48 @@
 | **Panell web** | **No n'hi ha.** Dashboards natius d'HA + app Companion per Tailscale | cap | Cobreixen 4,5 dels 5 gràfics amb zero codi, zero allotjament i zero credencials; el mig gràfic que falta no val una pàgina, una llibreria i un esquema de fitxers |
 | **Desplegament** | **`desplega.sh` llançat a mà per SSH** des de `main`. Mai `git clean` | bash `set -euo pipefail` (~80 línies) | N=1: Ansible, Makefile i CI són cerimònia; les baranes van al script perquè són el que s'oblida la nit que importen |
 | **Còpies de seguretat** | Instantània `VACUUM INTO` + `.storage` + `secrets.yaml` + **`matter-data/`** → **disc extern USB al local** cada nit; **tarball xifrat de `.storage`+`secrets.yaml`+`matter-data/` a `Local-data` cada diumenge** (~1 MB) | `gpg --symmetric` + git | Perdre `.storage` obliga a reemparellar-ho tot, i reemparellar **parteix totes les sèries**: ha de tenir còpia fora del local encara que la BD no la tingui. ⚠️ **`matter-data/` hi entra pel mateix motiu i amb la mateixa urgència:** hi viuen les **claus** dels aparells emparellats. És al `.gitignore` perquè són secrets, cosa que el fa fàcil d'oblidar precisament a la còpia |
-| **Supervisió de vida** | **healthchecks.io, dos checks**: `bategada` (host, cada 30 min, marge 3 h) i `nit` (dades, marge 26 h) **amb l'estat al cos del ping** | `curl` | Un sol bit no diu si has d'obrir l'SSH o agafar el cotxe; dos checks i un cos JSON converteixen l'avís en diagnòstic per tres línies |
+| **Supervisió de vida** | **healthchecks.io, dos checks**: `bategada` (host, cada 30 min, marge 3 h) i `nit` (dades, marge 26 h) **amb l'estat al cos del ping**. 🔄 ***21/09/2026, `bategada` escrita:*** **cron d'usuari** i no temporitzador, cos en **text** i no JSON, i el cos **és `comprova.sh --breu`** → [sota la taula](#-la-bategada-tal-com-sha-muntat) | `curl` + cron | Un sol bit no diu si has d'obrir l'SSH o agafar el cotxe; dos checks i un cos ~~JSON~~ **de text** converteixen l'avís en diagnòstic per tres línies |
 | *(Accés remot)* | **Tailscale**, expiració de clau desactivada. Única via d'administració i de consulta | paquet `apt` | Ja decidit i correcte; CGNAT elimina la resta per física de xarxa |
 | *(Ràdio)* | ~~ZHA + SLZB-06 per TCP~~ → **SUPERADA.** **Hub Tapo H110 + sensors T310/T315 per 868 MHz sub-GHz**, ja comprats i actius | **Matter** (via `matter-server`), no `tplink` | El maquinari ja hi era. El sub-GHz penetra millor el formigó que el Zigbee de 2,4 GHz, i desapareixen la prova de cobertura i l'emparellament irreversible. La via `tplink` va quedar tancada pel xifratge TPAP del hub — vegeu la revisió del 21/09 a dalt |
 | *(Sensor que decideix el cas)* | **ESP32 + ESPHome + 2× DS18B20**, compilat **al portàtil de casa**, pujat per OTA | YAML d'ESPHome (~40 línies) | És l'únic sensor que discrimina condensació de capil·laritat i n'hi havia **un de sol** |
+
+### 🔄 La `bategada`, tal com s'ha muntat
+
+*21/09/2026.* El que la fila de dalt deia es manté —dos checks, marges de 3 h i 26 h, l'estat al
+cos del ping—. Canvien quatre coses del *com*, i cadascuna té el seu motiu:
+
+1. **Cron d'usuari, no temporitzador de systemd.** El temporitzador demana `sudo`, i el que
+   aporta de més —`Persistent=true`, recuperar les passades perdudes— en una bategada seria
+   **mentir**: una passada que no surt perquè la màquina era apagada és justament el senyal. El
+   `cron` es va descartar per a l'exportador per les «passades perdudes en silenci»; aquí una
+   passada perduda **no és silenciosa**, és l'avís. Un `@reboot` n'envia una 2 min després
+   d'arrencar. Les línies de la crontab **no s'escriuen a mà**: les posa
+   `bash scripts/bategada.sh --instala`.
+2. **Cos de text, no JSON.** Qui el llegeix és una persona, al mòbil, dins del correu
+   —healthchecks.io hi posa el cos de l'últim ping—. Primera línia, el veredicte; després els
+   `✗`, els `⚠` i les dades. I en bash, un JSON demana escapar cada valor: una manera més de
+   fallar a l'única peça que no pot fallar.
+3. **L'estat no el calcula `bategada.sh`: és `comprova.sh --breu`.** Una sola llista del que ha
+   d'estar bé, per al diagnòstic a mà i per a l'avís. `--breu` treu els colors, dels `✓` només
+   deixa els que porten una dada i **salta el `check_config`**, que aixeca un segon HA dins del
+   contenidor amb el sostre de memòria compartit: cada 30 minuts seria buscar-li un OOM. Les
+   «3 línies» de l'esquema són 141, entre la instal·lació, la prova i el que es descriu aquí sota.
+4. **Fallada = el codi de sortida** (endpoint `/<codi>`): `0` és verd, qualsevol altre és un
+   correu al moment. Fa fallar el ping: **sense corrent**, un contenidor que no és `Up`, l'API
+   d'HA que no respon, **el recorder sense escriure fa 15 min** (mirat al fitxer, no a l'API),
+   el disc al 90 %, Tailscale caigut, un OOM **des del ping anterior**, i qualsevol altre `✗`
+   de `comprova.sh`. L'OOM compta només si és nou perquè healthchecks.io **només avisa quan el
+   check canvia d'estat**: un de 7 dies enrere el deixaria en vermell tota la setmana, i
+   qualsevol caiguda d'aquells dies passaria sense correu.
+
+I una peça que el disseny no tenia: **la bategada recorda les que no han pogut sortir.** Quan
+torna la xarxa, la primera que surt diu quantes se n'han perdut, des de quan i si la màquina
+anava amb bateria. És la diferència entre *«ha caigut internet, sense forat a les dades»* i
+*«ha caigut la màquina»*, que en tornar surt amb el temps d'engegada curt i sense cap perduda.
+
+**La `nit` hi encaixa sense tocar res:** el mateix conveni per al secret (`~/.nit_url`,
+permisos 600, fora de git), el mateix endpoint per codi de sortida, i si li cal el disc o la
+bateria, `comprova.sh --breu` ja els dona.
 
 ---
 
@@ -171,7 +209,8 @@
                                                           l'última fila, disc,
                                                           bateria, deriva rellotge
 
-   bategada.sh (bash, 3 línies, cada 30 min) ── curl ──▶ healthchecks.io #2
+   bategada.sh (bash, cron cada 30 min) ── curl ──▶ healthchecks.io #2
+     cos = comprova.sh --breu · codi de sortida ≠ 0 → fallada al moment
    ─────────────────────────────────────────────────────────────────────────
    CONSULTA I OPERACIÓ
 
@@ -196,7 +235,7 @@
 | Mínim de la Crítica 1 | 9 | 5 |
 | **AQUESTA DECISIÓ** | **12** | **8** |
 
-**Al local (8):** host Mint+Docker · contenidor HA · **contenidor `matter-server`** · `tailscaled` · **hub Tapo H110** · node ESPHome · timer+`nit.py` · timer+`bategada.sh`.
+**Al local (8):** host Mint+Docker · contenidor HA · **contenidor `matter-server`** · `tailscaled` · **hub Tapo H110** · node ESPHome · timer+`nit.py` · ~~timer~~ cron+`bategada.sh` *(21/09/2026, [per què](#-la-bategada-tal-com-sha-muntat))*.
 **Fora (4):** GitHub `Local` · GitHub `Local-data`+clau · healthchecks.io (2 checks) · TSA RFC 3161 (sense compte).
 
 > ℹ️ **D'11 peces a 12, i per què.** El coordinador **SLZB-06 ja no hi és**, però la peça no
@@ -208,13 +247,13 @@
 
 **Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (174 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
-**Fitxers que editaràs de debò: disset.** L'estimació original deia cinc i **~635 línies**; el
+**Fitxers que editaràs de debò: divuit.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~3.370 línies**):* `packages/rosada.yaml` (**665**), `packages/consum.yaml` (175), `custom_templates/tarifa.jinja` (91), `tools/tarifa.py` (211), `tools/calibratge.py` (488), `tools/replica.py` (317), `scripts/comprova.sh` (302), `scripts/prepara-host.sh` (270), `scripts/instala-tuya-local.sh` (87), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
+- *Ja escrits (**~3.680 línies**):* `packages/rosada.yaml` (**665**), `packages/consum.yaml` (175), `custom_templates/tarifa.jinja` (91), `tools/tarifa.py` (211), `tools/calibratge.py` (488), `tools/replica.py` (317), `scripts/comprova.sh` (474), `scripts/bategada.sh` (141), `scripts/prepara-host.sh` (270), `scripts/instala-tuya-local.sh` (87), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
-**~3.790 línies en total.** *(Els tres fitxers del consum i la tarifa, i el de `tuya-local`, hi van entrar el 21/09/2026, després del recompte.)* La desviació més grossa és de `rosada.yaml`: les ~200 línies
+**~4.100 línies en total.** *(Els tres fitxers del consum i la tarifa, i el de `tuya-local`, hi van entrar el 21/09/2026, després del recompte; `bategada.sh`, i les 172 línies que el seu mode `--breu` i les comprovacions noves van sumar a `comprova.sh`, el mateix dia al vespre.)* La desviació més grossa és de `rosada.yaml`: les ~200 línies
 estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
 d'`utility_meter` i `history_stats`. La resta són **eines de verificació i de frontera** que
 l'estimació no preveia perquè no preveia que calguessin: comprovar el host, validar el YAML
@@ -304,7 +343,7 @@ Sóc **tres** peces i tres sintaxis per sobre del mínim de la Crítica 1: **SQL
 9. Repos: `Local` (públic, ja existeix) i `Local-data` (privat) + **clau de desplegament SSH**. **`.gitattributes` amb `* text=auto eol=lf`** — codifiques des de Windows i un `desplega.sh` amb CRLF peta amb `bad interpreter: /bin/bash^M`.
 10. `docker-compose.yml` amb **versió d'HA fixada** i `recorder` amb **`purge_keep_days: 730`**, `commit_interval` elevat i `exclude` per llistes explícites.
 11. **Conveni de noms d'entitat definitiu** (`sensor.soterrani_nord_temperatura`) escrit al repositori abans d'emparellar res.
-12. `nit.py` + les dues unitats systemd + els dos checks de healthchecks.io **funcionant en buit**, amb el primer commit d'arxiu fet i **una restauració de prova manual verificada**.
+12. `nit.py` + les dues unitats systemd + els dos checks de healthchecks.io **funcionant en buit**, amb el primer commit d'arxiu fet i **una restauració de prova manual verificada**. *(21/09/2026: la `bategada` ja és escrita, i va per cron d'usuari —[per què](#-la-bategada-tal-com-sha-muntat)—; les unitats systemd queden només per a `nit.py`.)*
 13. `desplega.sh` amb totes les portes.
 14. **24 h amb tots els sensors junts a la mateixa habitació** abans d'instal·lar-los: desviació respecte de la mediana → *offset* fix a HA. Cost zero, i baixa el llindar útil de 2,0 a ~1,2 °C.
 
@@ -329,10 +368,10 @@ Sóc **tres** peces i tres sintaxis per sobre del mínim de la Crítica 1: **SQL
 | Decisió bloquejada | Dada concreta que la desbloqueja | Opció per defecte mentrestant |
 |---|---|---|
 | Cadència de la còpia setmanal xifrada i si el frontend d'HA per 4G és car | **Límit mensual del pla de dades de la SIM** (encara sense contractar). És la dada que més val la pena obtenir abans de programar res | Setmanal; si el pla és folgat, res canvia |
-| Si cal SAI de 50 € | **`energy_full` i cicles de la bateria + SMART del disc.** Tota la defensa de SQLite reposa que el portàtil és el seu propi SAI, i **és un actiu que es deprecia en silenci** | Comprar el SAI si la capacitat és < 60 %; monitoritzar `capacity` al cos del ping en tots els casos |
+| Si cal SAI de 50 € | **`energy_full` i cicles de la bateria + SMART del disc.** Tota la defensa de SQLite reposa que el portàtil és el seu propi SAI, i **és un actiu que es deprecia en silenci** | Comprar el SAI si la capacitat és < 60 %; monitoritzar `capacity` al cos del ping en tots els casos. 🔄 ***21/09/2026:*** **salut 80 %** —la mateixa que va donar `upower` el 20/09— i per aquest criteri **no cal**. Aquesta bateria no dona `energy_full` sinó **`charge_full`**, i el microprogramari no compta cicles (`cycle_count` = 0). La càrrega, l'estat i la salut ja **van a cada ping**, i el ping falla si la màquina es queda sense corrent. SMART, pendent |
 | Si ESPHome hi entra o basta un Tapo aïllat contra la paret | **Comparació d'un T310/T315 enganxat i tapat contra un termòmetre IR de mà** | ESPHome hi entra: és el sensor que decideix el cas i no s'hi val a estalviar |
 | Quina TSA RFC 3161 gratuïta es fa servir | **Comprovar quina està viva i accepta POST sense compte** | Si cap no ho estigués: commit diari + correu mensual del `SHA256SUMS` a l'advocat |
-| Marges exactes dels checks i mida del cos del ping | **Límits vigents del pla gratuït de healthchecks.io** | 2 checks, marges 3 h i 26 h, cos JSON curt |
+| ~~Marges exactes dels checks i mida del cos del ping~~ ✅ **Desbloquejada el 21/09/2026** | **Límits vigents del pla gratuït de healthchecks.io** → **20 checks**, 100 entrades de registre per check, fins a **100 kB de cos** guardats per ping, màxim 5 pings per minut; el correu d'avís porta **els últims 10.000 bytes** del cos de l'últim ping | 2 checks, marges 3 h i 26 h, cos ~~JSON~~ **de text** curt: la `bategada` fa **~0,6 kB** (11 línies) |
 | Si el `restic`/còpia nativa d'HA Container estalvia codi | **Si HA Container té còpia nativa utilitzable després de la reforma de 2025** | No en depenem: `VACUUM INTO` + `tar` cobreix el cas sencer |
 | Si cal l'endoll de rearmada i el switch de 12 € | **Si el router SIM té *watchdog* propi i si manté el commutador LAN quan es penja** | No muntar-lo. Un router penjat costa un viatge, no costa prova |
 | Mig apartat de la lògica del deshumidificador | **Si arrenca sol després d'un tall de corrent** | Arquitectura (a): higròstat propi, HA només enclavament i horaris |
