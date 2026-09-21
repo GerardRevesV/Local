@@ -157,11 +157,17 @@ mesurar.
 
 ### «La web», aquí, és la interfície de Home Assistant
 
-No cal panell propi: [decisio-stack.md](decisio-stack.md) el descarta i té raó. Els
+No cal panell propi **per a això**. Els
 `input_number` que ja hi ha a [`packages/rosada.yaml`](../../config/packages/rosada.yaml)
 surten sols a la interfície d'HA i a l'app Companion, s'hi toquen amb el dit, i s'hi arriba
 des de fora per Tailscale. El requisit, en la seva part central, **ja està cobert** — i té un
 forat.
+
+> ⚠️ *Aquí hi deia «`decisio-stack.md` el descarta i té raó». El **21/09/2026** aquell
+> document **va reobrir** el panell propi: primer taulers natius i, si no hi arriben, un
+> panell servit per HA des de `config/www/`. Per a **aquest** requisit segueix sense caldre'n
+> cap —els `input_number` ja surten sols a la interfície—, però ja no és cert que estigui
+> descartat.*
 
 ### 🔴 El forat, i es pot tapar avui
 

@@ -168,6 +168,9 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       **dashboards natius d'HA** per Tailscale. **PostgreSQL, MariaDB, InfluxDB i Grafana
       estan descartats**, no ajornats: el dipòsit de la prova és el CSV diari immutable a
       git, i un segon motor només compraria un mode de fallada silenciós més.
+      *(⚠️ 21/09/2026: **el CSV diari ha caigut** amb el canvi d'objectiu, i per tant la base
+      de dades passa a ser l'única còpia de l'històric. El descart dels motors no s'ha
+      revisat; el motiu que s'hi donava, sí que ha desaparegut.)*
       → [decisio-stack.md](domotica/decisio-stack.md)
 - [ ] ⚠️ **Verificar `purge_keep_days: 730` contra la instància EN CALENT**, no contra el
       fitxer. Ja és a `configuration.yaml` i `check_config --info recorder` el llegeix, però
@@ -203,7 +206,10 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       un token caduca i atura la pujada en silenci.)*
 - [x] ~~**Decidir si les dades del panell web seran privades o públiques.**~~ ✅ **La
       pregunta desapareix: no hi haurà panell web.** Dashboards natius d'HA i app Companion
-      per Tailscale. Amb això les dades no surten mai a cap pàgina, i el dilema del token
+      per Tailscale. *(⚠️ 21/09/2026: el **panell es reobre**
+      —[decisio-stack.md](domotica/decisio-stack.md)—, però **la pregunta segueix resolta**:
+      el serviria **HA mateix** des de `config/www/`, darrere de Tailscale, i per tant les
+      dades continuen sense sortir a cap pàgina pública.)* Amb això les dades no surten mai a cap pàgina, i el dilema del token
       dins d'una web s'evapora. **Cloudflare R2 + domini propi + Cloudflare Access queden
       descartats**: incompleixen «gratuït» (~12 €/any) i fiquen un tercer que desxifra TLS
       sobre dades amb valor legal. **GitHub Pages** també: privat és de pagament i públic
@@ -213,10 +219,12 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       RFC 3161**, més còpia a disc USB al local. GitHub Releases resolia un problema que no
       tenim —tot l'arxiu són ~20–30 MB. *(⚠️ **Superat el 21/09/2026:** cauen el repositori,
       el SHA-256 diari i el segell; es queda la còpia a disc USB al local.)*
-- [x] ~~Fixar l'**estructura de fitxers del panell**.~~ ✅ **Sense objecte** (no hi ha panell).
-      El que **sí** es manté és el requisit de fons: les marques de temps de l'arxiu van en
-      **ISO 8601 amb zona horària**, i el CSV diari les porta en ISO8601+offset **i** en
-      epoch.
+- [x] ~~Fixar l'**estructura de fitxers del panell**.~~ ✅ **Sense objecte**: es referia al
+      panell estàtic a GitHub Pages que llegia l'arxiu, i aquell arxiu ja no existeix.
+      *(⚠️ 21/09/2026: el panell **es reobre**, però servit per HA i llegint l'històric
+      directament; no li cal cap estructura de fitxers. I **el CSV diari també ha caigut**.)*
+      El que **sí** es manté és el requisit de fons: les marques de temps de qualsevol
+      exportació van en **ISO 8601 amb zona horària** i, si porten epoch, totes dues.
 - [x] ~~⚠️ **Comprovar si els 4 GB de RAM aguanten el segon contenidor de Matter.**~~ ✅
       **Mesurat el 21/09/2026:** sí, i de llarg. HA 436 MB (pic 609) + `matter-server` 88 MB
       (pic 89) = **19 %** de 3.716 MB, sense pressió de memòria. *(Tornar-ho a mirar després
