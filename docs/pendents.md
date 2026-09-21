@@ -55,6 +55,60 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ## Domòtica
 
+### ❓ El que falta per saber — les incògnites del sistema
+
+*Recollides el 22/09/2026 després dels experiments i de la [lògica v2](domotica/logica-v2.md).
+S'aniran omplint quan el muntatge sigui estable al local i hi hagi el maquinari que falta. Cada
+una diu **com es respon** i **què decideix**: una incògnita que no decideix res no hi és.*
+
+**Ara mateix, a casa (no cal res de nou)**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| **Litres per kWh** del deshumidificador, i com cauen amb l'HR | Una nit en continu amb el dipòsit buit: l'hora del codi 32 i els kWh, **a partir del segon dipòsit** | Confirma o corregeix la taula del cost per litre, i amb ella els tres llindars |
+| Si el llindar **35 és el «CO»** | Mirar la pantalla amb el llindar a 35 | Si el continu de la urgència i de les proves és el que creiem |
+| Què fa l'**assecat intern** | Apagar l'aparell amb l'assecat activat i mirar quant va el ventilador | Si val la pena deixar-lo activat al soterrani |
+| La **desviació de l'higròmetre** de l'aparell | Un Tapo al costat unes hores, quan acabi el calibratge | Traduir l'objectiu dels racons al llindar de l'aparell (el segon nivell) |
+| Si l'**energia del P110M depèn d'internet** | Una hora sense sortida a internet | Si el cost s'atura quan cau la SIM |
+| Si **Smart Life avisa** del dipòsit ple i de les avaries | Mirar-ho a l'app (la prova del dipòsit ho hauria disparat) | Si hi ha un avís que funciona encara que HA caigui |
+| Si l'**alarma del dipòsit** xiula | El so: TIMER + SPEED alhora; i omplir-lo amb el so actiu | Res greu: el codi 32 ja arriba a HA |
+| Quina operació és l'**ECO**, i **velocitat alta o baixa** | Litres per kWh de cadascuna (depèn de la primera fila) | L'operació i la velocitat de la configuració de repòs |
+
+**Quan el muntatge sigui al soterrani i estable**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| **Per on entra l'aire** | La prova de fum (tasca 0.1), amb els extractors en marxa | Si ventilar pot mullar: si entra pel terra, la ventilació es reconsidera sencera |
+| La **porta de l'escala**, oberta o tancada | Saber-ho, i si cal, mesurar amb totes dues | El cabal, i per on entra l'aire |
+| Contra quina **referència** ventilar: planta baixa o exterior | Unes setmanes gravant tots dos ΔTd | `referencia_ventilacio` |
+| **Quant aguanta la sequedat** | Les dues setmanes d'experiment amb `hr_vall` al 50 % | Si el pre-assecat surt a compte o es queda al 55 % |
+| Si la humitat és **general o localitzada** | Els tres punts del soterrani, calibrats | Si el deshumidificador és al lloc bo, i la idea de remenar l'aire |
+| Els **kWh/dia de base** | La setmana de base: 55 % fix i ventiladors com ara | Quant estalvia la v2 |
+| Com es mesuren els **litres amb la bomba** | Sense dipòsit no hi ha codi 32: comptador d'aigua, o un recipient de tant en tant | Els litres/dia de la Porta B al soterrani |
+| El **límit de dades** de la SIM | Les 72 h de `vnstat` | El pla de dades |
+
+**Quan es compri o s'instal·li**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| **Models, potència i cabal dels ventiladors** | Les fotos de la placa → [installacions.md](local/installacions.md) | Les renovacions en minuts i el ΔTd en litres per kWh: sense el cabal, els llindars de ventilació són provisionals |
+| Els **S110E**: càrrega de motor i temporitzador propi | La fitxa del relé; si els ventiladors van endollats o cablejats | La fallada segura de la ventilació, i si cal instal·lador |
+| El **marge de la paret** i quina paret és la més freda | Els DS18B20 (B.2) i un termòmetre IR de mà | La urgència de debò: avui mira l'aire, no la paret |
+| El **CO₂** (i potser el radó) | Un SCD40; un detector de radó si cal | Renovar per demanda en comptes de per rellotge |
+
+**A l'hivern**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| El **rendiment a 12–15 °C** i el **desgebratge (P1)** | Les primeres setmanes de fred; mirar quina dada es mou (la 106, la 107?) | Si el deshumidificador aguanta l'hivern, i el cost per litre real |
+| La **temperatura mínima** del soterrani | Les sèries d'hivern | `t_int_minima`, i si la resina necessita escalfor |
+
+**Quan arribi la primera factura**: que els **preus i les hores de cada tram** quadrin amb
+`tarifa.jinja` (el pendent ja hi és, més avall).
+
+**El servidor** té les seves pròpies incògnites al bloc *Resiliència*, més avall: el BIOS, la
+bateria i les còpies.
+
 ### 🆕 Lògica v2 — el que falta per decidir-la ([logica-v2.md](domotica/logica-v2.md))
 
 *Proposta del 21/09/2026: llindar del deshumidificador per tram, triat pel cost per litre (vall 55 ·
