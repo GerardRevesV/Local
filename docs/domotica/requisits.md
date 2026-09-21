@@ -192,7 +192,7 @@ tipus de cosa que costa d'explicar davant d'un pèrit.
 > contenidor): **amb `initial:` arrenca sempre amb aquell valor**; sense, **restaura** l'últim;
 > i sense estat previ, pren **el mínim del rang** —la segona de les dues respostes de sota, la
 > més agressiva—. La Fase 1 de la [v2](logica-v2-pla.md) treu els `initial:` i un automatisme
-> posa els valors de partida **una sola vegada** (`input_boolean.parametres_inicialitzats`).
+> posa els valors de partida **una sola vegada** per paràmetre (`input_number.parametres_versio`).
 
 **Si torna a 2,0** (que és el que diu la documentació), la correcció és treure `initial:` dels
 nou helpers. Però abans cal saber **què val un helper sense `initial:` la primera vegada**,
