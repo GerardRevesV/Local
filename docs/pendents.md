@@ -186,8 +186,13 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       mecanisme ja funciona per al deshumidificador a `rosada.yaml`; els blocs dels
       ventiladors hi són escrits però **comentats a posta** fins a la Fase C, perquè fins que
       els S110E no estiguin instal·lats quedarien `unavailable` i embrutarien l'històric.*
-- [ ] 🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13). ✅ **Preparat el
-      21/09/2026**, per executar: hi ha el marcador `input_boolean.mode_calibratge` —que posa
+- [ ] 🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13). 🟡 **Primera tanda feta
+      el 21/09/2026**, franja 49–59 %: dispersió de Td **0,95 → 0,24 °C**, temperatura sense
+      correcció, i desplaçaments d'HR entre −1,2 i +2,2 punts. **No aplicats**: falta la franja
+      humida. Següent pas, una **caixa tancada amb sal de cuina** (75,3 % d'HR, absolut i amb
+      pujada lenta) → [calibratge.md](domotica/calibratge.md#segona-tanda-proposada--la-franja-humida).
+      ⚠️ **I encendre el marcador aquesta vegada**: la primera tanda es va fer sense.
+      *Preparat des del 21/09/2026:* hi ha el marcador `input_boolean.mode_calibratge` —que posa
       la decisió a `calibratge` i impedeix que cap automatisme actuï—, el forat dels
       desplaçaments a les cinc plantilles de `rosada.yaml` (avui identitat, no corregeixen
       res) i `tools/calibratge.py` per ajustar-ho. ⚠️ **Són rampes lentes en els dos sentits,

@@ -60,7 +60,13 @@ MARCADOR = "input_boolean.mode_calibratge"
 
 PAS_GRAELLA_S = 60          # remostreig a 1 minut
 MIN_MOSTRES = 60            # menys d'una hora de rampa no és una rampa
-MIN_RECORREGUT_HR = 8.0     # sense aquest recorregut no s'ajusta cap pendent
+MIN_RECORREGUT_HR = 20.0    # sense aquest recorregut no s'ajusta cap pendent
+# ⚠️ Era 8, i era massa poc. Amb les dades reals del 21/09/2026 (HR 49–59 %,
+#    10 punts de recorregut) s'ajustava un pendent que NO millorava gens
+#    l'ajust —dispersió 0,25 °C contra 0,24 sense pendent— però que extrapolat
+#    al 85 % de l'hivern inventava fins a 1,5 punts d'HR de correcció (~0,3 °C
+#    de Td). Amb l'HR en enters, un pendent ajustat en 10 punts és soroll; i
+#    el que fa mal no és el soroll dins del rang, sinó el que fa fora d'ell.
 MAX_DISPERSIO_TD = 0.30     # °C — criteri d'acceptació (vegeu calibratge.md)
 
 
@@ -317,6 +323,11 @@ def informe(files_per_rampa) -> int:
             problemes += 1
 
         print("\n── Per enganxar a config/packages/rosada.yaml")
+        # El rang va AL COSTAT dels números: fora d'ell, la correcció s'extrapola.
+        hr_t = [est.median([f[1][f"sensor.{n}_humitat"] for n in SENSORS]) for f in totes]
+        t_t = [est.median([f[1][f"sensor.{n}_temperatura"] for n in SENSORS]) for f in totes]
+        print(f"   {{#- Calibratge vàlid entre {min(hr_t):.0f} i {max(hr_t):.0f} % d'HR "
+              f"i {min(t_t):.1f}–{max(t_t):.1f} °C. Fora d'aquest rang, s'extrapola. -#}}")
         for nom in SENSORS:
             c = final[nom]
             nota = "" if c["pendent_ajustat"] else "   # sense recorregut: només desplaçament"
@@ -387,6 +398,10 @@ def tests() -> int:
     res_plans = ajusta(plans)
     prop("cap pendent ajustat", not any(r["pendent_ajustat"] for r in res_plans.values()))
     prop("i el pendent es queda a 1", all(r["c_rh_a"] == 1.0 for r in res_plans.values()))
+
+    print("\nAmb 10 punts de recorregut, cap pendent (dades reals del 21/09)")
+    curt = ajusta(_sintetic(reals, pas_hr=10 / 300))
+    prop("no s'ajusta pendent amb 10 punts d'HR", not any(r["pendent_ajustat"] for r in curt.values()))
 
     print("\nLes rampes es parteixen bé")
     parts = rampes(files)
