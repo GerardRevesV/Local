@@ -128,7 +128,7 @@ feina i tu menys.
 | B.1d | ✅ **Fet el 21/09/2026** — endoll **P110M** emparellat per Matter (node 9), amb el microprogramari ja posat abans i **les dotze entitats renombrades el mateix dia**. En surten potència i **energia**, o sigui que els kWh/dia de la Porta B tenen font → [emparellar-matter.md](emparellar-matter.md#-com-va-acabar-21092026-0345) | 🤝 Fet |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
-| B.4 | ✅ **Fet** — `packages/rosada.yaml` (641 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
+| B.4 | ✅ **Fet** — `packages/rosada.yaml` (665 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
 | B.7 | ✅ **Fet** — `tools/replica.py` (317 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
