@@ -205,10 +205,10 @@
 **Fitxers que editaràs de debò: tretze.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~2.790 línies**):* `packages/rosada.yaml` (**665**), `tools/calibratge.py` (472), `tools/replica.py` (317), `scripts/comprova.sh` (302), `scripts/prepara-host.sh` (270), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
+- *Ja escrits (**~2.800 línies**):* `packages/rosada.yaml` (**665**), `tools/calibratge.py` (488), `tools/replica.py` (317), `scripts/comprova.sh` (302), `scripts/prepara-host.sh` (270), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
-**~3.210 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
+**~3.220 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
 estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
 d'`utility_meter` i `history_stats`. La resta són **eines de verificació i de frontera** que
 l'estimació no preveia perquè no preveia que calguessin: comprovar el host, validar el YAML

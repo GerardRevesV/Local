@@ -200,43 +200,89 @@ Per això no s'han aplicat: la tanda següent és barata i tapa exactament aques
 
 ## Segona tanda proposada — la franja humida
 
-**Una caixa tancada amb sal de cuina.** Una pasta de sal comuna (NaCl) i una mica d'aigua
-—**amb cristalls sense dissoldre a la vista**— manté l'aire d'un recipient tancat al
-**75,3 % d'HR**, gairebé independentment de la temperatura. És el mètode clàssic de calibratge
-d'higròmetres, i ho resol tot alhora:
+**Un tàper tancat amb sal de cuina.** Una pasta de sal comuna (NaCl) i una mica d'aigua —**amb
+cristalls sense dissoldre a la vista**— manté l'aire d'un recipient tancat al **75,3 % d'HR**,
+gairebé independentment de la temperatura. És el mètode clàssic de calibratge d'higròmetres, i
+ho resol tot alhora:
 
 | Què aporta | Per què importa |
 |---|---|
 | **Franja alta**, fins al 75 % | La que falta, i la que viurà el soterrani |
-| **Pujada lenta**, en hores | Una dutxa porta el bany al 90 % en deu minuts: massa de pressa, mesuraries temps de resposta |
+| **Pujada lenta**, en hores | Dona el desplaçament sense que el retard hi pesi |
 | **Un valor absolut conegut** | El consens entre cinc sensors no et diu si tots cinc llegeixen alt; la sal, sí |
-| **Baixada lenta** en treure-la | La rampa en l'altre sentit, per separar calibratge de retard |
+| **Dos graons**, de baixada i de pujada | Mesuren el **retard** de cada sensor, i si és **simètric** |
 
-### Com
+### Rampa lenta per al número, graó per al retard
 
-- [ ] **Encendre `input_boolean.mode_calibratge`** abans de començar.
-- [ ] Una caixa de plàstic amb tapa, d'uns 20–50 litres. Els cinc sensors a dins, **sense tocar
-      la sal**, sobre un drap o una reixeta.
-- [ ] Un plat amb **sal i aigua fins a fer una pasta humida**. Si es dissol tota, no funciona:
-      ha de quedar sal sòlida al fons.
-- [ ] Si tens un ventilador USB petit, a dins i apuntant a la paret: barreja l'aire i els cinc
-      veuen el mateix.
-- [ ] Tapar i **deixar-ho 4–6 hores**, fins que la mediana s'estabilitzi. Hi ha d'arribar sola
-      i a poc a poc: aquesta és la rampa de pujada.
-- [ ] Treure el plat i **obrir la tapa una escletxa**, i deixar que torni a l'ambient en 2–4 h:
-      rampa de baixada.
-- [ ] **Apagar el marcador.**
+Són dues magnituds diferents, i cadascuna demana una prova diferent:
 
-El que se n'ha de mirar: **on s'estabilitza cada sensor contra el 75,3 %**. Si tots cinc donen
-el 78 %, tots llegeixen 2,7 punts alt —cosa que el consens no pot veure mai— i això és un
-ancoratge absolut que val per si algun dia es reprèn la via documental.
+| Vols mesurar… | Et cal | Per què |
+|---|---|---|
+| **El desplaçament** | rampa **lenta** | L'error que hi afegeix el retard és *ritme × retard*. A 7 %/h amb 5 minuts de retard són 0,6 punts. Una dutxa (~35 punts en 10 minuts) en donaria ~17, que taparien del tot els 1–2 punts que es busquen |
+| **El retard** | **graó** ràpid | Es veu directament qui reacciona i quan |
 
-⚠️ **Evitar el 100 %.** Si l'aire arriba a condensar sobre els sensors, poden quedar-se
-enganxats hores. Amb sal no hi arriba; amb aigua sola, sí.
+El graó té un valor afegit. Les dues rampes cancel·len el retard **només si és simètric**, i els
+capacitius acostumen a **assecar-se més a poc a poc del que s'humitegen**: si és així, la
+mitjana no el cancel·la del tot. Els dos graons **comproven aquesta suposició** en comptes de
+donar-la per bona.
 
-**Opcional, per a un punt més alt:** el clorur de potassi (KCl) dona el **84 %**. La «sal baixa
-en sodi» del súper sol ser una barreja de KCl i NaCl, i per tant dona un valor entremig que no
-serveix d'ancoratge: cal KCl pur.
+La dutxa es va descartar també per dues raons més: **escalfa** (i 1 °C de T són ~0,95 °C de Td,
+de manera que barreja temperatura i humitat) i **l'aire no hi està barrejat**.
+
+### El recipient
+
+- **Un tàper o una caixa de plàstic** (també serveix el vidre). **Mai de metall:** una olla
+  tapada fa de gàbia i els sensors **no poden transmetre** — mesurarien, però no arribaria cap
+  lectura al hub.
+- **Com més petit, més ràpid** s'equilibra: en un tàper mitjà, **2–4 hores**.
+- Hi han de cabre **els cinc alhora**, sense apilar, sense tocar la sal i amb una mica d'aire al
+  voltant. Fer-ho en dues tandes no serveix.
+- **Tancat del tot.** A diferència d'unes tovalloles molles, la sal només fixa el 75 % si no hi
+  entra aire de fora.
+
+### La pasta
+
+- **2–4 cullerades de sal fina de cuina.** No serveix la «baixa en sodi» (és una barreja de KCl
+  i NaCl i dona un altre valor) ni la que porta herbes o all.
+- Aigua **de mica en mica** fins que tingui la **textura de sorra mullada**. Reposar-la cinc
+  minuts: si ja no es veuen cristalls, s'ha dissolt tota i cal més sal.
+- En un **platet**, i els sensors **aixecats** sobre un drap plegat o una reixeta, **sense tocar
+  mai la pasta**: és corrosiva i condueix.
+- **La sal no es gasta.** Es guarda en un pot tapat per repetir-ho a l'hivern (però no per
+  cuinar).
+
+### El recorregut
+
+1. **Encendre `input_boolean.mode_calibratge`.**
+2. **Tancar**, i esperar el **replà**: la humitat dels cinc quieta durant una hora. No obrir per
+   mirar; es segueix des del tauler.
+3. **Graó de baixada:** treure **el suport amb els cinc a sobre**, d'una vegada, a l'habitació.
+   Tornar a tancar el tàper, perquè es mantingui humit. **Apuntar l'hora.**
+4. **Una hora** a l'aire de l'habitació.
+5. **Graó de pujada:** tornar el suport al tàper i tancar ràpid. **Apuntar l'hora.**
+6. **1–2 hores** més, i **apagar el marcador**.
+
+⚠️ **Moure el suport, no els sensors.** Agafats un per un, hi ha segons de diferència entre ells
+i calor de mans en uns i no en els altres, i totes dues coses s'assemblen justament al retard que
+es vol mesurar. Movent el suport, es mouen tots cinc al mateix instant i ningú no els toca.
+
+⚠️ **Haver-los tocat per posar-los** altera els primers minuts: la calor de les mans escalfa la
+carcassa i l'alè i la pell pugen l'HR local. S'esvaeix en 10–30 minuts, i per això **l'anàlisi
+en descarta els primers 30** després de tancar. El número bo surt del replà, hores després.
+
+### Què se n'ha de mirar
+
+- **On s'estabilitza cada sensor contra el 75,3 %.** Si tots cinc donen el 78 %, tots llegeixen
+  2,7 punts alt —cosa que el consens no pot veure mai—. És un ancoratge absolut, que val per si
+  algun dia es reprèn la via documental.
+- **Als graons, qui reacciona i quan**, i si el retard de baixada s'assembla al de pujada.
+- ⚠️ **La resolució temporal del graó** depèn de cada quant informa el hub quan els valors canvien
+  de pressa, i això encara no se sap. El mateix graó ho dirà.
+
+⚠️ **Evitar el 100 %.** Si l'aire arriba a condensar sobre els sensors, poden quedar-se enganxats
+hores. Amb sal no hi arriba; amb aigua sola, sí.
+
+**Opcional, per a un punt més alt:** el clorur de potassi (KCl) **pur** dona el **84 %**.
 
 ## Registre
 

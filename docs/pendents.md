@@ -199,6 +199,13 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       no 24 h quiets**: amb l'HR en enters, un replà mort no deixa baixar de ±0,5 %, i amb una
       sola rampa el retard del hub no es distingeix del calibratge.
       → [calibratge.md](domotica/calibratge.md)
+- [ ] 🔋 **Les bateries dels cinc Tapo no arriben a Home Assistant.** Comprovat el
+      21/09/2026: l'HA no té cap entitat de bateria dels sensors —pel que sembla, el hub H110
+      no les passa per Matter—, tot i que el conveni de noms en preveu la magnitud `bateria`.
+      Avui l'**únic símptoma** d'una bateria que es mor és que el sensor passi a
+      `unavailable`, i per a llavors ja hi ha un forat a la sèrie. De moment es miren a l'app
+      de Tapo. Cal valorar un avís quan un sensor porti massa hores sense reportar, que és
+      l'únic senyal que sí que tenim.
 - [ ] 🔁 **Repetir el calibratge al soterrani a l'hivern.** El primer es farà a casa a 22–28 °C
       i el soterrani al gener serà de 8 a 15 °C. Els números porten el **rang de validesa**
       escrit al costat precisament per poder-los comparar quan hi hagi els dos.
