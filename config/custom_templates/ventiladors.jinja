@@ -1,0 +1,29 @@
+{#- ═══════════════════════════════════════════════════════════════════════════
+    ELS VENTILADORS — LA INTERFÍCIE. L'ÚNIC LLOC QUE DIU QUINS RELÉS SÓN.
+    Pla: docs/domotica/logica-v2-pla.md (D6, i la Fase 5)
+
+    Tot el que toca els ventiladors passa per aquí: els scripts
+    script.ventiladors_engega i _atura, binary_sensor.ventiladors_en_marxa i
+    sensor.ventiladors_potencia (packages/control.yaml). Ningú més no els
+    anomena.
+
+    AVUI: dos relés de mentida (input_boolean), perquè tota la cadena
+    —decisió, executor, temps mínims, límit d'engegada— es pugui provar sense
+    maquinari. Encendre actuacio_ventiladors mou aquests dos interruptors i
+    res més.
+
+    EL DIA DELS S110E (Fase 5), l'ÚNIC canvi de codi és aquest:
+        RELES     = ['switch.ventilador_1', 'switch.ventilador_2']
+        POTENCIES = ['sensor.ventilador_1_potencia', 'sensor.ventilador_2_potencia']
+    i després homeassistant.reload_custom_templates + template.reload.
+    Els noms ja són al conveni (noms-entitats.md): emparellar-los i
+    renombrar-los ABANS que gravin res.
+
+    Amb potències, «en marxa» es llegeix als WATTS i no al relé (requisits.md,
+    «watts, no relés»): un relé tancat amb un motor cremat no ventila.
+    ═══════════════════════════════════════════════════════════════════════════ -#}
+{%- set RELES = ['input_boolean.ventilador_1_virtual', 'input_boolean.ventilador_2_virtual'] -%}
+{%- set POTENCIES = [] -%}
+{#- Per sota d'aquests watts, un ventilador amb relé tancat no gira. A
+    confirmar amb la placa i la primera mesura dels S110E. -#}
+{%- set W_MINIM = 5 -%}

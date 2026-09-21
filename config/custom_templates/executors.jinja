@@ -1,0 +1,126 @@
+{#- ═══════════════════════════════════════════════════════════════════════════
+    ELS EXECUTORS — què cal fer perquè els aparells facin el que diu la decisió
+    Pla: docs/domotica/logica-v2-pla.md (Fase 3)
+    Rèplica: tools/replica.py (ordres, bloqueig_deshumidificador,
+             accio_ventiladors), comprovada contra aquestes macros amb --prova-ha
+
+    La decisió diu QUÈ es vol (sensor.decisio_del_soterrani). Aquí es decideix
+    COM s'hi arriba des d'on és l'aparell ara, i res més: quines ordres,
+    en quin ordre, i si es pot o s'ha d'esperar. Els automatismes i scripts
+    de control.yaml només les executen, i comproven cada pas.
+    ═══════════════════════════════════════════════════════════════════════════ -#}
+
+{#- ─────────────────────────────────────────────────────────────────────────
+    ordres_deshumidificador(d, a) → JSON [[ordre, valor], …]
+      d  el que vol la decisió: llindar, mode_aparell, velocitat
+      a  com és ara (tuya-local): engegat, operacio, mode, llindar, velocitat
+
+    L'ORDRE IMPORTA, i surt dels experiments del 21/09/2026
+    (deshumidificador.md i restaura() de tools/prova_deshumidificador.py):
+    · engegat, primer;
+    · l'operació: purificar no asseca, i posa l'aparell en Roba tot sol;
+    · Manual ABANS del llindar i la velocitat: en AUTO i en Roba l'aparell
+      REBUTJA el llindar sense dir res (es va quedar al 80 % en demanar-li 55);
+    · el mode final, l'últim (en Nit, l'aparell baixa la velocitat sol: no
+      s'hi toca).
+    NOMÉS LES QUE CALEN: cada ordre és un xiulet de l'aparell.
+    ───────────────────────────────────────────────────────────────────────── -#}
+{%- macro ordres_deshumidificador(d, a) -%}
+  {%- set o = namespace(llista=[], mode=a.mode) -%}
+  {%- if d.llindar is not none -%}
+    {%- set cal_llindar = a.llindar != d.llindar -%}
+    {%- set cal_velocitat = d.velocitat is not none and a.velocitat != d.velocitat -%}
+    {%- if a.engegat != true -%}
+      {%- set o.llista = o.llista + [['engega', none]] -%}
+    {%- endif -%}
+    {%- if a.operacio != 'dehumidify' -%}
+      {%- set o.llista = o.llista + [['operacio', 'dehumidify']] -%}
+    {%- endif -%}
+    {%- if o.mode not in ['normal', 'sleep'] or (cal_velocitat and o.mode != 'normal') -%}
+      {%- set o.llista = o.llista + [['mode', 'normal']] -%}
+      {%- set o.mode = 'normal' -%}
+    {%- endif -%}
+    {%- if cal_llindar -%}
+      {%- set o.llista = o.llista + [['llindar', d.llindar]] -%}
+    {%- endif -%}
+    {%- if cal_velocitat -%}
+      {%- set o.llista = o.llista + [['velocitat', d.velocitat]] -%}
+    {%- endif -%}
+    {%- if o.mode != d.mode_aparell -%}
+      {%- set o.llista = o.llista + [['mode', d.mode_aparell]] -%}
+    {%- endif -%}
+  {%- endif -%}
+  {{- o.llista | to_json -}}
+{%- endmacro -%}
+
+{#- ─────────────────────────────────────────────────────────────────────────
+    aplicada(ordre, valor) → 'si' · 'no'
+    Si l'aparell JA és com diu l'ordre. L'script la mira abans d'enviar-la
+    (l'aparell canvia coses tot sol uns segons després d'una ordre: en deixar
+    de purificar torna de Roba a Manual) i després, per verificar-la.
+    ───────────────────────────────────────────────────────────────────────── -#}
+{%- macro aplicada(ordre, valor) -%}
+  {%- if ordre == 'engega' -%}
+    {{- 'si' if is_state('humidifier.deshumidificador', 'on') else 'no' -}}
+  {%- elif ordre == 'operacio' -%}
+    {{- 'si' if is_state('select.deshumidificador_mode_aire', valor) else 'no' -}}
+  {%- elif ordre == 'mode' -%}
+    {{- 'si' if state_attr('humidifier.deshumidificador', 'mode') == valor else 'no' -}}
+  {%- elif ordre == 'llindar' -%}
+    {{- 'si' if state_attr('humidifier.deshumidificador', 'humidity') | int(-1) == valor | int else 'no' -}}
+  {%- elif ordre == 'velocitat' -%}
+    {{- 'si' if state_attr('fan.deshumidificador', 'percentage') | int(-1) == valor | int else 'no' -}}
+  {%- else -%}no{%- endif -%}
+{%- endmacro -%}
+
+{#- ─────────────────────────────────────────────────────────────────────────
+    bloqueig_deshumidificador(x) → '' si es pot actuar, o el motiu si no
+      x: actuacio, llindar (el de la decisió), potencia (W), codi (d'avaria),
+         estat (del humidifier)
+    ───────────────────────────────────────────────────────────────────────── -#}
+{%- macro bloqueig_deshumidificador(x) -%}
+  {%- if not x.actuacio -%}actuació apagada (ombra)
+  {%- elif x.llindar is none -%}la decisió diu que no es toqui
+  {%- elif x.potencia is none or x.potencia < 0.5 -%}sense corrent: tuya-local no ho sap i mostraria l'últim estat
+  {%- elif x.codi == 32 -%}dipòsit ple o tret: fins que es buidi, cap ordre
+  {%- elif x.estat not in ['on', 'off'] -%}tuya-local no el veu ({{ x.estat }})
+  {%- endif -%}
+{%- endmacro -%}
+
+{#- ─────────────────────────────────────────────────────────────────────────
+    accio_ventiladors(v) → JSON {"accio": engega · atura · res, "motiu": …}
+      v: vol (true · false · none = no es toquen), en_marxa, minuts (des de
+         l'últim canvi de binary_sensor.ventiladors_en_marxa), min_on,
+         min_off, max (minuts)
+
+    Els temps mínims protegeixen els motors: cap canvi abans d'hora. En
+    arrencar HA, el comptador torna a zero (last_changed es reinicia): és el
+    costat segur, mai s'escurça un temps mínim.
+    El límit: CAP engegada no dura «per sempre» (principi 6 de la v2), ni
+    quan la decisió diu que no es toquin. Després, el temps mínim aturat, i
+    si la decisió els segueix volent, tornen a engegar. És el cicle que farà
+    el temporitzador propi del relé, si en té (pendents.md).
+    ───────────────────────────────────────────────────────────────────────── -#}
+{%- macro accio_ventiladors(v) -%}
+  {%- set m = '%.0f' | format(v.minuts) -%}
+  {%- if v.en_marxa and v.minuts >= v.max -%}
+    {%- set r = {'accio': 'atura', 'motiu': 'fa ' ~ m ~ ' min que van: el límit és ' ~ ('%.0f' | format(v.max))} -%}
+  {%- elif v.vol is none -%}
+    {%- set r = {'accio': 'res', 'motiu': 'la decisió diu que no es toquin'} -%}
+  {%- elif v.vol and not v.en_marxa -%}
+    {%- if v.minuts >= v.min_off -%}
+      {%- set r = {'accio': 'engega', 'motiu': 'la decisió els vol engegats'} -%}
+    {%- else -%}
+      {%- set r = {'accio': 'res', 'motiu': 'aturats fa ' ~ m ~ ' min: el mínim és ' ~ ('%.0f' | format(v.min_off))} -%}
+    {%- endif -%}
+  {%- elif not v.vol and v.en_marxa -%}
+    {%- if v.minuts >= v.min_on -%}
+      {%- set r = {'accio': 'atura', 'motiu': 'la decisió els vol aturats'} -%}
+    {%- else -%}
+      {%- set r = {'accio': 'res', 'motiu': 'engegats fa ' ~ m ~ ' min: el mínim és ' ~ ('%.0f' | format(v.min_on))} -%}
+    {%- endif -%}
+  {%- else -%}
+    {%- set r = {'accio': 'res', 'motiu': 'ja són com diu la decisió'} -%}
+  {%- endif -%}
+  {{- r | to_json -}}
+{%- endmacro -%}

@@ -93,6 +93,34 @@ views:
               yellow: 0.8
               green: 2.0
 
+      # ── EL QUE FAN DE DEBÒ ──────────────────────────────────────────────────
+      #  Contra el que vol la decisió (dalt). En ombra, no han de coincidir.
+      - type: entities
+        title: Els aparells, ara
+        entities:
+          - entity: sensor.deshumidificador_estat
+            name: Deshumidificador (pels watts)
+          - type: attribute
+            entity: humidifier.deshumidificador
+            attribute: humidity
+            name: El seu llindar ara
+            suffix: "%"
+          - type: attribute
+            entity: humidifier.deshumidificador
+            attribute: mode
+            name: El seu mode ara
+          - entity: binary_sensor.ventiladors_en_marxa
+            name: Ventiladors
+          - type: attribute
+            entity: binary_sensor.ventiladors_en_marxa
+            attribute: virtuals
+            name: Relés de mentida (sense S110E)
+          - type: divider
+          - entity: input_boolean.actuacio_deshumidificador
+            name: Actuar sobre el deshumidificador
+          - entity: input_boolean.actuacio_ventiladors
+            name: Actuar sobre els ventiladors
+
       - type: entities
         title: Els números que decideixen
         entities:
@@ -225,7 +253,9 @@ views:
           - entity: sensor.decisio_del_soterrani
             name: Estat
           - entity: binary_sensor.decisio_ventiladors
-            name: Ventiladors
+            name: Ventiladors (el que vol)
+          - entity: binary_sensor.ventiladors_en_marxa
+            name: Ventiladors (el que fan)
           - entity: input_select.mode_soterrani
             name: Mode
 
@@ -621,9 +651,17 @@ views:
             name: HR exterior que bloqueja (només amb «Exterior»)
 
       - type: entities
-        title: Protecció dels relés (Fase 3)
+        title: Protecció dels relés
         entities:
           - entity: input_number.min_on_ventilador
             name: Temps mínim d'engegada del ventilador
           - entity: input_number.min_off_ventilador
             name: Temps mínim d'aturada del ventilador
+          - entity: input_number.ventiladors_max_minuts
+            name: Engegada màxima (res «per sempre»)
+          - type: section
+            label: Els relés de mentida, fins als S110E
+          - entity: input_boolean.ventilador_1_virtual
+            name: Ventilador 1 (virtual)
+          - entity: input_boolean.ventilador_2_virtual
+            name: Ventilador 2 (virtual)
