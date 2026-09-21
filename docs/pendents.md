@@ -57,7 +57,8 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ### 🆕 Lògica v2 — el que falta per decidir-la ([logica-v2.md](domotica/logica-v2.md))
 
-*Proposta del 21/09/2026: llindar del deshumidificador per tram (vall 50 · pla 55 · punta 65),
+*Proposta del 21/09/2026: llindar del deshumidificador per tram, triat pel cost per litre (vall 55 ·
+pla 60 · punta 65, amb el 50 de vall com a experiment),
 urgència per sobre del preu, ventilació contra una referència triable (**planta baixa** o
 exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
 

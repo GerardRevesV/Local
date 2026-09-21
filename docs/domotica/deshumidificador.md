@@ -128,9 +128,10 @@ ni tan sols són tots del ventilador, perquè el compressor puja sol mentre s'es
 canvi, el ventilador va de 15 a 48 W (experiment 5): amb el compressor, l'aparell no el deu fer
 anar igual.
 
-**Conseqüència per a l'eficiència: quan asseca, velocitat alta.** Per ~7 W més mou molt més
-aire, i un deshumidificador treu més aigua com més aire passa per la bateria freda. *(A
-comprovar en litres; i amb fred, al soterrani, velocitat alta també ajuda a no glaçar-se.)*
+**Conseqüència per a l'eficiència: velocitat alta per defecte quan asseca**, però **a confirmar
+en litres**. Per ~7 W més mou molt més aire; alhora, més cabal refreda menys la bateria, i cada
+kg d'aire hi deixa menys aigua. Normalment guanya el cabal, sobretot amb l'aire humit, però no
+sempre. Amb fred, al soterrani, la velocitat alta a més allunya el glaç.
 
 ### 5. El ventilador sol — què costa només moure aire
 
@@ -241,7 +242,7 @@ Per ordre d'importància. El que ja té entitat hi surt; el que no, és pendent.
 | **Desgebratge (P1)** | L'hivern al soterrani: estona descongelant en comptes d'assecar | ⏳ per identificar |
 | **Hores de compressor** | El filtre cada 360 h, i les hores al dia són una casella de la Porta B. Es compten amb els watts, sense dependre de l'aparell | Watts |
 | **L'operació** | **Purificar no asseca** i posa l'aparell en mode Roba: si hi és, HA no el governa | `select.deshumidificador_mode_aire` |
-| **La velocitat** | Quan asseca, **alta**: amb el compressor només hi suma ~7 W (experiment 4). En mode Nit l'aparell la baixa sol | `fan.deshumidificador` |
+| **La velocitat** | Quan asseca, **alta per defecte**: amb el compressor només hi suma ~7 W (experiment 4). Si treu més aigua, a confirmar en litres. En mode Nit l'aparell la baixa sol | `fan.deshumidificador` |
 | **El temporitzador** | Si algú el posa a mà, s'apagarà sol | `sensor.deshumidificador_temps_restant` |
 | **El bloqueig infantil** | En un local, que ningú no li canviï el mode des dels botons | `lock.deshumidificador_bloqueig_infantil` |
 
