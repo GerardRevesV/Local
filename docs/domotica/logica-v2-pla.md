@@ -147,6 +147,12 @@ a [noms-entitats.md](noms-entitats.md) **abans de crear res**, i els pendents.
 
 ### Fase 1 — La decisió v2, en ombra
 
+> ✅ **Codificada el 22/09/2026.** `replica.py`: 106 tests; `--prova-ha`: **3.029 casos** avaluats
+> pel HA de debò, els 12 estats coberts, **cap diferència**, motiu inclòs —i amb una histèresi
+> canviada a posta en una còpia de la macro, en troba 81—; `check_config` net; i les plantilles
+> noves (HR màxima, ΔTd contra la planta baixa, la recollida d'entrades i la targeta del
+> tauler), avaluades contra els estats reals sense desplegar res. ⏳ **Pendent de desplegar.**
+
 **Entra:** `custom_templates/decisio.jinja` · `packages/control.yaml` amb els paràmetres, els
 modes i la seva caducitat, `referencia_ventilacio`, els dos interruptors d'actuació (apagats),
 l'inicialitzador i la decisió · a `rosada.yaml`, `sensor.dtd_interior_planta_baixa` i

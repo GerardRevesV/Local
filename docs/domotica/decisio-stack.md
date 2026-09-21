@@ -228,10 +228,10 @@
 **Fitxers que editaràs de debò: disset.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~3.370 línies**):* `packages/rosada.yaml` (**665**), `packages/consum.yaml` (175), `custom_templates/tarifa.jinja` (91), `tools/tarifa.py` (211), `tools/calibratge.py` (488), `tools/replica.py` (317), `scripts/comprova.sh` (302), `scripts/prepara-host.sh` (270), `scripts/instala-tuya-local.sh` (87), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
+- *Ja escrits (**~4.550 línies**):* `packages/rosada.yaml` (**445**), `packages/consum.yaml` (175), `custom_templates/tarifa.jinja` (91), `packages/control.yaml` (606), `custom_templates/decisio.jinja` (256), `tools/tarifa.py` (211), `tools/calibratge.py` (488), `tools/replica.py` (857), `scripts/comprova.sh` (302), `scripts/prepara-host.sh` (270), `scripts/instala-tuya-local.sh` (87), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
-**~3.790 línies en total.** *(Els tres fitxers del consum i la tarifa, i el de `tuya-local`, hi van entrar el 21/09/2026, després del recompte.)* La desviació més grossa és de `rosada.yaml`: les ~200 línies
+**~4.970 línies en total.** *(Els tres fitxers del consum i la tarifa, i el de `tuya-local`, hi van entrar el 21/09/2026, després del recompte; els dos de la lògica v2, el 22/09/2026, quan la decisió i els paràmetres van passar de `rosada.yaml` a `control.yaml` i `rosada.yaml` es va quedar la física.)* La desviació més grossa és de `rosada.yaml`: les ~200 línies
 estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
 d'`utility_meter` i `history_stats`. La resta són **eines de verificació i de frontera** que
 l'estimació no preveia perquè no preveia que calguessin: comprovar el host, validar el YAML
