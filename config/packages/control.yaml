@@ -190,6 +190,16 @@ input_number:
     unit_of_measurement: min
     icon: mdi:timer-pause
 
+  # Fins a quina versió s'han posat els valors de partida (vegeu l'automatisme
+  # «parametres_valors_de_partida»). Sense estat previ val 0: tots per posar.
+  parametres_versio:
+    name: Versió dels valors de partida
+    min: 0
+    max: 100
+    step: 1
+    mode: box
+    icon: mdi:numeric
+
 input_boolean:
   # ───────────────────────────────────────────────────────────────────────────
   #  EL MODE OMBRA: dos interruptors, un per aparell. Apagats, la decisió es
@@ -205,10 +215,6 @@ input_boolean:
     name: Actuar sobre els ventiladors
     icon: mdi:fan
 
-  # Els valors de partida ja s'han posat una vegada (vegeu l'automatisme).
-  parametres_inicialitzats:
-    name: Paràmetres inicialitzats
-    icon: mdi:numeric
 
 input_select:
   # ───────────────────────────────────────────────────────────────────────────
@@ -441,91 +447,103 @@ template:
 # ═════════════════════════════════════════════════════════════════════════════
 automation:
   # ───────────────────────────────────────────────────────────────────────────
-  #  Els valors de partida, UNA sola vegada (vegeu PARÀMETRES, dalt de tot).
-  #  Es dispara en arrencar i en recarregar els automatismes; la condició fa
-  #  que només actuï si mai no s'ha fet. Si es perd .storage, es perden
-  #  alhora els valors i la marca, i torna a posar-los: sempre quadren.
-  #  ⚠️ Aquests valors i PARAMETRES_DE_PARTIDA de tools/replica.py han de dir
-  #     el mateix; el test ho comprova. Format fix, una línia per valor.
+  #  Els valors de partida, UNA sola vegada per paràmetre (vegeu PARÀMETRES,
+  #  dalt de tot). Per VERSIONS: cada fase que afegeix paràmetres hi posa un
+  #  bloc nou i puja «ultima». Així un paràmetre que arriba més tard rep el seu
+  #  valor encara que els vells ja el tinguin —amb una marca de sí o no, es
+  #  quedaria al mínim del rang—, i els que ja hi eren no es toquen.
+  #  Es dispara en arrencar i en recarregar els automatismes. Si es perd
+  #  .storage, es perden alhora els valors i la versió, i els torna a posar
+  #  tots: sempre quadren.
+  #  ⚠️ Aquests valors i els de tools/replica.py han de dir el mateix; el test
+  #     ho comprova. Format fix, una línia per valor.
   # ───────────────────────────────────────────────────────────────────────────
   - id: parametres_valors_de_partida
-    alias: "Paràmetres — valors de partida, la primera vegada"
+    alias: "Paràmetres — valors de partida, una sola vegada"
     mode: single
     trigger:
       - platform: homeassistant
         event: start
       - platform: event
         event_type: automation_reloaded
+    variables:
+      ultima: 1
+      versio: "{{ states('input_number.parametres_versio') | int(0) }}"
     condition:
-      - condition: not
-        conditions:
-          - condition: state
-            entity_id: input_boolean.parametres_inicialitzats
-            state: "on"
+      - condition: template
+        value_template: "{{ versio < ultima }}"
     action:
+      # ── Versió 1 (22/09/2026): la Fase 1 de la lògica v2
+      - if:
+          - condition: template
+            value_template: "{{ versio < 1 }}"
+        then:
+          - service: input_number.set_value
+            target: { entity_id: input_number.delta_td_on }
+            data: { value: 2.0 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.delta_td_off }
+            data: { value: 0.8 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.delta_td_higiene }
+            data: { value: 0.0 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.t_int_minima }
+            data: { value: 13 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_ext_bloqueig }
+            data: { value: 95 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.marge_superficie_min }
+            data: { value: 3.0 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_vall }
+            data: { value: 55 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_pla }
+            data: { value: 60 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_punta }
+            data: { value: 65 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_fix }
+            data: { value: 55 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_urgencia }
+            data: { value: 70 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_urgencia_objectiu }
+            data: { value: 50 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.hr_mentre_ventila }
+            data: { value: 70 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.renovacions_dia }
+            data: { value: 3 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.renovacions_absencia }
+            data: { value: 1 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.cabal_ventiladors }
+            data: { value: 150 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.volum_soterrani }
+            data: { value: 115 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.min_on_ventilador }
+            data: { value: 12 }
+          - service: input_number.set_value
+            target: { entity_id: input_number.min_off_ventilador }
+            data: { value: 10 }
       - service: input_number.set_value
-        target: { entity_id: input_number.delta_td_on }
-        data: { value: 2.0 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.delta_td_off }
-        data: { value: 0.8 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.delta_td_higiene }
-        data: { value: 0.0 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.t_int_minima }
-        data: { value: 13 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_ext_bloqueig }
-        data: { value: 95 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.marge_superficie_min }
-        data: { value: 3.0 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_vall }
-        data: { value: 55 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_pla }
-        data: { value: 60 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_punta }
-        data: { value: 65 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_fix }
-        data: { value: 55 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_urgencia }
-        data: { value: 70 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_urgencia_objectiu }
-        data: { value: 50 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.hr_mentre_ventila }
-        data: { value: 70 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.renovacions_dia }
-        data: { value: 3 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.renovacions_absencia }
-        data: { value: 1 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.cabal_ventiladors }
-        data: { value: 150 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.volum_soterrani }
-        data: { value: 115 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.min_on_ventilador }
-        data: { value: 12 }
-      - service: input_number.set_value
-        target: { entity_id: input_number.min_off_ventilador }
-        data: { value: 10 }
-      - service: input_boolean.turn_on
-        target: { entity_id: input_boolean.parametres_inicialitzats }
+        target:
+          entity_id: input_number.parametres_versio
+        data:
+          value: "{{ ultima }}"
       - service: logbook.log
         data:
           name: Paràmetres
-          message: "valors de partida de la lògica v2 posats (logica-v2-pla.md)"
+          message: "valors de partida posats, de la versió {{ versio + 1 }} a la {{ ultima }} (logica-v2-pla.md)"
 
   # ───────────────────────────────────────────────────────────────────────────
   #  EL MODE CADUCA SOL i torna a «Òptim».
