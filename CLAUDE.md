@@ -89,6 +89,7 @@ docs/
     calibratge.md      Procediment del calibratge creuat dels cinc sensors
     emparellar-matter.md  Com s'afegeix un aparell per Matter sense partir la sèrie
     deshumidificador.md  Com funciona de debò, què n'ha de saber HA, i els experiments
+    logica-v2.md       Proposta: llindar per tram, ventilació contra la planta baixa, estats
     requisits.md       El que el sistema ha de saber fer i encara no és decisió
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE

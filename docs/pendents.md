@@ -55,6 +55,22 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ## Domòtica
 
+### 🆕 Lògica v2 — el que falta per decidir-la ([logica-v2.md](domotica/logica-v2.md))
+
+*Proposta del 21/09/2026: llindar del deshumidificador per tram (vall 50 · pla 55 · punta 65),
+urgència per sobre del preu, ventilació contra una referència triable (**planta baixa** o
+exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
+
+- [ ] **Models i cabal dels ventiladors** (l'usuari en té fotos) → `installacions.md`.
+- [ ] **La porta de l'escala: oberta o tancada**, habitualment. Canvia el cabal i per on entra
+      l'aire.
+- [ ] **Si els S110E tenen temporitzador propi**, perquè els ventiladors s'apaguin sols si HA
+      cau engegant-los.
+- [ ] **Decidir la v2** i, llavors, codificar-la a `rosada.yaml` amb la rèplica offline.
+- [ ] 📌 **Filament en caixes estanques amb dessecant**: a un 55 % ja agafa massa humitat.
+- [ ] **Provar l'assecat intern apagant l'aparell**, no amb el llindar: amb el llindar no allarga
+      els 5 min de ventilador (21/09/2026), i probablement només actua en apagar-lo.
+
 ### 🔴 Resiliència — el que falta perquè una caiguda no costi dades ni silenci
 
 *Prioritzat el 21/09/2026.* El deshumidificador ja aguanta sol qualsevol caiguda (torna sol,
