@@ -300,16 +300,21 @@ done
 #
 # ⚠️ En mode breu, el ✗ només pel que ha passat des del ping anterior (35 min:
 #    els 30 del període i marge). healthchecks.io només avisa quan el check
-#    CANVIA d'estat: un OOM que fes fallar la bategada 7 dies seguits la
-#    deixaria en vermell tota la setmana, i qualsevol altra caiguda d'aquells
-#    dies passaria SENSE correu. Així, cada OOM dona un avís i prou. El
-#    recompte de 7 dies hi va igualment, a la línia de la memòria.
+#    CANVIA d'estat: un OOM que fes fallar el check «estat» 7 dies seguits el
+#    deixaria en vermell tota la setmana, i qualsevol altre ✗ d'aquells dies
+#    passaria SENSE correu. Així, cada OOM dona un avís i prou. El recompte de
+#    7 dies hi va igualment, a la línia de la memòria.
+#
+# ⚠️ «_TRANSPORT=kernel» i NO «-k»: «-k» vol dir «--dmesg», que porta implícit
+#    «-b», o sigui NOMÉS L'ARRENCADA ACTUAL. Un OOM que acabés en reinici
+#    —justament el pitjor— desapareixia del recompte en tornar a engegar.
+#    Comprovat el 21/09/2026: amb «-k», res abans de l'última arrencada.
 oom="?"
-if journalctl -k -n 1 >/dev/null 2>&1; then
+if journalctl _TRANSPORT=kernel -n 1 >/dev/null 2>&1; then
   patro='oom-kill:|Out of memory: Killed process'
-  oom=$(journalctl -k --since "-7 days" 2>/dev/null | grep -ciE "$patro" || true)
+  oom=$(journalctl _TRANSPORT=kernel --since "-7 days" 2>/dev/null | grep -ciE "$patro" || true)
   if [ "$BREU" = 1 ]; then
-    oom_nou=$(journalctl -k --since "-35 min" 2>/dev/null | grep -ciE "$patro" || true)
+    oom_nou=$(journalctl _TRANSPORT=kernel --since "-35 min" 2>/dev/null | grep -ciE "$patro" || true)
     [ "${oom_nou:-0}" -eq 0 ] \
       || mal "$oom_nou mort(s) per memòria al kernel en l'última mitja hora — hi ha un forat a l'històric"
   else
@@ -324,7 +329,8 @@ fi
 sw=$(cat /proc/sys/vm/swappiness 2>/dev/null || echo "?")
 [ "$sw" = 10 ] && ok "vm.swappiness=10" \
                || avis "vm.swappiness=$sw — s'espera 10 (vegeu prepara-host.sh)"
-read -r ram_disp ram_total < <(free -m | awk '/^Mem:/{print $7, $2}')
+# «LC_ALL=C»: en alguns idiomes «free» tradueix l'etiqueta «Mem:».
+read -r ram_disp ram_total < <(LC_ALL=C free -m | awk '/^Mem:/{print $7, $2}')
 [ "$BREU" = 1 ] \
   && fet "memòria: $ram_disp MB disponibles de $ram_total · OOM en 7 dies: $oom · reinicis: $reinicis"
 if [ "${ram_disp:-0}" -lt 400 ] 2>/dev/null; then
@@ -440,14 +446,18 @@ if crontab -l 2>/dev/null | grep -v '^#' | grep -q 'scripts/bategada.sh'; then
 else
   mal "la bategada NO està programada — si la màquina cau, no t'assabentes (bash scripts/bategada.sh --instala)"
 fi
-URL_BAT=~/.bategada_url
-if [ ! -r "$URL_BAT" ]; then
-  mal "falta $URL_BAT — la bategada no sap on enviar-se"
-elif [ "$(stat -c %a "$URL_BAT")" != 600 ]; then
-  avis "$URL_BAT té permisos $(stat -c %a "$URL_BAT"): ha de ser 600, és un secret"
-else
-  ok "$URL_BAT hi és, amb permisos 600"
-fi
+# Dos secrets, un per check (vegeu la capçalera de bategada.sh): sense el de
+# «bategada» no surt res; sense el d'«estat», surt, però un ✗ no avisa.
+for par in "bategada:la bategada no sap on enviar-se" "estat:un ✗ no enviarà cap correu"; do
+  u=~/.${par%%:*}_url
+  if [ ! -r "$u" ]; then
+    mal "falta $u — ${par#*:}"
+  elif [ "$(stat -c %a "$u")" != 600 ]; then
+    avis "$u té permisos $(stat -c %a "$u"): ha de ser 600, és un secret"
+  else
+    ok "$u hi és, amb permisos 600"
+  fi
+done
 DARRERA=${XDG_STATE_HOME:-$HOME/.local/state}/bategada/darrera
 if [ -r "$DARRERA" ]; then
   read -r quan codi_bat < "$DARRERA"
@@ -456,9 +466,9 @@ if [ -r "$DARRERA" ]; then
   if [ "$edat" -gt 2700 ]; then
     mal "l'última bategada enviada és de fa $(durada "$edat") — mira «journalctl -t bategada»"
   elif [ "${codi_bat:-0}" != 0 ]; then
-    avis "l'última bategada (fa $(durada "$edat")) va sortir com a FALLADA (codi $codi_bat)"
+    avis "l'última bategada (fa $(durada "$edat")) portava un ✗ (codi $codi_bat): el check «estat» és en vermell"
   else
-    ok "l'última bategada va sortir fa $(durada "$edat"), verda"
+    ok "l'última bategada va sortir fa $(durada "$edat"), sense cap ✗"
   fi
 else
   avis "encara no s'ha enviat cap bategada des d'aquesta màquina"

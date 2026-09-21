@@ -398,11 +398,14 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       ✅ ***21/09/2026 — `scripts/bategada.sh` escrit*** i provat al servidor sense enviar: el
       cos és `comprova.sh --breu` i diu si hi ha corrent, si els contenidors corren, si HA
       respon, si el recorder escriu, la bateria, el disc i Tailscale. **Falta, per ordre:**
-      1. 👤 Compte a healthchecks.io i check `bategada` (30 min, marge 3 h); l'URL, a
-         `~/.bategada_url` → [runbook](domotica/runbook-servidor.md#lavís-de-caiguda--healthchecksio).
+      1. 👤 Compte a healthchecks.io i **dos** checks: `bategada` (30 min, marge 3 h) i `estat`
+         (30 min, marge 1 dia). Les URL, a `~/.bategada_url` i `~/.estat_url`
+         → [runbook](domotica/runbook-servidor.md#lavís-de-caiguda--healthchecksio).
       2. Desplegar (`git pull --ff-only`) i `bash scripts/bategada.sh --instala`.
-      3. Veure arribar la primera, i un **correu de fallada** amb `--falla`.
-      4. La prova de silenci de la **Porta A**: desconnectar el portàtil i rebre el correu.
+      3. Veure arribar la primera als dos checks, i un **correu de fallada** d'`estat` amb
+         `--falla`.
+      4. La prova de silenci de la **Porta A**: desconnectar el portàtil i rebre el correu de
+         `bategada`.
       5. El check **`nit`**, quan existeixi `nit.py` (mateix conveni: `~/.nit_url`).
 - [ ] Valorar un **endoll intel·ligent de rearmada** per al portàtil i el router,
       independent de Home Assistant.

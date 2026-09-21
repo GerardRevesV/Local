@@ -156,19 +156,30 @@ Després, al navegador: **http://LA-IP:8123** → crear el compte.
 Sense això, si la màquina cau **no te n'assabentes**. El disseny i el perquè són a
 [decisio-stack.md](decisio-stack.md#-la-bategada-tal-com-sha-muntat).
 
-**1. Al web de healthchecks.io** (compte gratuït): un check **`bategada`**, tipus *Simple*,
-***Period* 30 minuts** i ***Grace* 3 hores**, amb avís per correu. Se'n copia l'**URL de ping**
-(`https://hc-ping.com/…`).
+**1. Al web de healthchecks.io** (compte gratuït): **dos** checks, tipus *Simple*, amb avís per
+correu. Cada un té la seva **URL de ping** (`https://hc-ping.com/…`).
 
-**2. L'URL, al servidor i enlloc més.** ⚠️ És un **secret** —amb ella qualsevol pot fer callar
-l'avís— i aquest repositori és públic. Es crea amb permisos 600 des del primer byte, sense que
-passi per cap argument ni per l'historial del shell:
+| Check | *Period* | *Grace* | Per a què |
+|---|---|---|---|
+| **`bategada`** | 30 minuts | **3 hores** | El silenci: rep sempre un «tot bé», i avisa si deixa d'arribar |
+| **`estat`** | 30 minuts | **1 dia** | Els `✗`: avisa al moment, i quan s'arregla. El dia de marge és perquè una mort de la màquina no doni dos correus |
+
+Per què dos i no un: [decisio-stack.md](decisio-stack.md#-la-bategada-tal-com-sha-muntat),
+punt 0.
+
+**2. Les URL, al servidor i enlloc més.** ⚠️ Són **secretes** —amb elles qualsevol pot fer
+callar l'avís— i aquest repositori és públic. Es creen amb permisos 600 des del primer byte,
+sense que passin per cap argument ni per l'historial del shell:
 
 ```bash
 ssh -t local-ha '(umask 077; cat > ~/.bategada_url)'
 ```
 
-S'enganxa l'URL, `Enter` i `Ctrl-D`.
+```bash
+ssh -t local-ha '(umask 077; cat > ~/.estat_url)'
+```
+
+A cada una, s'enganxa l'URL del check que toca, `Enter` i `Ctrl-D`.
 
 **3. Mirar què enviaria, sense enviar res:**
 
@@ -185,8 +196,9 @@ programada amb un `✗`, el primer correu ja seria una fallada.
 ssh local-ha "cd ~/Local && bash scripts/bategada.sh --instala"
 ```
 
-Deixa dues línies a la crontab: una als minuts **7 i 37** de cada hora i una **2 min després
-de cada arrencada**. La sortida va al journal:
+Deixa dues línies a la crontab: una als minuts **7 i 37** de cada hora i una **en cada
+arrencada** (el guió espera als 150 s d'engegada, que HA hagi tingut temps d'aixecar-se). Si
+no pot llegir la crontab, **no toca res**. La sortida va al journal:
 
 ```bash
 ssh local-ha "journalctl -t bategada -n 20"
@@ -194,14 +206,15 @@ ssh local-ha "journalctl -t bategada -n 20"
 
 **5. Provar que avisa, en els dos sentits:**
 
-- **Fallada:** `bash scripts/bategada.sh --falla` ha de fer arribar un correu **al moment**,
-  amb `✗ PROVA` al cos. La bategada següent el torna a verd, amb un segon correu.
-- **Silenci:** desconnectar el portàtil de la xarxa (o apagar-lo) i esperar: el correu
-  arriba **entre 3 i 3,5 h** després de l'última bategada (el període més el marge). És la
-  prova de la **Porta A** ([fases.md](fases.md)).
+- **Fallada:** `bash scripts/bategada.sh --falla` ha de posar **`estat`** en vermell, amb un
+  correu **al moment** i `✗ PROVA` al cos. `bategada` es queda verda. La bategada següent torna
+  `estat` a verd, amb un segon correu.
+- **Silenci:** desconnectar el portàtil de la xarxa (o apagar-lo) i esperar: el correu de
+  **`bategada`** arriba **entre 3 i 3,5 h** després de l'última (el període més el marge). És
+  la prova de la **Porta A** ([fases.md](fases.md)).
 
-**`comprova.sh` vigila la bategada:** diu si és a la crontab, si l'URL hi és amb permisos 600
-i si la darrera ha sortit fa menys de 45 min.
+**`comprova.sh` vigila la bategada:** diu si és a la crontab, si les dues URL hi són amb
+permisos 600 i si la darrera ha sortit fa menys de 45 min.
 
 ---
 
@@ -219,7 +232,7 @@ i si la darrera ha sortit fa menys de 45 min.
 | Python | 3.12.3 | Mint — `nit.py` només farà servir la biblioteca estàndard |
 
 **Serveis actius a l'arrencada:** `ssh`, `docker`, `tailscaled`, `cron` (el de Mint, de sèrie; hi penja la bategada).
-**A la crontab de l'usuari:** la bategada cap a healthchecks.io, posada per `bash scripts/bategada.sh --instala`. L'URL, a `~/.bategada_url` (600), fora del repositori.
+**A la crontab de l'usuari:** la bategada cap a healthchecks.io, posada per `bash scripts/bategada.sh --instala`. Les URL, a `~/.bategada_url` i `~/.estat_url` (600), fora del repositori.
 **Emmascarats a posta:** `sleep.target`, `suspend.target`, `hibernate.target`.
 **Apagat a posta:** `bluetooth`.
 **Ajustat a posta:** `vm.swappiness=10` (`/etc/sysctl.d/99-memoria.conf`, el posa `prepara-host.sh`).
@@ -454,11 +467,16 @@ dir-ho**, no callar.
 
 ### 🪤 healthchecks.io només avisa quan el check canvia d'estat
 
-Un check que ja és en vermell **no torna a avisar** per una fallada nova. Per això la bategada
-no pot fallar per una cosa que dura: un OOM de fa sis dies la tindria en vermell tota la
-setmana, i si aquells dies queia la màquina **no arribaria cap correu**. La regla: el que fa
-fallar el ping ha de ser **l'estat d'ara** (sense corrent, un contenidor aturat) o **el que ha
-passat des del ping anterior** (un OOM dels últims 35 minuts), mai un recompte de dies.
+Un check que ja és en vermell **no torna a avisar** per una fallada nova. La primera versió de
+la bategada tenia **un sol check**: un `✗` que durés —el disc al 90 %, Tailscale
+desconnectat— el deixava en vermell, i si llavors la màquina moria **no arribava cap correu**.
+Ho va trobar la revisió del PR. Per això són dos: **`bategada` rep sempre un «tot bé»** i
+només pot anar a vermell per silenci, i els `✗` van a **`estat`**.
+
+I dins d'`estat` la regla continua valent: el que el fa fallar ha de ser **l'estat d'ara**
+(sense corrent, un contenidor aturat) o **el que ha passat des del ping anterior** (un OOM dels
+últims 35 minuts), mai un recompte de dies. Un OOM de fa sis dies el tindria en vermell tota
+la setmana, i qualsevol altre `✗` d'aquells dies passaria sense correu.
 
 ---
 
@@ -474,8 +492,9 @@ L'ordre importa, perquè el que no es pot recuperar és l'històric:
 4. `docker compose up -d` i `check_config`.
 5. Comprova que `purge_keep_days` segueix sent **730** *a la instància en calent*, no al fitxer.
 6. **Torna a posar la bategada** ([punt 6](#lavís-de-caiguda--healthchecksio), passos 2 a 4).
-   L'URL no és a cap còpia: es torna a copiar del web de healthchecks.io, on el check segueix
-   existint. Mentre no hi sigui, el check **ja deu estar en vermell** des que va morir el disc.
+   Les URL no són a cap còpia: es tornen a copiar del web de healthchecks.io, on els checks
+   segueixen existint. Mentre no hi siguin, `bategada` **ja deu estar en vermell** des que va
+   morir el disc.
 
 > La pèrdua màxima és de **24 hores**, perquè la instantània és nocturna.
 >
