@@ -21,60 +21,108 @@ views:
     cards:
 
       # ── LA RESPOSTA ─────────────────────────────────────────────────────────
+      #  La decisió v2 (packages/control.yaml): què fa, i què vol als aparells.
+      #  En ombra, és el que FARIA: no s'actua sobre res.
+      #  ⚠️ «content: |» i no «>»: la taula necessita un salt de línia per fila.
       - type: markdown
-        content: >
-          {% set d = states('sensor.decisio_del_soterrani') %}
-          {% set m = state_attr('sensor.decisio_del_soterrani', 'motiu') %}
-
-          # {{ {'ventilar': '🌬️ VENTILAR',
+        content: |
+          {%- set s = 'sensor.decisio_del_soterrani' -%}
+          {%- set d = states(s) -%}
+          {%- set m = state_attr(s, 'motiu') -%}
+          {%- set act = state_attr(s, 'actuacio') or {} -%}
+          {%- set ll = state_attr(s, 'llindar') -%}
+          {%- set v = state_attr(s, 'ventiladors') -%}
+          # {{ {'urgencia': '🚨 URGÈNCIA',
+                'ventilar': '🌬️ VENTILAR',
+                'higiene': "🔄 RENOVAR L'AIRE",
                 'deshumidificar': '💧 DESHUMIDIFICAR',
                 'repos': '✅ REPÒS',
+                'ocupat': '🛏️ OCUPAT',
+                'impressio': '🖨️ IMPRESSIÓ',
+                'fix': '📌 LLINDAR FIX',
                 'bloquejat': '⛔ BLOQUEJAT',
+                'aturat': '⏸️ TOT ATURAT',
                 'sense_dades': '❓ SENSE DADES',
                 'calibratge': '🧪 CALIBRATGE'}.get(d, d) }}
 
           ### {{ m if m else '—' }}
 
-          {% if d == 'ventilar' %}
-          L'aire de fora és més sec que el de dins: obrir els ventiladors
-          treu aigua **sense engegar el compressor**.
-          {% elif d == 'deshumidificar' %}
-          Ventilar ara **afegiria aigua**. Si cal assecar, ha de ser amb el
-          deshumidificador.
-          {% elif d == 'repos' %}
-          L'objectiu d'humitat ja està assolit. No cal fer res.
-          {% elif d == 'calibratge' %}
+          | | |
+          |---|---|
+          | **Deshumidificador** | {% if ll is number %}al **{{ ll }} %**, {{ 'mode Nit' if state_attr(s, 'mode_aparell') == 'sleep' else 'Manual, velocitat alta' }}{% else %}no es toca{% endif %} |
+          | **Ventiladors** | {{ '**engegats**' if v == true else 'aturats' if v == false else 'no es toquen' }} |
+          | **Mode** | {{ states('input_select.mode_soterrani') }}{% if is_state('timer.override_manual', 'active') %} · caduca a les {{ (state_attr('timer.override_manual', 'finishes_at') | as_datetime | as_local).strftime('%H:%M') }}{% endif %} |
+          | **Tram** | {{ state_attr(s, 'tram') or '—' }} · llindar del tram: {{ state_attr(s, 'llindar_tram') or '—' }} % |
+
+          {% if d == 'calibratge' -%}
           Els cinc sensors estan **junts per calibrar-los**, no al seu lloc.
           Cap lectura d'aquesta pantalla vol dir res del soterrani.
-          {% endif %}
+          {%- elif not act.get('deshumidificador') and not act.get('ventiladors') -%}
+          🌓 **En ombra**: és el que **faria**. No s'actua sobre cap aparell
+          (Ajustos → *Actuar*).
+          {%- endif %}
 
-      # ── EL NÚMERO QUE DECIDEIX ──────────────────────────────────────────────
-      - type: gauge
-        entity: sensor.dtd_interior_exterior
-        name: ΔTd · dins menys fora
-        unit: °C
-        min: -6
-        max: 6
-        needle: true
-        severity:
-          red: -6      # ventilar afegiria aigua
-          yellow: 0.8  # banda morta: ni engega ni atura
-          green: 2.0   # a partir d'aquí, ventilar surt a compte
+      # ── ELS NÚMEROS QUE DECIDEIXEN ──────────────────────────────────────────
+      #  Els dos ΔTd: la referència la tria input_select.referencia_ventilacio,
+      #  però es graven tots dos per saber quin encerta. Els colors són els
+      #  llindars de partida (0,8 i 2,0 °C): una targeta no llegeix paràmetres.
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.dtd_interior_planta_baixa
+            name: ΔTd · contra la planta baixa
+            unit: °C
+            min: -6
+            max: 6
+            needle: true
+            severity:
+              red: -6
+              yellow: 0.8
+              green: 2.0
+          - type: gauge
+            entity: sensor.dtd_interior_exterior
+            name: ΔTd · contra fora
+            unit: °C
+            min: -6
+            max: 6
+            needle: true
+            severity:
+              red: -6
+              yellow: 0.8
+              green: 2.0
 
       - type: entities
-        title: Els dos números que es resten
+        title: Els números que decideixen
         entities:
+          - entity: sensor.soterrani_humitat_maxima
+            name: HR del pitjor racó (calibrada)
+          - type: attribute
+            entity: sensor.soterrani_humitat_maxima
+            attribute: punt
+            name: Quin racó
+          - entity: sensor.marge_de_condensacio
+            name: Marge de la paret
+          - type: divider
           - entity: sensor.soterrani_punt_de_rosada_de_referencia
             name: Td interior (el punt més humit)
+          - entity: sensor.planta_baixa_punt_de_rosada
+            name: Td de la planta baixa
           - entity: sensor.exterior_punt_de_rosada
-            name: Td exterior
-          - type: divider
-          - entity: sensor.dtd_interior_exterior
-            name: Diferència
+            name: Td de fora
           - type: attribute
             entity: sensor.decisio_del_soterrani
             attribute: punt_mes_humit
-            name: Racó més humit ara
+            name: Racó més humit (per Td)
+          - type: divider
+          - entity: sensor.ventilacio_minuts_avui
+            name: Minuts de ventilació avui
+          - type: attribute
+            entity: sensor.decisio_del_soterrani
+            attribute: higiene_pendent
+            name: Minuts de renovació que falten
+            suffix: min
 
       # ── ELS PUNTS, UN A UN ──────────────────────────────────────────────────
       - type: entities
@@ -135,30 +183,51 @@ views:
     icon: mdi:chart-line
     cards:
 
-      # El gràfic que ho explica tot: quan la línia de fora va per sota de la
-      # de dins, ventilar asseca. La distància entre les dues és el ΔTd.
+      # El gràfic que ho explica tot: quan la línia de dalt o de fora va per
+      # sota de la de dins, ventilar asseca. La distància és el ΔTd.
       - type: history-graph
-        title: Punt de rosada — dins contra fora
+        title: Punt de rosada — dins, la planta baixa i fora
         hours_to_show: 48
         entities:
           - entity: sensor.soterrani_punt_de_rosada_de_referencia
             name: Interior (referència)
+          - entity: sensor.planta_baixa_punt_de_rosada
+            name: Planta baixa
           - entity: sensor.exterior_punt_de_rosada
             name: Exterior
 
+      # Les dues referències, juntes: amb unes setmanes, quina prediu millor
+      # que ventilar asseca (logica-v2.md). La que decideix és la de Ajustos.
       - type: history-graph
         title: ΔTd — per sobre de 2 °C, ventilar surt a compte
         hours_to_show: 48
         entities:
+          - entity: sensor.dtd_interior_planta_baixa
+            name: Contra la planta baixa
           - entity: sensor.dtd_interior_exterior
-            name: ΔTd
+            name: Contra fora
+
+      # El segon nivell de la v2, a la vista: el pitjor racó contra el llindar
+      # que la decisió vol a l'aparell. Tots dos en %, al mateix eix.
+      - type: history-graph
+        title: El pitjor racó contra el llindar del deshumidificador
+        hours_to_show: 48
+        entities:
+          - entity: sensor.soterrani_humitat_maxima
+            name: HR del pitjor racó
+          - entity: sensor.decisio_llindar_deshumidificador
+            name: Llindar que vol la decisió
 
       - type: history-graph
         title: Decisió
         hours_to_show: 48
         entities:
           - entity: sensor.decisio_del_soterrani
-            name: Què hauria fet
+            name: Estat
+          - entity: binary_sensor.decisio_ventiladors
+            name: Ventiladors
+          - entity: input_select.mode_soterrani
+            name: Mode
 
       # Els watts, amb la mateixa finestra que la resta (R3 de requisits.md):
       # les bandes de funcionament surten de la potència, no de l'estat de
@@ -345,28 +414,86 @@ views:
     icon: mdi:tune
     cards:
 
+      - type: entities
+        title: Mode
+        entities:
+          - entity: input_select.mode_soterrani
+            name: Mode del soterrani
+          - entity: timer.override_manual
+            name: Caducitat del mode
+          - entity: input_select.referencia_ventilacio
+            name: Referència per ventilar
+          - type: section
+            label: Actuar — apagat, la decisió només es grava (ombra)
+          - entity: input_boolean.actuacio_deshumidificador
+            name: Actuar sobre el deshumidificador
+          - entity: input_boolean.actuacio_ventiladors
+            name: Actuar sobre els ventiladors
+
       - type: markdown
         content: >
+          ### Els modes
+
+          **Òptim**, el de cada dia. **Ocupat** (12 h): ventilació contínua i
+          l'aparell en mode Nit. **Prioritzar ventilació** (4 h): renova encara
+          que costi. **Assecat intensiu** (12 h): al 50 %, sigui quin sigui el
+          preu. **Silenci** (10 h): res de ventiladors, aparell en Nit.
+          **Impressió** (3 h): ventilació contínua, fins i tot amb fred.
+          **Absència**: menys renovació. **Llindar fix**: l'aparell a un
+          llindar fix, per a la setmana de base. **Tot aturat**: manteniment,
+          cap ordre. Els que caduquen tornen sols a *Òptim*. La **urgència**
+          passa per davant de tots, menys de *Tot aturat*.
+
           ### Els llindars
 
-          Aquests valors són els que decideixen. Els d'ara són una **estimació
-          de partida** treta de l'error dels sensors, no una mesura: es fixaran
-          amb dades pròpies quan n'hi hagi un mes.
+          Són **hipòtesis de partida** (logica-v2.md): es corregiran amb les
+          dades que la mateixa lògica deixa cada dia.
 
           ⚠️ **`Δ d'arrencada` ha de ser més gran que `Δ d'aturada`.** Si es
-          creuen, el ventilador engega i s'atura sense parar.
+          creuen, la decisió passa a *bloquejat* i no es ventila per ΔTd.
 
       - type: entities
-        title: Llindars de decisió
+        title: Deshumidificador — llindar per tram (cost per litre)
+        entities:
+          - entity: input_number.hr_vall
+            name: En vall
+          - entity: input_number.hr_pla
+            name: En pla
+          - entity: input_number.hr_punta
+            name: En punta
+          - entity: input_number.hr_mentre_ventila
+            name: Mentre ventila
+          - entity: input_number.hr_fix
+            name: En mode «Llindar fix»
+
+      - type: entities
+        title: Urgència — passa per davant del preu
+        entities:
+          - entity: input_number.hr_urgencia
+            name: HR del pitjor racó que és urgència
+          - entity: input_number.hr_urgencia_objectiu
+            name: On asseca la urgència
+          - entity: input_number.marge_superficie_min
+            name: Marge mínim de la paret
+
+      - type: entities
+        title: Ventilació
         entities:
           - entity: input_number.delta_td_on
             name: Δ d'arrencada — per sobre d'això, ventilar
           - entity: input_number.delta_td_off
             name: Δ d'aturada — per sota, parar
-          - entity: input_number.hr_objectiu
-            name: Humitat relativa objectiu
-          - entity: input_number.marge_superficie_min
-            name: Marge mínim de condensació
+          - entity: input_number.delta_td_higiene
+            name: Δ a partir del qual renovar no mulla
+          - type: divider
+          - entity: input_number.renovacions_dia
+            name: Renovacions al dia
+          - entity: input_number.renovacions_absencia
+            name: Renovacions al dia en «Absència»
+          - entity: input_number.cabal_ventiladors
+            name: Cabal dels ventiladors (hipotètic)
+          - entity: input_number.volum_soterrani
+            name: Volum del soterrani
 
       - type: entities
         title: Bloquejos de seguretat
@@ -374,22 +501,12 @@ views:
           - entity: input_number.t_int_minima
             name: Temperatura interior mínima per ventilar
           - entity: input_number.hr_ext_bloqueig
-            name: HR exterior que bloqueja
+            name: HR exterior que bloqueja (només amb «Exterior»)
 
       - type: entities
-        title: Protecció dels aparells
+        title: Protecció dels relés (Fase 3)
         entities:
           - entity: input_number.min_on_ventilador
             name: Temps mínim d'engegada del ventilador
           - entity: input_number.min_off_ventilador
             name: Temps mínim d'aturada del ventilador
-          - entity: input_number.min_off_deshumidificador
-            name: Temps mínim d'aturada del deshumidificador
-
-      - type: entities
-        title: Mode
-        entities:
-          - entity: input_select.mode_soterrani
-            name: Mode del soterrani
-          - entity: timer.override_manual
-            name: Caducitat del mode manual
