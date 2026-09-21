@@ -177,9 +177,15 @@ def graella(dades, inici: datetime, fi: datetime, pas_s: int = PAS_GRAELLA_S):
         punts = []
         for quan, estat in sorted(dades.get(nom, [])):
             try:
-                punts.append((quan, float(estat)))
+                valor = float(estat)
             except ValueError:
-                continue  # unknown, unavailable
+                # ⚠️ «unavailable» o «unknown» és un FORAT, no un «no ha canviat».
+                #    Saltar-lo feia que el valor d'abans seguís vigent: un sensor
+                #    amb la bateria morta quedava CONGELAT com si fos viu mentre
+                #    els altres pujaven, i l'ajust en treia una desviació enorme
+                #    i falsa. Amb None, aquestes files queden fora.
+                valor = None
+            punts.append((quan, valor))
         series[nom] = punts
 
     files = []
@@ -421,6 +427,16 @@ def tests() -> int:
          len(llegit.get("sensor.x", [])) == 3,
          f"{len(llegit.get('sensor.x', []))} de 3 llegits")
     prop("i una serie buida no peta", list(llegit) == ["sensor.x"])
+
+    print("\nUn sensor que cau no queda congelat")
+    t0 = datetime(2026, 9, 21, tzinfo=timezone.utc)
+    caigut = {f"sensor.{n}_{m}": [(t0, "50.0")] for n in SENSORS for m in ("temperatura", "humitat")}
+    caigut["sensor.soterrani_fons_humitat"] += [(t0 + timedelta(minutes=30), "unavailable"),
+                                              (t0 + timedelta(minutes=60), "51.0")]
+    files_c = graella(caigut, t0, t0 + timedelta(minutes=90))
+    durant = [f for f in files_c if t0 + timedelta(minutes=30) <= f[0] < t0 + timedelta(minutes=60)]
+    prop("els minuts sense dada queden fora", len(durant) == 0, f"{len(durant)} files mentre estava caigut")
+    prop("i quan torna, torna a comptar", len(files_c) == 61, f"{len(files_c)} de 61")
 
     print("\nLa finestra surt del marcador")
     t0 = datetime(2026, 9, 21, tzinfo=timezone.utc)
