@@ -55,6 +55,25 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ## Domòtica
 
+### 🔴 Resiliència — el que falta perquè una caiguda no costi dades ni silenci
+
+*Prioritzat el 21/09/2026.* El deshumidificador ja aguanta sol qualsevol caiguda (torna sol,
+recorda la configuració i es controla des de Smart Life); **les dades i els avisos, no**. Anàlisi
+sencera a [home-assistant.md](domotica/home-assistant.md#què-passa-si-cau-la-llum-el-portàtil-o-internet).
+Per ordre de profit per esforç —cada un té el seu pendent més avall:
+
+1. 🔴 **Avís de caiguda** (healthchecks.io). Avui, si el portàtil cau, **no te n'assabentes**. →
+   «Muntar un avís de caiguda», a *Muntatge*.
+2. 🔴 **BIOS — *restore on AC power loss***. Sense això, un tall més llarg que la bateria deixa HA
+   apagat fins que algú hi vagi. → *Tanda física*.
+3. 🔴 **Còpies de seguretat**: `matter-data/` (les claus: sense elles, reemparellar i sèrie
+   partida), `config/.storage` i l'històric. Avui un portàtil mort ho perd tot. → «`matter-data/`
+   ha d'entrar a la còpia de seguretat», a *Muntatge*, i `nit.py`.
+4. ⚠️ **SAI petit per al router i el hub**, perquè un tall curt no sigui un forat. → *El portàtil
+   que farà de servidor*.
+5. 🆕 **Mirar si l'app Smart Life avisa del dipòsit ple i de les avaries.** Si ho fa, és un avís
+   que funciona **encara que HA hagi caigut**.
+
 ### 🆕 Requisits definits el 21/09/2026 — [requisits.md](domotica/requisits.md)
 
 Tres coses que el sistema ha de saber fer i que encara **no són decisions preses**. El

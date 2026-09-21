@@ -413,6 +413,62 @@ càrrega (vegeu sota).
 > assumir-ho i vigilar que la bateria no s'infli. Estat de la bateria avui: **42,5 Wh de 53
 > Wh de disseny, 80 % de salut, «fully-charged»**.
 
+## Què passa si cau la llum, el portàtil o internet
+
+> Escrit el **21/09/2026**, amb el deshumidificador ja a HA i els experiments del mateix dia
+> ([deshumidificador.md](deshumidificador.md)). **Resum: el deshumidificador està protegit en
+> els tres casos; les dades i els avisos, encara no.**
+
+### Si cau la llum
+
+| | Mentre dura | Quan torna |
+|---|---|---|
+| Router, hub, endoll, deshumidificador | Apagats | ✅ Tornen sols. L'endoll torna **encès** (`power_on_behavior: on`) |
+| Deshumidificador | Apagat | ✅ **Arrenca sol amb la configuració que tenia** i **espera 5 min** abans del compressor (tots dos provats el 21/09/2026) |
+| Portàtil | Amb la bateria, HA corrent però sense sensors: tot «no disponible» i la decisió a `sense_dades` (fallada segura). **Forat a les dades** | ✅ Si ha aguantat, tot es reconnecta sol i el cost reparteix el forat |
+| Portàtil, si el tall passa la bateria | S'apaga de cop | ⚠️ **Només torna sol si el BIOS té *restore on AC power loss***, encara per comprovar. Si no, HA queda apagat fins que algú hi vagi |
+
+### Si cau el portàtil (penjat, apagat o espatllat)
+
+- ✅ **El deshumidificador continua sol** amb el seu higròstat, i l'endoll es queda encès. Res no
+  l'apaga.
+- ✅ **Es pot controlar des del mòbil sense el portàtil**: el deshumidificador amb l'**app Smart
+  Life**, l'endoll amb l'**app Tapo**. Van pel núvol i pel router de la SIM, no pel portàtil. Per
+  això no es van treure de les apps.
+- ❌ **No es grava res**, i **HA no pot avisar perquè és ell qui ha caigut**.
+- ⚠️ **Avui no te n'assabentaries**: l'avís extern (healthchecks.io,
+  [decisio-stack.md](decisio-stack.md)) no està muntat.
+- ⚠️ **Si mor del tot, avui es perdrien l'històric i les claus de Matter**, que no tenen còpia.
+  Sense les claus, reemparellar el hub i l'endoll, i la sèrie partida. El que sí que es refà:
+  la configuració (és a git) i el deshumidificador, que es torna a afegir sense reemparellar-lo
+  mentre no se'l reemparelli a Smart Life.
+- 📌 **A la Fase C, compte:** si HA cau amb els ventiladors engegats i el deshumidificador
+  treballant pel seu compte, l'enclavament de programari no hi és. L'enclavament dur (C.3) ha de
+  preveure aquest cas.
+
+### Si cau internet (la SIM)
+
+- ✅ **Tot el que és local continua**: HA, Matter, `tuya-local`, el registre, la decisió i el
+  cost. **Sense forat a les dades.**
+- ❌ Es perden l'accés remot (Tailscale), els avisos d'HA al mòbil (els que caiguin en el tall
+  **no arriben mai**), les apps Smart Life i Tapo des de fora, i l'AEMET: la decisió dona per fet
+  que no plou.
+- ⚠️ Pendent de saber si el comptador de kWh del P110M necessita internet
+  ([pendents.md](../pendents.md)). Si en necessita, el cost s'atura i en tornar reparteix el forat.
+- ✅ **Quan torna, tot es reconnecta sol.**
+
+### D'un cop d'ull
+
+| | Deshumidificador | Dades | Avisos i control des del mòbil |
+|---|---|---|---|
+| **Cau la llum** | ✅ Torna sol | ❌ Forat | ❌ (✅ quan torna) |
+| **Cau el portàtil** | ✅ Continua | ❌ Forat | ⚠️ Smart Life i Tapo sí; avisos d'HA no |
+| **Cau internet** | ✅ Continua | ✅ Sense forat | ❌ Fins que torna |
+
+**El que falta perquè una caiguda no costi dades ni silenci**, per ordre de profit per esforç, és a
+[pendents.md → Resiliència](../pendents.md): l'avís de caiguda, el BIOS, les còpies de seguretat,
+un SAI i els avisos de Smart Life.
+
 ## Entrar al BIOS
 
 El d'aquest Acer és un **InsydeH2O**. Cal per a tres coses d'aquest projecte: arrencar del pen
