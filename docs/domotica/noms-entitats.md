@@ -183,7 +183,7 @@ Surten de [logica-v2-pla.md](logica-v2-pla.md), fase per fase. Les plantilles no
 | `sensor.soterrani_humitat_maxima` | La HR **calibrada** més alta dels tres punts; el punt, a l'atribut `punt` |
 | `input_select.referencia_ventilacio` | *Planta baixa* · *Exterior* |
 | `input_boolean.actuacio_deshumidificador` · `…_ventiladors` | Els dos interruptors del mode ombra: **apagats**, no s'actua |
-| `input_boolean.parametres_inicialitzats` | Els valors de partida ja s'han posat una vegada |
+| `input_number.parametres_versio` | Fins a quina versió s'han posat els valors de partida (cada fase que afegeix paràmetres, un bloc) |
 | `input_number.hr_vall` · `hr_pla` · `hr_punta` · `hr_fix` · `hr_urgencia` · `hr_urgencia_objectiu` · `hr_mentre_ventila` · `delta_td_higiene` · `renovacions_dia` · `renovacions_absencia` · `cabal_ventiladors` · `volum_soterrani` | Els paràmetres nous |
 
 **Fase 2 — dades i gràfics**
