@@ -88,6 +88,7 @@ docs/
     noms-entitats.md   Conveni de noms d'entitat — es fixa ABANS d'emparellar
     calibratge.md      Procediment del calibratge creuat dels cinc sensors
     emparellar-matter.md  Com s'afegeix un aparell per Matter sense partir la sèrie
+    deshumidificador.md  Com funciona de debò, què n'ha de saber HA, i els experiments
     requisits.md       El que el sistema ha de saber fer i encara no és decisió
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE
@@ -110,6 +111,7 @@ tools/                 Eines que corren a casa, no al local (Python stdlib)
   valida_xifres.py     Comprova les xifres de línies citades als docs, abans del PR
   calibratge.py        Calcula els desplaçaments de calibratge des de l'històric
   tarifa.py            El calendari de trams per segona vegada: tests i festius
+  prova_deshumidificador.py  Ordre per tuya-local → watts al P110M, de punta a punta
 ```
 
 ## Dades personals — regla dura

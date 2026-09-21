@@ -292,8 +292,10 @@ hores. Amb sal no hi arriba; amb aigua sola, sí.
 
 > **Incidències de la tanda en marxa** (marcador encès des de les 12:09 del 21/09/2026):
 >
-> - **18:15** — el **deshumidificador** s'endolla i arrenca. ❓ Pendent de saber si és a la
->   mateixa habitació que els sensors: ell llegia 44 % amb els sensors al 66–72 %.
+> - **18:15** — el **deshumidificador** s'endolla i arrenca. ✅ **En una altra habitació, a
+>   posta** per no influir en el calibratge (confirmat per l'usuari), i amb un aire condicionat
+>   que també asseca: per això ell llegia 44 % amb els sensors al 66–72 %. **No toca les
+>   rampes.**
 > - **18:49:41** — **reinici d'HA** per carregar `tuya-local`, decidit amb l'usuari. L'API
 >   torna al cap de **9 s**, i als cinc sensors **no hi queda cap `unavailable` gravat** ni
 >   cap salt: la rampa humida segueix llisa.

@@ -93,7 +93,7 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 |---|---|
 | `humidifier.deshumidificador` | **L'aparell**: engegat, **llindar d'HR** (35–80 %, de 5 en 5), mode (`auto` · `normal` · `sleep` · `laundry`), i l'HR que mesura ell (atribut `current_humidity`) |
 | `sensor.deshumidificador_temperatura` | La temperatura que mesura ell (°C, en enters) |
-| `binary_sensor.deshumidificador_avaria` | Avaria (codi de falla a l'atribut `fault_code`). ⚠️ **Encara no se sap si hi surten el P1 i el P2**: vegeu la nota de sota |
+| `binary_sensor.deshumidificador_avaria` | Avaria (codi de falla a l'atribut `fault_code`). ✅ **El P2 hi surt: codi 32**, dipòsit ple o tret (21/09/2026). El P1, per veure |
 | `fan.deshumidificador` | La velocitat del ventilador |
 | `select.deshumidificador_mode_aire` | Deshumidificar · purificar · totes dues |
 | `switch.deshumidificador_silenci` · `_nit` · `_assecat_intern` | Configuració de l'aparell |
@@ -105,9 +105,9 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 > un canvi de mode, de silenci o de nit **explica** un canvi de rendiment, i aquestes entitats
 > només escriuen quan algú les toca: cap volum.
 >
-> ❓ **El P1 i el P2.** L'aparell publica dues dades que la configuració del D820A no coneix
-> (les **106** i **107**, totes dues a 0 el 21/09/2026). Poden ser just el desgebratge i el
-> dipòsit ple. Es mirarà quin número es mou el primer cop que l'aparell en mostri un →
+> ❓ **El P1, i la 106 i la 107.** El P2 ja se sap que és el codi 32 del `fault_code`. L'aparell
+> publica dues dades que la configuració del D820A no coneix (les **106** i **107**, totes dues
+> a 0) i que **no es van moure amb el dipòsit**. Podrien ser el desgebratge o la bomba →
 > [pendents.md](../pendents.md).
 
 > ⚠️ **Dos amos no.** Al principi, d'aquest aparell **només es llegeix i s'ajusta el llindar**.

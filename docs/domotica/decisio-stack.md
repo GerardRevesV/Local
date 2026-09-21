@@ -72,6 +72,12 @@
 >   ajustar-ne el llindar. **El P110 es queda** com a mesura i com a actuador de la lògica.
 >   L'arquitectura (a) no canvia.
 >
+>   ✅ ***21/09/2026, al vespre — la prova 0.2b, superada.*** Tallant l'endoll un minut,
+>   l'aparell **recorda el mode, el llindar i la velocitat** i es reprèn sol: **l'arquitectura
+>   (a) queda confirmada del tot**. Amb un matís que obliga: **en mode AUTO l'aparell no fa cas
+>   del llindar**, o sigui que la configuració de repòs ha de ser **Manual** →
+>   [deshumidificador.md](deshumidificador.md).
+>
 > El detall és a **[inventari.md](inventari.md)**.
 
 > **Aquest document mana.** Recull la decisió presa el **20 de setembre de 2026** després d'un

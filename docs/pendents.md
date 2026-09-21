@@ -431,15 +431,26 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       el **llindar d'HR des d'HA** i l'estat (**P1** desgebrant, P2, HR pròpia). ⚠️ Emparellar-lo
       **a la Wi-Fi del router SIM**: cada reemparellament canvia la clau. El **P110 es queda**.
       *(Tasca B.1c de [fases.md](domotica/fases.md).)* → [inventari.md](domotica/inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)
-- [ ] 🆕 **Saber on surten el P1 i el P2 del deshumidificador.** `tuya-local` hi fa servir la
-      configuració del D820A, i l'aparell publica dues dades que aquella no coneix: la **106** i
-      la **107**. El primer cop que desgebri o s'ompli el dipòsit (P2 es pot provocar traient el
-      tub de desguàs), mirar quina es mou. Si són aquestes, es demana a `tuya-local` que les hi
-      afegeixi —el registre d'HA diu com— o s'escriu una configuració pròpia.
+- [x] ~~🆕 **Saber on surt el P2 del deshumidificador.**~~ ✅ **Codi d'avaria 32** (21/09/2026,
+      treient, omplint i tornant a posar el dipòsit): `binary_sensor.deshumidificador_avaria`
+      a `on` amb `fault_code: 32`, tant **ple** com **tret**. Només es comprova quan
+      deshumidifica, no quan purifica. → [deshumidificador.md](domotica/deshumidificador.md#8-el-dipòsit--per-quina-dada-surt-el-p2)
+- [ ] 🆕 **Saber on surt el P1 (desgebrant) i què són la 106 i la 107.** No es van moure amb el
+      dipòsit. El P1 només es veurà amb fred, al soterrani: mirar-ho el primer dia que el
+      compressor passi estona aturat amb el ventilador en marxa i l'HR per sobre del llindar.
+- [ ] 🆕 **Una nit sencera per saber els litres per kWh** —la dada de la Porta B que falta per a
+      aquest aparell—. Manual i continu, dipòsit buit, i: si s'omple, l'hora del codi 32 i els
+      kWh fins llavors donen **3,8 L / kWh** sense mesurar res; si no, l'aigua del matí amb una
+      gerra. Una hora de compressor el 21/09 no va arribar ni a mullar el dipòsit.
+- [ ] 🆕 **Mirar a la pantalla si el llindar 35 és el «CO»** del manual (assecar sense parar).
+      Es comporta com a tal, però l'aparell hauria de mostrar «CO».
+- [ ] 🆕 **Deixar-lo en la configuració de repòs** proposada: **Manual · 55 % · velocitat alta ·
+      bloqueig infantil** (i bomba, al soterrani). En AUTO, com venia, HA no el pot governar.
+      I, a la Fase C, que HA **la restauri cada cop que arrenqui** → [deshumidificador.md](domotica/deshumidificador.md#si-ha-cau-el-pla-b-ja-hi-és-i-no-demana-programar-res-a-laparell)
 - [ ] 🆕 **Decidir si l'HR que mesura el deshumidificador serveix.** És un atribut, no un
-      sensor, o sigui que no fa estadístiques; si serveix, cal una plantilla que la tregui. A
-      les 19:00 del 21/09 deia 44 % amb els sensors del calibratge al 66–72 %: primer cal saber
-      si era en una altra habitació.
+      sensor, o sigui que no fa estadístiques; si serveix, cal una plantilla que la tregui. El
+      44 % del 21/09 contra el 66–72 % dels sensors **ja és explicat**: era en una altra
+      habitació, amb aire condicionat. Per saber si és precís, un dia al costat d'un Tapo.
 - [ ] 🆕 **Mirar els cicles del compressor quan el deshumidificador sigui al soterrani.** El
       21/09/2026 a casa feia **~2 min de compressor i 5–6 min aturat** (el ventilador segueix a
       ~15 W): els 5 min d'aturada són la protecció que porta l'aparell; els 2 min en marxa, el
@@ -453,10 +464,11 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [x] ~~⚠️ **El deshumidificador arrenca sol després d'un tall de corrent?**~~ ✅ **Sí.** El
       control per endoll intel·ligent és viable i queda confirmada l'arquitectura (a):
       l'higròstat propi regula, i el **Tapo P110** el governa i en mesura el consum.
-- [ ] 🔴 **Però: recorda el llindar d'humitat** després d'un cicle d'alimentació? Desendollar
-      i tornar a endollar amb l'higròstat al 45 %. Si torna a fàbrica, l'arquitectura del
-      deshumidificador canvia. *(Tasca 0.2b de [fases.md](domotica/fases.md).)* La sortida,
-      en aquest cas, seria `tuya-local` (vegeu la prova de més amunt).
+- [x] ~~🔴 **Però: recorda el llindar d'humitat** després d'un cicle d'alimentació?~~ ✅ **Sí.**
+      Provat el 21/09/2026 a distància, tallant l'endoll un minut: recorda el mode, el llindar i
+      la velocitat, i es reprèn sol. I, de propina, **espera ~5 min abans d'engegar el
+      compressor** en tornar el corrent. *(Tasca 0.2b.)* →
+      [deshumidificador.md](domotica/deshumidificador.md#2-memòria-la-prova-02b)
 - [ ] ⚠️ **Per on entra l'aire de reposició** quan els extractors funcionen? (Prova de fum.)
       Si entra per fissures en contacte amb el terreny, **el ventilador pot estar empitjorant
       les humitats** i el projecte canvia de naturalesa.
