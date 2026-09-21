@@ -69,14 +69,53 @@ En aquest projecte, això és partir la sèrie per una actualització.
 > **segueix apagat** —tal com diuen el [`docker-compose.yml`](../../docker-compose.yml) i el
 > [runbook](runbook-servidor.md#-el-bluetooth-omple-el-log)—, i no s'han de tocar.
 
+## 🔴 El LED: verd fix està bé — i el QR imprès probablement ja no serveix
+
+**La pregunta no és si parpelleja, és si l'endoll ja ha estat configurat mai.** El LED només
+ho delata:
+
+| Què fa el LED | Què vol dir | Quin codi Matter serveix |
+|---|---|---|
+| **Parpelleja ambre i verd alternativament** | **Mai configurat**, o restaurat de fàbrica. S'anuncia per BLE esperant que algú li doni el Wi-Fi | ✅ El **QR imprès** a l'aparell |
+| **Verd fix** | **Ja configurat i connectat al Wi-Fi.** És l'estat normal de treball | ❌ El QR imprès **ja no**. Cal un codi **temporal** de l'app de Tapo |
+| **Ambre**, fix o parpellejant sol | No arriba al Wi-Fi | Cap. Primer, la xarxa |
+
+> 🪤 **Aquest és el parany que fa que no te'n surtis.** El codi imprès obre la finestra
+> d'emparellament **un sol cop**: quan l'app de Tapo configura l'endoll, el comissiona a la
+> **seva** xarxa Matter i **consumeix** el codi de fàbrica. A partir d'aquí l'endoll es queda
+> verd fix, funciona perfectament… i pots escanejar el QR de l'etiqueta tantes vegades com
+> vulguis: **no hi ha cap finestra oberta a l'altra banda**, i HA no el troba.
+>
+> El camí bo amb verd fix és el **multiadministrador** de Matter: és l'app de Tapo qui obre una
+> finestra nova i en dona un codi **temporal**, d'un sol ús i amb compte enrere (~15 min).
+
+### Amb verd fix, el camí que toca
+
+| # | On | Què |
+|---|---|---|
+| 1 | **App de Tapo** | L'endoll → engranatge de configuració → **Matter** → *afegir-lo a una altra plataforma* / *vincular a altres plataformes*. En surten un **QR i 11 xifres noves**, amb compte enrere |
+| 2 | **HA → Afegeix dispositiu → Matter** | Quan pregunti si l'aparell **ja és a una altra app**, digues-li que **sí**: és el que fa que esperi un codi de compartició i no el de fàbrica |
+| 3 | **El codi nou** | El de l'app, **no** el de l'etiqueta |
+| 4 | Si s'acaba el compte enrere | No es reaprofita: se'n genera un altre i es torna a començar |
+
+> **Amb verd fix, el Bluetooth ja no hi fa res.** L'endoll és a la Wi-Fi: el descobriment va
+> per **mDNS i IPv6** i l'emparellament és *on-network*. El BLE només cal en el cas del
+> parpelleig, quan encara se li han de passar les credencials de la xarxa. Per al servidor,
+> igual: `/run/dbus` segueix sense fer falta en cap dels dos casos.
+
+> ⚠️ **No el restauris de fàbrica per tornar al parpelleig.** Funciona, però perdries el Wi-Fi
+> i la configuració de l'app —i amb ella **la via d'actualitzar el microprogramari**— per no
+> guanyar res: el multiadministrador dona el mateix resultat sense desfer res. *(Avui encara
+> no hi ha històric i un reemparellament no costaria dades. **Dins de la sèrie, sí.**)*
+
 ## El procediment, en ordre
 
 | # | Pas | Detall |
 |---|---|---|
 | 1 | **Llegir l'etiqueta** | `P110M` o `P110`. Si no hi ha codi Matter imprès, para i vegeu la taula de dalt |
-| 2 | **App de Tapo → afegir l'endoll** al Wi-Fi **definitiu** | El de la SIM, no el de casa, si es pot esperar (vegeu *Ara o quan hi hagi la SIM?*) |
+| 2 | **App de Tapo → afegir l'endoll** al Wi-Fi **definitiu** | El del **router de la SIM**, que ja és el que hi ha (vegeu [La xarxa ja és la definitiva](#-la-xarxa-ja-és-la-definitiva)) |
 | 3 | **App de Tapo → Configuració del dispositiu → Actualització de microprogramari** | Fins a **≥ 1.3.0**. **Apunta la versió que hi queda**: és una dada del registre |
-| 4 | **Obtenir el codi Matter** | El de l'etiqueta de l'aparell. Si ja és a l'app de Tapo, l'app en genera un de **temporal** des de l'opció d'afegir-lo a una altra plataforma |
+| 4 | **Obtenir el codi Matter** | ⚠️ **Mira el LED primer.** Verd fix → el de l'etiqueta **no serveix** i cal el codi temporal de l'app de Tapo; parpellejant ambre/verd → el de l'etiqueta. Vegeu [El LED](#-el-led-verd-fix-està-bé--i-el-qr-imprès-probablement-ja-no-serveix) |
 | 5 | **App Companion d'HA → Configuració → Dispositius i serveis → Afegeix → Matter** | Escaneja el QR o escriu les 11 xifres. Triga un parell de minuts |
 | 6 | 🔴 **Renombrar les entitats ABANS que gravin res** | Vegeu la secció de sota. És la casella A.8, i no es pot desfer bé |
 | 7 | **Reiniciar Home Assistant** | El `utility_meter` de [`rosada.yaml`](../../config/packages/rosada.yaml) s'enganxa a `sensor.deshumidificador_energia` **en arrencar**: si l'entitat no existia o s'acaba de renombrar, no s'hi enganxa fins al reinici |
@@ -222,6 +261,27 @@ i això ho fa el mòbil.
 > l'IPv6 d'enllaç local del portàtil. Si el camí del navegador segueix fallant, el del mòbil
 > **és un camí diferent de debò**, no el mateix intent repetit.
 
+### 🟢 I el LED? Verd fix, i no és el senyal que busques
+
+**No ha de parpellejar.** En aquest cas el que toca és **verd fix**:
+
+| LED | Vol dir | Aquí |
+|---|---|---|
+| **Verd fix** | Configurat i connectat a la Wi-Fi | ✅ **És l'estat bo.** És justament el que fa possible el `commission_on_network` que HA prova |
+| **Ambre i verd alternats** | **De fàbrica**, mai configurat: s'anuncia per BLE esperant que algú li passi les credencials de la xarxa | ❌ Voldria dir que **no és a la Wi-Fi** — i llavors el camí de la xarxa no existiria |
+| **Ambre** sol, fix o parpellejant | No arriba a la Wi-Fi | ❌ Primer, la xarxa |
+
+> 🎯 **I el que importa més: el LED no diu si la finestra d'emparellament és oberta.** Tapo no
+> el canvia quan l'app comparteix l'aparell amb una altra plataforma. El senyal de debò és el
+> **`CM=2`** de l'`avahi-browse` de més amunt — i el 21/09 hi era. O sigui que **l'estat de
+> l'aparell ja està descartat com a causa**, i mirar el LED no hi afegirà res.
+
+> ⚠️ **Per això no el restauris de fàbrica per fer-lo parpellejar.** Perdries la Wi-Fi i el fil
+> amb l'app de Tapo —que és **l'única via d'actualitzar el microprogramari** sense
+> reemparellar— a canvi de res, perquè la finestra ja s'obre bé. Del pla B de l'**app
+> Companion**, el que val no és el Bluetooth: és que **qui parla amb l'aparell és el mòbil i
+> no el servidor**. I això s'aconsegueix **sense esborrar res**.
+
 ### El que queda, i què s'hi fa
 
 Si l'aparell hi és, s'anuncia i respon a un ping però **no contesta l'emparellament**, la causa
@@ -243,7 +303,8 @@ Si l'aparell hi és, s'anuncia i respon a un ping però **no contesta l'emparell
 4. **Un intent cada cop.** Si falla, torna al pas 1: reintentar amb el mateix codi sobre un
    aparell ocupat només afegeix un node mort més al comptador.
 5. Si tres rondes netes fallen, prova-ho des de l'**app Companion d'HA** amb el mòbil a la
-   mateixa Wi-Fi: hi entra el **BLE del mòbil**, que és un camí diferent del de la xarxa.
+   mateixa Wi-Fi: el comissionador passa a ser **el mòbil**, i per tant l'intent ja no depèn
+   de quina interfície tria el servidor. És un camí **diferent de debò**, no el mateix repetit.
 
 > 📌 **Els intents fallits deixen rastre inofensiu:** cada un consumeix un número de node
 > (2, 3, 4…). No cal netejar res; el node bo serà el següent número lliure.
