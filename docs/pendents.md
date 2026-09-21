@@ -405,12 +405,27 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       25 L/dia, bomba de condensats i higròstat propi 40–80 %. El manual oficial n'ha resolt
       el rang (5–35 °C), el desgebratge automàtic i la protecció de compressor de 5 min, que
       **ja és a l'aparell**. → [inventari.md](domotica/inventari.md)
-- [ ] 🆕 **Provar `tuya-local` (HACS) amb el deshumidificador** *(obert el 21/09/2026)*. Ja
+- [ ] 🆕 ▶️ **Provar `tuya-local` amb el deshumidificador** *(obert el 21/09/2026; en marxa el
+      mateix vespre)*. ✅ **Endollat al P110M** a les 18:15 i ✅ **ja és a la Wi-Fi del router
+      SIM** —s'anuncia a la xarxa local—, o sigui que el pas 1 no demana reemparellar.
+      ✅ Instal·lació **sense HACS**, amb la versió **2026.9.1 fixada per suma**
+      (`scripts/instala-tuya-local.sh`). ⏳ Queden: reiniciar HA, la configuració assistida
+      (**tu**, amb el codi d'usuari i el QR de l'app Smart Life), veure quina configuració
+      proposa i **renombrar al conveni** abans que gravi res. ✅ **Reserva DHCP feta** al
+      router SIM (`192.168.1.104`, confirmat per l'usuari el 21/09/2026).
+      *Com estava escrit el matí:* Ja
       no cal compte de desenvolupador de Tuya: la *local key* s'extreu un cop amb l'app Smart
       Life. El D825 no és a la llista, però pot encaixar amb la configuració del D820A. Donaria
       el **llindar d'HR des d'HA** i l'estat (**P1** desgebrant, P2, HR pròpia). ⚠️ Emparellar-lo
       **a la Wi-Fi del router SIM**: cada reemparellament canvia la clau. El **P110 es queda**.
       *(Tasca B.1c de [fases.md](domotica/fases.md).)* → [inventari.md](domotica/inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)
+- [ ] 🆕 **Mirar els cicles del compressor quan el deshumidificador sigui al soterrani.** El
+      21/09/2026 a casa feia **~2 min de compressor i 5–6 min aturat** (el ventilador segueix a
+      ~15 W): els 5 min d'aturada són la protecció que porta l'aparell; els 2 min en marxa, el
+      seu higròstat tocant el llindar en una habitació ja seca. El disseny demana tandes de
+      **20–30 min** ([control-punt-rosada.md](domotica/control-punt-rosada.md)). Al soterrani,
+      amb molta més humitat, probablement no passarà; si passa, és un argument per governar-lo
+      per `tuya-local` amb histèresi pròpia.
 
 ## Verificacions físiques al local (abans de gastar diners)
 

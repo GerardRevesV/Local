@@ -78,6 +78,29 @@ hi consten perquè existeixen i perquè la decisió sobre tensió i corrent és 
 > no fan falta per a res del projecte. Queda per decidir si entren a `exclude.entities` del
 > `recorder` (mai per glob) o si s'accepten i s'obliden → [pendents.md](../pendents.md).
 
+### El deshumidificador per `tuya-local` — fixat el 21/09/2026, ABANS d'afegir-lo
+
+El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
+[inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)).
+És **el mateix aparell** que alimenta el P110M, i per això comparteix el prefix
+`deshumidificador`: el domini ja diu qui és qui.
+
+| `entity_id` | Què és |
+|---|---|
+| `humidifier.deshumidificador` | **L'aparell**: engegat, **llindar d'HR**, mode, i l'HR que mesura ell (atribut) |
+| `sensor.deshumidificador_temperatura` | La temperatura que mesura ell, si la publica |
+| `binary_sensor.deshumidificador_avaria` | Avaria o avís. Aquí hi han de sortir el **P1** (desgebrant) i el **P2** (dipòsit ple) |
+| `fan.deshumidificador` | La velocitat del ventilador, si la publica |
+| La resta | `deshumidificador_<funció en català>`, decidit en veure què publica. El que no es faci servir, desactivat |
+
+> ⚠️ **Dos amos no.** Al principi, d'aquest aparell **només es llegeix i s'ajusta el llindar**.
+> Qui l'engega i l'atura per a la lògica segueix sent `switch.deshumidificador`, el P110M. Que
+> el `humidifier` mani també és una decisió que es prendrà a posta, no per accident.
+>
+> ⚠️ `tuya-local` bateja les entitats amb el nom del dispositiu i el de la funció en anglès.
+> **Es renombren el mateix moment d'afegir-lo**, abans que gravin res, com es va fer amb el
+> P110M ([runbook](runbook-servidor.md#-renombrar-entitats-sense-tocar-storage)).
+
 ### Derivades — les calcula `packages/rosada.yaml`
 
 | `entity_id` | Què és |

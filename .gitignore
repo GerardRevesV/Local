@@ -48,3 +48,8 @@ config/image/
 # No es versiona (són secrets), però SÍ que ha d'entrar a la còpia de
 # seguretat: perdre-ho obliga a reemparellar, i reemparellar parteix les sèries.
 matter-data/
+
+# Integracions de tercers: el codi NO es versiona. El que es versiona és el
+# guió que diu quina versió exacta hi ha d'haver i en verifica la suma
+# (scripts/instala-tuya-local.sh).
+config/custom_components/

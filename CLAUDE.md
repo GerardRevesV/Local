@@ -103,6 +103,7 @@ scripts/               Guions per al host del local (bash)
   prepara-host.sh      Deixa el portàtil llest: SSH, NTP, cap suspensió, Docker
   comprova.sh          Verifica d'una passada que tot segueix com ha de ser
   inicia-serie.sh      Tanca l'experimentació i comença la sèrie probatòria
+  instala-tuya-local.sh  tuya-local en una versió fixada per suma, sense HACS
 tools/                 Eines que corren a casa, no al local (Python stdlib)
   replica.py           Rèplica offline de la lògica + test de deriva
   valida_yaml.py       Valida el YAML abans de desplegar
