@@ -210,7 +210,10 @@ de tenir **banda morta i límits**, o es posaria a oscil·lar:
 | `urgencia` | Al **50 %**: asseca fins allà i **s'atura sol** | — | ✅ |
 
 I, en arrencar, HA **torna a posar el llindar del tram i Manual**, per si l'aparell s'ha quedat
-en un estat vell.
+en un estat vell. **I també cada cop que l'aparell torna del corrent** (els watts del P110M tornen
+després d'un tall): el 22/09/2026 va tornar d'un tall llarg amb la configuració de fàbrica
+—Manual · continu · velocitat mitjana— en comptes de la que tenia
+([deshumidificador.md](deshumidificador.md#2-memòria-la-prova-02b)).
 
 ## Què aprèn cada dia — les dades que ajusten els paràmetres
 

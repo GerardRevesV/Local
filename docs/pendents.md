@@ -123,6 +123,8 @@ una diu **com es respon** i **què decideix**: una incògnita que no decideix re
 | Si **Smart Life avisa** del dipòsit ple i de les avaries | Mirar-ho a l'app (la prova del dipòsit ho hauria disparat) | Si hi ha un avís que funciona encara que HA caigui |
 | Si l'**alarma del dipòsit** xiula | El so: TIMER + SPEED alhora; i omplir-lo amb el so actiu | Res greu: el codi 32 ja arriba a HA |
 | Quina operació és l'**ECO**, i **velocitat alta o baixa** | Litres per kWh de cadascuna (depèn de la primera fila) | L'operació i la velocitat de la configuració de repòs |
+| **La memòria després d'un tall llarg** | Engegat, amb una configuració inconfusible, i 30 min sense corrent; i el mateix apagat | Si HA ha de restaurar-la sempre en tornar el corrent (ja proposat per prudència: el 22/09 va tornar amb la de fàbrica) |
+| **Com comptar l'aigua que surt pel tub** | Un **pluviòmetre de balancí** (15–30 €) a l'ESP32 de la B.2; o les glopades de la bomba als watts, si es veuen (prova de la bomba) | Els litres/dia al soterrani, on amb la bomba no hi ha codi 32. Un cabalímetre normal no serveix: massa poc cabal, a glopades i amb aire |
 
 **Quan el muntatge sigui al soterrani i estable**
 

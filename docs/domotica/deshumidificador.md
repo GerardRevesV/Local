@@ -80,6 +80,17 @@ el corrent, **l'aparell mateix** —una lectura sencera nova a les 20:12:11, no 
 **Conseqüència:** la 🔴 de fases 0.2b queda tancada, i l'arquitectura (a) —l'higròstat de
 l'aparell regula, HA només fa l'enclavament i els horaris— queda **confirmada**.
 
+> ⚠️ ***22/09/2026, 00:37 — no sempre recorda.*** En moure l'aparell de lloc, **apagat (en
+> espera) i sense corrent una estona més llarga**, va tornar amb **Manual · continu (35) ·
+> velocitat mitjana**, que sembla la configuració de fàbrica: tenia AUTO · 55 % · velocitat alta.
+> O sigui que la memòria aguanta el cas provat (engegat, 1 minut) i no aquest. Encara no se sap
+> si el que la fa perdre és la **durada del tall** o que estigués **apagat**.
+>
+> **No és perillós**: el valor de fàbrica és *assecar sense parar*, que es passa de llarg però no
+> deixa el soterrani sense protecció. Però vol dir que **HA ha de tornar a posar la configuració
+> cada cop que l'aparell torna del corrent**, no només quan arrenca HA →
+> [logica-v2.md](logica-v2.md) i [pendents.md](../pendents.md).
+
 Dues coses que va ensenyar de passada:
 
 - ⚠️ **`tuya-local` no va marcar l'aparell com a no disponible** durant el tall: va perdre la
