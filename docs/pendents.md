@@ -350,14 +350,16 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [x] ~~Registrar el **període tarifari com a entitat** a HA per calcular el cost real.~~ ✅
       **Escrit el 21/09/2026:** `packages/consum.yaml` + `custom_templates/tarifa.jinja` donen
       el tram i el preu d'ara, i el **cost en euros** i els **kWh per tram** acumulats, amb una
-      mostra del comptador de l'endoll per hora. Al tauler, vista *Consum* i watts a
+      mostra del comptador de l'endoll cada 5 minuts. Al tauler, vista *Consum* i watts a
       *Històric*. El calendari de festius, verificat hora per hora de 2026 a 2036.
       → [subministraments.md](local/subministraments.md#el-cost-a-home-assistant)
-- [ ] 🆕 **Desplegar el consum i veure'n les dues primeres mostres.** Es recarrega **sense
-      reiniciar** (`reload_custom_templates` + `template.reload`) perquè el calibratge no en
-      noti res. La primera mostra (a l'hh:59:59) només posa la referència; **la segona ja ha de
-      donar euros**. Després, `python3 tools/tarifa.py --prova-ha` perquè el calendari es
-      comprovi també importat des del fitxer, i `comprova.sh`.
+- [x] ~~🆕 **Desplegar el consum.**~~ ✅ **Desplegat el 21/09/2026 a les 17:10** sense reiniciar
+      HA, i verificat: `check_config` net, el tram i el preu d'ara correctes, **48.216 instants de
+      2026 a 2036 sense cap discrepància** amb el calendari ja importat des del fitxer
+      (`tools/tarifa.py --prova-ha`) i `comprova.sh` tot verd.
+- [ ] 🆕 **Desplegar la mostra cada 5 minuts i veure'n les dues primeres.** La primera només
+      posa la referència (o continua la que ja hi hagi); **la següent en què el comptador s'hagi
+      mogut ja ha de donar euros**. També es recarrega sense reiniciar.
 - [ ] 🆕 **Contrastar el cost amb la primera factura real:** els tres preus, l'impost
       elèctric (5,11269632 %) i l'IVA (21 %), i que les **hores de cada tram** que dona la
       factura quadrin amb el calendari. *(Que l'IVA és cost ja no és dubte: confirmat el

@@ -121,17 +121,22 @@ lloc**: [`custom_templates/tarifa.jinja`](../../config/custom_templates/tarifa.j
 |---|---|---|
 | **W** | L'endoll, tal com la dona | — |
 | **kWh** | El **comptador del mateix endoll** (`sensor.deshumidificador_energia`) | L'endoll integra la potència per dins, molt més sovint del que HA la veu. Integrar-la a HA (Riemann sobre els W) seria pitjor: HA només rep la potència quan canvia i Matter té un interval mínim d'informe |
-| **€** | Una lectura d'aquell comptador **cada hora, al 59:59**, multiplicada pel preu del tram | Vegeu a sota |
+| **€** | Una lectura d'aquell comptador **cada 5 minuts** (al segon 59 del minut 4, 9… 59), multiplicada pel preu del tram | Vegeu a sota |
 
-**Per què una mostra per hora, i no més:** totes les fronteres de tram de la 2.0TD —les 8, les
-10, les 14, les 18, les 22 i les 00— **cauen en hora en punt**. Cada hora és sencera d'un sol
-tram, o sigui que el delta del comptador en una hora té **un sol preu**, i el cost surt
-exacte. Mostrejar més fi no l'afinaria —la resolució ja la porta el comptador— i només
-gravaria més files.
+**Per què és exacte:** totes les fronteres de tram de la 2.0TD —les 8, les 10, les 14, les 18,
+les 22 i les 00— **cauen en hora en punt**, i per tant també en múltiple de 5 minuts. Cada bloc
+de 5 minuts és sencer d'un sol tram, o sigui que el delta del comptador té **un sol preu**.
 
-**Per què al 59:59 i no al 00:00:** perquè la lectura caigui **dins** de la franja horària
-de les estadístiques d'HA. Al 00:00, el cost de 10 a 11 quedaria a la barra de les 11 i les
-barres d'euros anirien una hora desfasades de les d'energia.
+**Per què cada 5 minuts i no cada hora:** una hora també seria exacta, i és com es va
+desplegar primer el 21/09/2026. Però els euros anaven fins a **una hora tard** i, després de
+desplegar, no n'hi havia fins al cap de dues hores. Amb 5 minuts el cost es veu gairebé en viu i
+quadra amb les estadístiques de 5 minuts d'HA. **Si el comptador no s'ha mogut, no s'escriu
+res**: amb 8 W l'endoll avança 1 Wh cada 7,5 minuts, i la majoria de mostres no porten res.
+Com a molt són ~600 files al dia; les de tensió i corrent en fan 3.600 cadascuna.
+
+**Per què al :x4:59 i no al :x5:00:** perquè la lectura caigui **dins** de la seva franja
+d'estadístiques. Al :00, els últims 5 minuts de cada hora sortirien a la barra de l'hora
+següent.
 
 **L'error que queda:** a cada frontera, el que l'endoll encara no hagi reportat. El comptador
 va de 0,001 kWh en 0,001 kWh: **menys d'1 Wh mal repartit per frontera**. Amb unes 1.500
@@ -139,9 +144,10 @@ fronteres l'any i 0,14 €/kWh de diferència màxima entre trams, el pitjor cas
 cèntims l'any**, i com que l'error va tant cap a un costat com cap a l'altre, en la pràctica
 molt menys.
 
-**Si hi ha un forat** —HA aturat, o l'endoll sense resposta a l'hora de la mostra—, no es
-perd res: la mostra següent cobreix tot el forat, i si creua trams el reparteix **suposant
-consum uniforme** dins del forat, que és el millor que es pot dir sense dades. La referència
+**Si hi ha un forat** —HA aturat, l'endoll sense resposta a l'hora de la mostra, o el
+comptador quiet una estona—, no es perd res: la mostra següent cobreix tot l'interval, i si
+creua trams el reparteix **suposant consum uniforme**, que és el millor que es pot dir sense
+dades. La referència
 es guarda als atributs del sensor de cost i HA la restaura en arrencar.
 
 **Què inclou el preu:** el terme d'energia de cada tram, amb **l'impost especial sobre

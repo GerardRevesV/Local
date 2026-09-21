@@ -322,10 +322,10 @@ views:
           - **W**: el que mesura l'endoll ara. **kWh**: el comptador del mateix
           endoll, que integra la potència per dins.
 
-          - **€**: una lectura d'aquell comptador **cada hora**, al 59:59. Totes
-          les fronteres de tram cauen en hora en punt, o sigui que cada hora té
-          **un sol preu** i el càlcul és exacte. Per això els euros van fins a
-          **una hora endarrerits** respecte dels watts.
+          - **€**: una lectura d'aquell comptador **cada 5 minuts**. Totes les
+          fronteres de tram cauen en hora en punt, o sigui que cada bloc de 5
+          minuts té **un sol preu** i el càlcul és exacte. Els euros van fins a
+          **5 minuts endarrerits** respecte dels watts.
 
           - Preus **amb** l'impost elèctric i l'IVA. **Sense** el terme de
           potència ni el lloguer del comptador: són fixos, no depenen del que

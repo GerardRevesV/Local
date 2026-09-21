@@ -9,15 +9,22 @@
 #          integra la potència per dins; HA no integra res. Fer-ho aquí
 #          (Riemann sobre els W) seria pitjor: HA només veu la potència quan
 #          canvia, i l'informe Matter té un interval mínim.
-#    €   → una mostra d'aquell comptador CADA HORA, al segon 59:59.
+#    €   → una mostra d'aquell comptador CADA 5 MINUTS, al segon 59 del minut
+#          4, 9, 14… 59.
 #
-#  PER QUÈ UNA HORA N'HI HA PROU, i és exacte: totes les fronteres de tram de
-#  la 2.0TD cauen en hora en punt. Cada hora és sencera d'un sol tram, o sigui
-#  que el delta d'una hora té un sol preu. Mostrejar més fi no afinaria el
-#  cost —el comptador ja porta tota la resolució—, només gravaria més files.
-#  I al 59:59 i no al 00:00 perquè el valor caigui DINS de la franja horària
-#  de les estadístiques d'HA: si no, la barra d'euros de les 10 sortiria a les
-#  11, desfasada una hora de la d'energia.
+#  PER QUÈ ÉS EXACTE: totes les fronteres de tram de la 2.0TD cauen en hora en
+#  punt, o sigui que cada bloc de 5 minuts és sencer d'un sol tram i el seu
+#  delta té un sol preu. Una hora també ho seria; 5 minuts és perquè el cost
+#  es vegi gairebé en viu (fins al 21/09/2026 era una mostra per hora, i els
+#  euros anaven una hora tard). Quadra amb les estadístiques de 5 minuts d'HA.
+#  I al :x4:59 i no al :x5:00 perquè cada valor caigui DINS de la seva franja
+#  d'estadístiques: si no, els últims 5 minuts de cada hora sortirien a la
+#  barra de l'hora següent.
+#
+#  SI EL COMPTADOR NO S'HA MOGUT, NO S'ESCRIU RES: ni estat ni referència.
+#  Amb una càrrega petita (8 W → 1 Wh cada 7,5 min) la majoria de mostres no
+#  porten res, i així la base de dades no creix per no res. El Wh, quan
+#  arriba, es reparteix sobre tot el temps des de l'últim moviment.
 #
 #  L'ERROR QUE QUEDA: a cada frontera, com a molt el que l'endoll no hagi
 #  reportat encara (el comptador va de 0,001 kWh en 0,001 kWh). Menys d'1 Wh
@@ -33,9 +40,9 @@
 template:
   # ───────────────────────────────────────────────────────────────────────────
   #  EL TRAM I EL PREU D'ARA — per veure'ls i per pintar-los sota els watts.
-  #  El cost NO els llegeix: avalua el calendari ell mateix per a l'hora que
-  #  acaba (vegeu més avall), perquè al 59:59 no hi hagi cap cursa possible
-  #  amb el canvi de tram del 00:00.
+  #  El cost NO els llegeix: avalua el calendari ell mateix per a l'interval
+  #  que tanca (vegeu més avall), perquè al 59:59 no hi hagi cap cursa
+  #  possible amb el canvi de tram del 00:00.
   # ───────────────────────────────────────────────────────────────────────────
   - sensor:
       - name: "Tarifa — període"
@@ -64,7 +71,7 @@ template:
             {{ PREUS.get(states('sensor.tarifa_periode')) }}
 
   # ───────────────────────────────────────────────────────────────────────────
-  #  EL COST I L'ENERGIA PER TRAM — una mostra per hora, al 59:59
+  #  EL COST I L'ENERGIA PER TRAM — una mostra cada 5 minuts
   #
   #  Quatre acumuladors que no es reinicien mai (el dia, la setmana i el mes
   #  els fan les targetes a partir de les estadístiques, que no es purguen):
@@ -83,11 +90,14 @@ template:
   #     aquí encara no hi ha «this» (és per entitat, i les variables són del
   #     bloc). Si mai es renombra, s'ha de canviar aquí. comprova.sh ho vigila.
   # ───────────────────────────────────────────────────────────────────────────
+  # «time_pattern» no admet «cada 5 minuts començant pel 4»: dispara cada
+  # minut al segon 59, i «toca» deixa passar el 4, el 9… el 59.
   - triggers:
       - trigger: time_pattern
-        minutes: 59
+        minutes: "/1"
         seconds: 59
     variables:
+      toca: "{{ now().minute % 5 == 4 }}"
       e_ara: "{{ states('sensor.deshumidificador_energia') | float(none) }}"
       e_ref: "{{ state_attr('sensor.deshumidificador_cost', 'kwh_mostra') | float(none) }}"
       # L'instant de la mostra, arrodonit al minut: les 11:00, no les 10:59:59.
@@ -100,21 +110,28 @@ template:
         {%- elif e_ara >= e_ref -%}{{ (e_ara - e_ref) | round(6) }}
         {%- else -%}{{ e_ara }}
         {%- endif -%}
+      # Sense lectura, amb el comptador quiet, o lleugerament enrere (un rebot,
+      # no un reinici), no es toca RES: ni l'estat ni la referència. El consum
+      # no es perd, el comptarà la mostra següent. Mateixa regla que fa servir
+      # HA per als «total_increasing»: baixar menys d'un 10 % no és un reinici.
+      mou: >-
+        {{ e_ara is not none
+           and (e_ref is none or e_ara > e_ref or e_ara < 0.9 * e_ref) }}
+      # Les variables s'avaluen cada minut, ABANS de les condicions: el bucle
+      # de reparteix() només corre quan de debò hi ha mostra. Si no, amb
+      # l'endoll aturat dies, recorreria dies d'hores cada minut per res.
       trams: >-
-        {% from 'tarifa.jinja' import reparteix %}{{ reparteix(t_ref, t_ara) }}
+        {% from 'tarifa.jinja' import reparteix %}
+        {%- if toca and mou -%}{{ reparteix(t_ref, t_ara) }}
+        {%- else -%}{{ {'punta': 0, 'pla': 0, 'vall': 0} }}
+        {%- endif -%}
       preu: >-
         {% from 'tarifa.jinja' import PREUS, IMPOSTOS %}
         {{ (trams.punta * PREUS.punta + trams.pla * PREUS.pla
             + trams.vall * PREUS.vall) * IMPOSTOS }}
-    # Sense lectura, o amb el comptador lleugerament enrere (un rebot, no un
-    # reinici), no es toca RES: ni l'estat ni la referència. El consum no es
-    # perd, el comptarà la mostra següent. Mateixa regla que fa servir HA per
-    # als «total_increasing»: baixar menys d'un 10 % no és un reinici.
     conditions:
       - condition: template
-        value_template: >
-          {{ e_ara is not none
-             and (e_ref is none or e_ara >= e_ref or e_ara < 0.9 * e_ref) }}
+        value_template: "{{ toca and mou }}"
     sensor:
       - name: "Deshumidificador — cost"
         unique_id: deshumidificador_cost
