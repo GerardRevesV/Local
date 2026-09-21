@@ -234,6 +234,12 @@ d'estalvi.
 Tens **models barrejats** (3× T315 i 2× T310). Això fa el pas de calibratge **més important**,
 no menys: l'error sistemàtic entre models diferents no es cancel·la sol.
 
+> ⚠️ **21/09/2026 — primera tanda feta, i la premissa del model ha caigut.** Els dos T310
+> quadren entre ells, i entre els T315 hi ha el que llegeix més baix de tots i dos dels que
+> llegeixen més alt: **cada sensor és el seu cas**, no el seu model. La dispersió de Td passa
+> de **0,95 a 0,24 °C** amb un desplaçament per sensor, i la temperatura no en necessita cap.
+> Falta la franja humida abans d'aplicar-ho → [calibratge.md](calibratge.md)
+
 **Deixa'ls 24 h junts a la mateixa habitació**, apunta la desviació de cadascun respecte de la
 mediana, i li aplico un *offset* fix a Home Assistant. Cost zero, i permet baixar el llindar
 de decisió de 2,0 °C a ~1,2 °C — que són hores de ventilació gratuïta guanyades.

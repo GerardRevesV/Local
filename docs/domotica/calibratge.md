@@ -1,8 +1,9 @@
 # Calibratge creuat dels sensors — procediment
 
-> **Estat: preparat, sense executar.** Les peces hi són i els desplaçaments són
-> `(0, 1, 0)` —identitat—, de manera que avui no corregeixen res. Fase **A.13** de
-> [fases.md](fases.md).
+> **Estat: primera tanda feta el 21/09/2026, provisional.** Els desplaçaments de la franja
+> **49–59 % d'HR** estan mesurats, però **no s'han aplicat**: falta la franja humida, que és
+> on viurà el soterrani a l'hivern. Els de `rosada.yaml` segueixen sent identitat. Fase
+> **A.13** de [fases.md](fases.md).
 
 ## Per què, i quant val
 
@@ -11,7 +12,8 @@ fa mal **no és l'error absolut** de cada sensor, sinó la **diferència entre d
 tinguin tots cinc per igual s'anul·la sol en la resta.
 
 Tens **models barrejats** —3× T315 i 2× T310—, i entre models l'error sistemàtic no es
-cancel·la.
+cancel·la. *(⚠️ La primera tanda ho va desmentir: **no és una qüestió de model**, cada sensor
+té la seva desviació. Vegeu els resultats més avall.)*
 
 El premi és concret: amb la dispersió per sota de **0,3 °C** es pot baixar `delta_td_on` de
 **2,0 a ~1,2 °C**, i això són **hores de ventilació gratuïta** cada setmana. Amb l'objectiu nou
@@ -138,8 +140,106 @@ s'expliqui sol**: d'aquí a un any qualsevol sabrà per què hi ha un tram on ci
 soterrani deien el mateix des d'una taula del menjador. Sempre en pots excloure el tram; el
 que no podries és recuperar la procedència si l'haguessis apartat.
 
+## Primera tanda — 21/09/2026
+
+Els cinc sensors junts a casa durant **~11 hores** (00:43–11:26), amb una estona d'aire
+condicionat al final. **El marcador no es va encendre**, de manera que la finestra s'ha donat a
+mà; el període queda dins de la base de dades d'experimentació, que `inicia-serie.sh` arxiva.
+
+### Què diuen les dades
+
+**La temperatura no necessita calibratge.** Els cinc coincideixen dins de **±0,1 °C**, que és
+el gra del sensor: la desviació que es veu és quantització, no error.
+
+**La humitat, sí — i molt.** Cada sensor té una desviació **estable tota la nit**:
+
+| Sensor | Model | Correcció d'HR | Llegeix |
+|---|---|---|---|
+| `soterrani_fons` | T315 | **+2,2** | baix |
+| `soterrani_centre` | T315 | **−1,1** | alt |
+| `soterrani_gran` | T310 | +0,3 | — |
+| `baixa` | T315 | **−1,2** | alt |
+| `exterior` | T310 | 0,0 | — |
+
+Entre el que llegeix més baix i els que llegeixen més alt hi ha **~3,4 punts d'HR**, que són
+**~0,7 °C de Td**: més del doble del pressupost d'error.
+
+| Dispersió de Td entre els cinc | |
+|---|---|
+| Sense corregir | **0,95 °C** |
+| Amb només desplaçament | **0,24 °C** ✅ dins de l'objectiu de 0,30 |
+| Amb pendent i desplaçament | 0,25 °C — **el pendent no afegeix res** |
+
+### Tres coses que no s'esperaven
+
+**1. No és una qüestió de model.** El pla suposava que l'error vindria del T310 contra el
+T315. No: els dos T310 quadren entre ells, i entre els T315 hi ha el que llegeix més baix de
+tots (`fons`) i dos dels que llegeixen més alt. **Cada sensor és el seu cas.**
+
+**2. El màxim amplifica l'error.** La referència interior és el **punt de rosada més alt** dels
+tres del soterrani. Sense corregir, **`centre` la marca el 99 % del temps** —no perquè sigui el
+punt més humit, sinó perquè és el que llegeix més alt—, i això infla el Td de referència
+**+0,16 °C**. Un màxim sempre tria el sensor amb el biaix més positiu. Quan estiguin repartits
+pel soterrani, l'atribut `punt_mes_humit` assenyalarà el sensor esbiaixat, no el racó humit,
+fins que es calibrin.
+
+**3. L'eina ajustava un pendent que no havia d'ajustar.** Amb 10 punts de recorregut n'hi havia
+prou per passar el llindar de llavors, però aquell pendent no millorava res i, extrapolat al
+85 % de l'hivern, **inventava fins a 1,5 punts d'HR de correcció**. El llindar ha pujat a 20
+punts, i l'eina escriu ara el rang de validesa al costat dels números.
+
+### Què NO diuen
+
+**El rang és de només 49–59 % d'HR i 25,9–27,0 °C.** El soterrani viurà al **65–90 %** a
+l'hivern, que és precisament on els capacitius barats es tornen menys fiables. Aplicar aquests
+desplaçaments allà és una extrapolació. I com que no hi va haver cap rampa controlada en els dos
+sentits —la nit va ser plana i l'aire condicionat només va fer baixar—, **encara no es pot
+descartar que part de la desviació sigui retard del hub**.
+
+Per això no s'han aplicat: la tanda següent és barata i tapa exactament aquests dos forats.
+
+## Segona tanda proposada — la franja humida
+
+**Una caixa tancada amb sal de cuina.** Una pasta de sal comuna (NaCl) i una mica d'aigua
+—**amb cristalls sense dissoldre a la vista**— manté l'aire d'un recipient tancat al
+**75,3 % d'HR**, gairebé independentment de la temperatura. És el mètode clàssic de calibratge
+d'higròmetres, i ho resol tot alhora:
+
+| Què aporta | Per què importa |
+|---|---|
+| **Franja alta**, fins al 75 % | La que falta, i la que viurà el soterrani |
+| **Pujada lenta**, en hores | Una dutxa porta el bany al 90 % en deu minuts: massa de pressa, mesuraries temps de resposta |
+| **Un valor absolut conegut** | El consens entre cinc sensors no et diu si tots cinc llegeixen alt; la sal, sí |
+| **Baixada lenta** en treure-la | La rampa en l'altre sentit, per separar calibratge de retard |
+
+### Com
+
+- [ ] **Encendre `input_boolean.mode_calibratge`** abans de començar.
+- [ ] Una caixa de plàstic amb tapa, d'uns 20–50 litres. Els cinc sensors a dins, **sense tocar
+      la sal**, sobre un drap o una reixeta.
+- [ ] Un plat amb **sal i aigua fins a fer una pasta humida**. Si es dissol tota, no funciona:
+      ha de quedar sal sòlida al fons.
+- [ ] Si tens un ventilador USB petit, a dins i apuntant a la paret: barreja l'aire i els cinc
+      veuen el mateix.
+- [ ] Tapar i **deixar-ho 4–6 hores**, fins que la mediana s'estabilitzi. Hi ha d'arribar sola
+      i a poc a poc: aquesta és la rampa de pujada.
+- [ ] Treure el plat i **obrir la tapa una escletxa**, i deixar que torni a l'ambient en 2–4 h:
+      rampa de baixada.
+- [ ] **Apagar el marcador.**
+
+El que se n'ha de mirar: **on s'estabilitza cada sensor contra el 75,3 %**. Si tots cinc donen
+el 78 %, tots llegeixen 2,7 punts alt —cosa que el consens no pot veure mai— i això és un
+ancoratge absolut que val per si algun dia es reprèn la via documental.
+
+⚠️ **Evitar el 100 %.** Si l'aire arriba a condensar sobre els sensors, poden quedar-se
+enganxats hores. Amb sal no hi arriba; amb aigua sola, sí.
+
+**Opcional, per a un punt més alt:** el clorur de potassi (KCl) dona el **84 %**. La «sal baixa
+en sodi» del súper sol ser una barreja de KCl i NaCl, i per tant dona un valor entremig que no
+serveix d'ancoratge: cal KCl pur.
+
 ## Registre
 
 | Data | Rang assolit | Dispersió abans → després | Notes |
 |---|---|---|---|
-| *(pendent)* | | | |
+| 21/09/2026 | HR 49–59 % · T 25,9–27,0 °C | **0,95 → 0,24 °C** (només desplaçament) | ~11 h a casa, marcador sense encendre. Temperatura sense correcció. **No aplicat**: falta la franja humida |
