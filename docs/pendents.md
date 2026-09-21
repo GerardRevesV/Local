@@ -165,7 +165,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       decidides però pendents d'escriure `nit.py`.
 - [ ] Confirmar si la **càmera Tapo C200** que es va investigar era per al local.
 - [x] ~~**Decidir on viu la lògica de control** del punt de rosada.~~ ✅ **HA natiu**, i ja
-      **escrita**: `config/packages/rosada.yaml` (641 línies), amb un únic punt d'avaluació,
+      **escrita**: `config/packages/rosada.yaml` (665 línies), amb un únic punt d'avaluació,
       `sensor.decisio_del_soterrani`. Node-RED, AppDaemon, pyscript i el servei propi en
       Python queden **descartats**. → [decisio-stack.md](domotica/decisio-stack.md)
 - [x] ~~**Decidir la base de dades i l'eina de visualització.**~~ ✅ **SQLite** i els
