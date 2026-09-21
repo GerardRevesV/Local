@@ -338,7 +338,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [x] ~~**Decidir on viu la lògica de control** del punt de rosada.~~ ✅ **HA natiu**, i ja
       **escrita**: `config/packages/rosada.yaml` (445 línies), amb un únic punt d'avaluació,
       `sensor.decisio_del_soterrani`. *(22/09/2026: la decisió passa a
-      `config/packages/control.yaml` (606 línies), amb la lògica v2.)* Node-RED, AppDaemon, pyscript i el servei propi en
+      `config/packages/control.yaml` (624 línies), amb la lògica v2.)* Node-RED, AppDaemon, pyscript i el servei propi en
       Python queden **descartats**. → [decisio-stack.md](domotica/decisio-stack.md)
 - [x] ~~**Decidir la base de dades i l'eina de visualització.**~~ ✅ **SQLite** i els
       **dashboards natius d'HA** per Tailscale. **PostgreSQL, MariaDB, InfluxDB i Grafana
