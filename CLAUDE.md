@@ -97,9 +97,11 @@ docs/
 
 config/                Configuració de Home Assistant (es desplega al local)
   configuration.yaml   `recorder`: purge_keep_days, commit_interval, exclusions
-  packages/rosada.yaml La lògica del punt de rosada — UN sol punt d'avaluació
+  packages/rosada.yaml La física: punts de rosada, ΔTd, HR màxima, marge, calibratge
+  packages/control.yaml  La decisió v2 —UN sol punt d'avaluació—, paràmetres i modes
   packages/consum.yaml W, kWh i euros de l'endoll, amb els trams de la factura
   custom_templates/tarifa.jinja  El calendari de trams i els preus — l'ÚNIC lloc
+  custom_templates/decisio.jinja La lògica v2, en una macro que només crida la decisió
 docker-compose.yml     Els DOS contenidors: HA (versió fixada) i matter-server
                        (digest fixat). Matter, perquè «tplink» rebutja el hub
 scripts/               Guions per al host del local (bash)
@@ -108,7 +110,7 @@ scripts/               Guions per al host del local (bash)
   inicia-serie.sh      Tanca l'experimentació i comença la sèrie probatòria
   instala-tuya-local.sh  tuya-local en una versió fixada per suma, sense HACS
 tools/                 Eines que corren a casa, no al local (Python stdlib)
-  replica.py           Rèplica offline de la lògica + test de deriva
+  replica.py           Rèplica de la decisió v2: tests, --prova-ha (contra HA) i --deriva
   valida_yaml.py       Valida el YAML abans de desplegar
   valida_xifres.py     Comprova les xifres de línies citades als docs, abans del PR
   calibratge.py        Calcula els desplaçaments de calibratge des de l'històric
