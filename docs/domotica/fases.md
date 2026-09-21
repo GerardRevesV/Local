@@ -42,7 +42,7 @@ invalidar.
 | 0.5 | **Salut del portàtil:** SMART del disc, capacitat de bateria, pila CMOS, si té Ethernet | 🤝 Tu executes, jo interpreto |
 | 0.5b | 🔧 **Tanda física al BIOS, abans de moure el portàtil:** *restore on AC power loss*, límit de càrrega, disc intern a dalt de l'arrencada, RJ-45 amb cable | 👤 Tu |
 | 0.6 | Ubicació física del portàtil: **planta baixa**, aixecat de terra, ventilat | 👤 Tu |
-| 0.7 | Contractar la SIM i saber-ne el **límit de dades** | 👤 Tu |
+| 0.7 | ~~Contractar la SIM~~ ✅ **Feta i en servei** *(21/09/2026)*: tot l'stack ja penja del router de la SIM. ⏳ Queda saber-ne el **límit de dades** i córrer les 72 h de `vnstat` | 👤 Tu |
 
 ### 🚦 Porta 0
 
@@ -125,7 +125,7 @@ feina i tu menys.
 | B.1 | ~~Comprar sensors i endoll, i fixar-ne model i destí.~~ ✅ **Fet:** cinc T/HR comprats i gravant, endoll **P110** amb mesura de consum, i assignació decidida. ⏳ **Queda repartir-los pel local** — avui són a casa | 👤 Tu |
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.1c | 🆕 **Provar `tuya-local`** amb el deshumidificador: emparellar-lo a la Wi-Fi del router SIM, configuració assistida, i veure si el reconeix. Si sí, noms fixats abans, i al principi **només lectura i llindar**. Opcional, excepte si 0.2b surt malament → [inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local) | 🤝 Tu emparelles, jo configuro |
-| B.1d | 🆕 **Emparellar l'endoll per Matter**, en aquest ordre: confirmar el model (`P110M`), deixar-hi el **microprogramari ≥ 1.3.0 abans** d'emparellar, i **renombrar les entitats immediatament**. El que es gravi abans de B.0 és experimentació i s'arxiva; el que no s'ha de repetir és el microprogramari → [emparellar-matter.md](emparellar-matter.md) | 🤝 Tu, des del mòbil; jo verifico les entitats |
+| B.1d | 🆕 **Emparellar l'endoll per Matter.** ✅ Model confirmat (**P110M**) i ✅ microprogramari **1.4.3**, fet **abans** d'emparellar. 🔴 **L'emparellament falla** amb `PASE timeout` —l'aparell no contesta, i la xarxa està descartada—; recepta a [emparellar-matter.md](emparellar-matter.md#-quan-lemparellament-falla-pase-timeout). En sortir-se'n, **renombrar les entitats immediatament** | 🤝 Tu emparelles; jo llegeixo el registre i verifico |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
 | B.4 | ✅ **Fet** — `packages/rosada.yaml` (641 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |

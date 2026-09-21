@@ -45,9 +45,13 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 - [ ] **Inventariar** els 2 sistemes de ventilació forçada i els splits: marca, model,
       ubicació, forma de control. → [inventari.md](domotica/inventari.md)
 - [ ] Comprovar l'estat de l'**aigua**.
-- [ ] **Contractar la SIM de dades:** operadora, pla i límit mensual; model de router (cal
-      Ethernet per al servidor) i cobertura al local. El **límit mensual** no es pot triar a
-      cegues: surt de les 72 h de `vnstat` del pas 4 de la llista de sota.
+- [x] ~~**Contractar la SIM de dades.**~~ ✅ **Contractada i en servei** *(21/09/2026)*: tot
+      l'estat penja ja del **router de la SIM** —el servidor per **cable** a `enp1s0`, i el
+      hub, l'endoll i el mòbil per Wi-Fi—, o sigui que l'assaig general es fa sobre la xarxa
+      definitiva i **els emparellaments d'ara ja són els bons**.
+- [ ] **Saber el límit mensual de dades de la SIM** i apuntar operadora i pla. No es pot
+      triar a cegues: surt de les 72 h de `vnstat` del pas 4 de la llista de sota, que
+      **encara no s'han corregut**.
 
 ## Domòtica
 
@@ -193,10 +197,12 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [ ] 🔁 **Repetir el calibratge al soterrani a l'hivern.** El primer es farà a casa a 22–28 °C
       i el soterrani al gener serà de 8 a 15 °C. Els números porten el **rang de validesa**
       escrit al costat precisament per poder-los comparar quan hi hagi els dos.
-- [ ] Fixar els **noms d'entitat definitius** abans de posar cap sensor en producció. El
-      conveni **ja està escrit** a [noms-entitats.md](domotica/noms-entitats.md); el que falta
-      és **aplicar-lo** en emparellar el hub per Matter, perquè renombrar després parteix la
-      sèrie.
+- [x] ~~Fixar els **noms d'entitat definitius** abans de posar cap sensor en producció.~~ ✅
+      **Aplicats als sis sensors del hub** (verificat al registre d'entitats el 21/09/2026:
+      `soterrani_fons`, `soterrani_centre`, `soterrani_gran`, `baixa`, `exterior` i
+      `soterrani_inundacio`). ⏳ **Queden els de l'endoll** —`switch.deshumidificador` i els
+      seus dos sensors—, que es posen **just després d'emparellar-lo** i abans que gravi res.
+      → [noms-entitats.md](domotica/noms-entitats.md)
 - [x] ~~Muntar el **ritual mensual** d'exportació CSV + SHA-256 fora del local.~~ ✅
       **Descartat i substituït:** el fa el **commit nocturn**, cada dia i amb segell RFC 3161,
       no un cop al mes i a mà. → [decisio-stack.md](domotica/decisio-stack.md)
@@ -289,20 +295,30 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       deixa sense objecte. **L'exigència de treure'l del local es manté**, perquè el seu motiu
       no era probatori: és el de just a sobre. L'històric, en canvi, es queda només al disc
       USB. → [decisio-stack.md](domotica/decisio-stack.md)
-- [ ] **Emparellar el hub H110 per Matter** i comprovar que apareixen els sis sensors i que
-      graven. ⚠️ **No per `tplink`**: el rebutja amb *«Unsupported device»* pel xifratge TPAP
+- [x] ~~**Emparellar el hub H110 per Matter** i comprovar que apareixen els sis sensors.~~ ✅
+      **Fet.** Verificat al registre d'HA el **21/09/2026**: el hub hi és com a **node 1** amb
+      subscripció activa, i hi pengen els **sis** aparells —tres T315, dos T310 i el T300
+      d'inundació—, **amb els noms del conveni ja aplicats**
+      (`sensor.soterrani_fons_temperatura`, `binary_sensor.soterrani_inundacio`…).
+      Microprogramari: hub **1.3.1**, T315 **1.12.0**, T310 **1.6.0**, T300 **1.9.0**.
+      ⚠️ Va **per Matter**, no per `tplink`, que el rebutja pel xifratge TPAP
       ([`python-kasa#1590`](https://github.com/python-kasa/python-kasa/issues/1590)).
-- [ ] 🆕 ❓ **Confirmar si l'endoll és un `P110M` o un `P110`** *(obert el 21/09/2026)*. Mirar
-      l'etiqueta: si hi ha **codi Matter imprès** (QR + 11 xifres) és un P110M i tot el
-      disseny escrit s'aguanta; si és un P110 pelat **no parla Matter** i només entra per
-      `tplink`, amb el compte de Tapo que Matter havia tret del mig. Els documents deien
-      «P110» **i** font Matter, que no podia ser.
-      → [emparellar-matter.md](domotica/emparellar-matter.md)
-- [ ] 🆕 🔴 **Microprogramari de l'endoll a ≥ 1.3.0 ABANS d'emparellar-lo.** El consum per
-      Matter només hi és des de Matter 1.3, i actualitzar-lo després d'emparellar ha obligat
-      altra gent a **treure'l d'HA i tornar-lo a emparellar** — que aquí vol dir partir la
-      sèrie. L'actualització es fa des de l'app de Tapo; des d'HA es reporta que falla.
-- [ ] 🆕 **Emparellar l'endoll per Matter i veure si surt l'energia.** Les tres entitats han
+- [x] ~~🆕 ❓ **Confirmar si l'endoll és un `P110M` o un `P110`.**~~ ✅ **És un P110M**
+      *(21/09/2026)*: s'anuncia a la xarxa com a dispositiu **Matter** (`DN=Smart Wi-Fi Plug`,
+      `DT=266`, fabricant TP-Link). Els documents deien «P110» **i** font Matter, que no podia
+      ser; ara el model quadra amb la via.
+- [x] ~~🆕 🔴 **Microprogramari de l'endoll a ≥ 1.3.0 ABANS d'emparellar-lo.**~~ ✅ **1.4.3**,
+      llegida a l'app de Tapo el 21/09/2026 — per damunt de l'1.3.0 que cal perquè el consum
+      surti per Matter, i **feta abans d'emparellar**, que és l'ordre que estalvia haver de
+      reemparellar.
+- [ ] 🆕 🔴 **L'emparellament de l'endoll falla** *(21/09/2026)*. HA diu només «Something went
+      wrong»; el `matter-server` diu `PASESession timed out … Expected message type was 33`,
+      o sigui que **l'aparell no contesta**. Xarxa descartada: s'anuncia amb `CM=2` (finestra
+      oberta) i respon a un ping per IPv4 **i** per IPv6 d'enllaç local. Queden el codi caducat
+      —val ~15 min i un sol ús—, una sessió a mig fer, o el codi imprès en comptes del de
+      l'app. Recepta i diagnòstic:
+      [emparellar-matter.md](domotica/emparellar-matter.md#-quan-lemparellament-falla-pase-timeout)
+- [ ] 🆕 **Un cop emparellat, veure si surt l'energia.** Les tres entitats han
       de ser `switch.deshumidificador`, `sensor.deshumidificador_potencia` i
       `sensor.deshumidificador_energia` (renombrades **abans** de gravar res): són les que
       `rosada.yaml` ja té escrites al `utility_meter` i al `history_stats`. Si l'energia no
