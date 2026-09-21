@@ -255,6 +255,26 @@ guió**, no deduïda de `docker compose config --services`. Un guió que s'adapt
 ha no s'adona mai que falta alguna cosa. `comprova.sh` ara compara les dues llistes en tots
 dos sentits i es queixa si no quadren.
 
+### 🪤 `docker compose exec -T` s'empassa l'entrada estàndard
+
+`exec -T` s'enganxa a l'entrada estàndard de qui el crida. Si el guió que el conté **arriba
+per una canonada** en comptes de llegir-se d'un fitxer —`ssh local-ha bash -s <<'EOF'`, un
+`cron`, un altre guió que el canalitzi—, l'`exec` **es menja la resta del guió** i es queda
+penjat fins que venci el temps d'espera.
+
+Comprovat el 21/09/2026 desplegant: el mateix `check_config` va trigar **més de 280 s** sense
+redirecció i **4 s** amb `</dev/null`.
+
+El parany és que **només passa quan no hi ha terminal**, que és exactament quan no hi ha ningú
+mirant. Llançat a mà per SSH sembla que funcioni.
+
+```bash
+docker compose exec -T homeassistant python -m homeassistant --script check_config -c /config </dev/null
+```
+
+`scripts/comprova.sh` ja ho porta a les dues crides que fa. Si algun dia s'escriu `desplega.sh`
+o s'engega el guió per un temporitzador, ha de fer el mateix.
+
 ### 🪤 Les descàrregues
 
 Imatge d'HA: **3,43 GB**. Actualitzacions d'una Mint acabada d'instal·lar: **434 paquets**.

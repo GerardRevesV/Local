@@ -113,12 +113,19 @@ t "Home Assistant"
 codi=$(curl -s -o /dev/null -w '%{http_code}' -m 10 http://127.0.0.1:8123 2>/dev/null)
 [ "$codi" = 200 ] && ok "respon a 8123" || mal "8123 no respon (codi $codi)"
 
+# ⚠️ «</dev/null» NO és decoratiu: «docker compose exec -T» s'enganxa a
+# l'entrada estàndard del guió. Si aquest arriba per una canonada —«ssh host
+# bash -s», cron, un altre guió—, l'exec se l'empassa i es queda penjat fins
+# que venci el temps. Passa només quan no hi ha terminal, que és justament
+# quan no hi ha ningú mirant. Comprovat el 21/09/2026: 4 s amb la redirecció,
+# més de 280 s sense.
+#
 # ⚠️ Cal mirar el CODI DE SORTIDA, no només el text. Si `docker compose exec`
 # falla (contenidor mort, dimoni caigut), el missatge no conté «ERROR» ni
 # «Failed», i només buscant text s'imprimiria «check_config net» amb el
 # contenidor apagat. Un fals verd aquí és el més car de tot el guió.
 sortida=$(docker compose exec -T homeassistant python -m homeassistant \
-            --script check_config -c /config 2>&1); codi_cc=$?
+            --script check_config -c /config </dev/null 2>&1); codi_cc=$?
 sortida=$(printf '%s' "$sortida" | sed -e 's/\x1b\[[0-9;]*m//g')
 if [ "$codi_cc" -ne 0 ]; then
   mal "check_config NO s'ha pogut executar (codi $codi_cc):"
@@ -133,7 +140,7 @@ fi
 # ──────────────────────────────────────────── el recorder, que és el moll ───
 t "L'històric — la línia que no té arreglada"
 dies=$(docker compose exec -T homeassistant \
-         grep -oP 'purge_keep_days:\s*\K[0-9]+' /config/configuration.yaml 2>/dev/null | head -1)
+         grep -oP 'purge_keep_days:\s*\K[0-9]+' /config/configuration.yaml </dev/null 2>/dev/null | head -1)
 [ "$dies" = 730 ] && ok "purge_keep_days: 730, vist des de dins del contenidor" \
                   || mal "purge_keep_days és «$dies», hauria de ser 730"
 db=config/home-assistant_v2.db
