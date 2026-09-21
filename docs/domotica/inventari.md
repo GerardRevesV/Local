@@ -11,7 +11,7 @@
 | Aparell | Model | Ubicació | Estat |
 |---|---|---|---|
 | Hub | **Tapo H110** ✅ *(hub IR + sub-GHz)* | corridor | Actiu |
-| Endoll intel·ligent | **Tapo P110M** ❓ *(mesura consum — vegeu la nota)* | corridor | Actiu — deshumidificador |
+| Endoll intel·ligent | **Tapo P110M** ✅ *(Matter — mesura consum)* | corridor | A la xarxa; ⏳ **pendent d'emparellar a HA** |
 | **Mòduls de relé** | **2× Tapo S110E** | — | ⏳ **Comprats, sense instal·lar** |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Centre* | Actiu |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Fons* | Actiu |
@@ -21,20 +21,18 @@
 | Sensor d'inundació | **Tapo T300** (?) | Soterrani — Centre | Actiu |
 | Càmeres | Tapo | — | N'hi ha |
 
-> ❓ **21/09/2026 — `P110` o `P110M`? La lletra decideix la via.** Fins avui aquí hi deia
-> **P110**, i alhora [noms-entitats.md](noms-entitats.md) en dona la font com a **Matter**.
-> Les dues coses no poden ser certes: el **P110** pelat no parla Matter i només entra a HA per
-> `tplink`, **amb el compte de Tapo**; el **P110M** sí, i llavors tot el disseny escrit
-> s'aguanta tal com està. El model que s'ha esmentat en conversa és **P110M**, i per això
-> queda escrit així, **pendent de confirmar a l'etiqueta de l'aparell**: si hi ha codi Matter
-> imprès (QR + 11 xifres), és un P110M.
+> ✅ **21/09/2026 — és un `P110M`, i les dues condicions estan resoltes.** Aquí hi deia
+> **P110**, que no podia ser: el P110 pelat **no parla Matter** i només entra a HA per
+> `tplink`, amb el compte de Tapo. **L'aparell s'anuncia a la xarxa local com a dispositiu
+> Matter** —`DN=Smart Wi-Fi Plug`, `DT=266` (endoll d'engegada i aturada), fabricant TP-Link—,
+> o sigui que el model és el **P110M**.
 >
-> ⚠️ I una segona condició que no es veu a l'etiqueta: per Matter, **el consum només surt a
-> partir del microprogramari 1.3.0** (el que hi va portar Matter 1.3). Amb un de més vell,
-> l'endoll només dona l'interruptor —i els kWh/dia de la Porta B es queden sense font.
+> ✅ I la segona condició, la que no es veu a l'etiqueta: per Matter **el consum només surt a
+> partir del microprogramari 1.3.0** (el que hi va portar Matter 1.3). L'aparell porta la
+> **1.4.3**, llegida a l'app de Tapo. Els kWh/dia de la Porta B tenen font.
 >
-> → Procediment complet, amb l'ordre que evita reemparellar:
-> [emparellar-matter.md](emparellar-matter.md).
+> ⏳ **El que queda és l'emparellament**, que el 21/09/2026 encara falla —vegeu
+> [emparellar-matter.md](emparellar-matter.md#-quan-lemparellament-falla-pase-timeout).
 
 ### Distribució dels sensors
 

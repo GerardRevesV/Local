@@ -47,15 +47,18 @@ sensor.<zona>_<punt>_<magnitud>
 
 | Aparell | Funció | `entity_id` |
 |---|---|---|
-| Tapo P110M ❓ | Deshumidificador | `switch.deshumidificador` · `sensor.deshumidificador_potencia` · `sensor.deshumidificador_energia` |
+| Tapo P110M | Deshumidificador | `switch.deshumidificador` · `sensor.deshumidificador_potencia` · `sensor.deshumidificador_energia` |
 | Tapo S110E | Ventilador 1 | `switch.ventilador_1` · `sensor.ventilador_1_potencia` |
 | Tapo S110E | Ventilador 2 | `switch.ventilador_2` · `sensor.ventilador_2_potencia` |
 | Tapo T300 | Inundació | `binary_sensor.soterrani_inundacio` |
 
 > **La nota, que fins avui faltava (21/09/2026).** Que la font sigui Matter vol dir que
-> l'aparell ha de **parlar Matter**: el hub **H110** i els **S110E** sí, i l'endoll només si
-> és un **P110M** i no un P110 pelat — comprovació pendent a l'etiqueta
+> l'aparell ha de **parlar Matter**: el hub **H110** i els **S110E** sí, i l'endoll també,
+> perquè és un **P110M** i no un P110 pelat — confirmat pel que anuncia a la xarxa
 > ([inventari.md](inventari.md)).
+>
+> ✅ **Els sis del hub ja estan renombrats** (verificat al registre d'entitats el 21/09/2026).
+> ⏳ **Falten els tres de l'endoll**, que es posen just després d'emparellar-lo.
 >
 > ⚠️ Matter bateja les entitats amb el model i un tros d'identificador
 > (`sensor.tapo_p110m_power`). **Es renombren immediatament**, abans que gravin res, i es

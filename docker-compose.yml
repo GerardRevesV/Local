@@ -126,6 +126,31 @@ services:
     # host no pot ni descobrir ni emparellar res.
     network_mode: host
 
+    # ── Quina interfície, per als enllaços locals ───────────────────────────
+    # Els aparells Matter s'anuncien amb una adreça IPv6 «fe80::», que NO és
+    # única per màquina sinó per ENLLAÇ: per enviar-hi res cal dir també per
+    # quina interfície surt. I aquest amfitrió en té quatre amb adreça fe80:
+    # enp1s0 (el cable, l'única bona), wlp0s20f3 (Wi-Fi, avall), docker0
+    # (avall) i tailscale0. Si el servidor tria la que no toca, els paquets
+    # se'n van a un forat: l'aparell no contesta mai i l'emparellament mor
+    # amb «PASESession timed out ... Expected message type was 33», que és
+    # exactament el que va passar el 21/09/2026 cinc vegades seguides amb
+    # el P110M.
+    #
+    # Els dos primers arguments són el CMD per defecte de la imatge
+    # (ENTRYPOINT=matter-server): posar «command» el substitueix sencer, i
+    # sense ells el servidor perdria el magatzem i els certificats.
+    #
+    # ⚠️ Si algun dia es canvia de portàtil o de targeta de xarxa, aquest nom
+    #    canvia. Es llegeix amb «ip -br addr».
+    command:
+      - --storage-path
+      - /data
+      - --paa-root-cert-dir
+      - /data/credentials
+      - --primary-interface
+      - enp1s0
+
     # Requisit documentat del projecte: sense això, el dimoni no pot fer
     # algunes operacions de xarxa sota AppArmor.
     security_opt:

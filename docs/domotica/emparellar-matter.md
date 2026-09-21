@@ -17,14 +17,15 @@
 | **P110M** | ✅ **Sí, de fàbrica.** Porta el **codi Matter imprès** (QR + 11 xifres) | Directament al `matter-server`, **sense hub i sense núvol** | El que caldria |
 | **P110** (sense `M`) | ❌ **No.** És un Tapo clàssic | Només per la integració `tplink`, **amb correu i contrasenya del compte Tapo** | El que diu avui [inventari.md](inventari.md) |
 
-> 🔴 **[inventari.md](inventari.md) i [noms-entitats.md](noms-entitats.md) diuen «P110» i
-> alhora donen la font com a **Matter**. Les dues coses no poden ser certes.** Si l'aparell
-> és un **P110M**, el que està malament és el nom del model als documents i la resta del
-> disseny s'aguanta. Si és un **P110** pelat, el que cau és la via: tornaria el compte de
-> Tapo que Matter havia tret del mig.
+> ✅ **Resolt el 21/09/2026: és un P110M.** Els documents deien «P110» i alhora que la font
+> era Matter, i això no podia ser. L'aparell **s'anuncia a la xarxa local com a dispositiu
+> Matter** (`DN=Smart Wi-Fi Plug`, `DT=266`, fabricant TP-Link) i porta el microprogramari
+> **1.4.3**, molt per damunt de l'1.3.0 que cal per al consum. Les dues condicions, doncs,
+> estan complertes.
 >
-> **Si hi ha codi Matter imprès a l'aparell, és un P110M.** Aquesta és la comprovació de
-> cinc segons que decideix.
+> Per a la propera vegada, la comprovació de cinc segons és aquesta: **si hi ha codi Matter
+> imprès a l'aparell, és un model «M»**. I per veure què s'anuncia de debò a la xarxa:
+> `ssh local-ha "timeout 8 avahi-browse -rpt _matterc._udp | grep '^='"`.
 
 ## Les dues regles que no tenen arreglada a posteriori
 
@@ -129,6 +130,124 @@ Amb el microprogramari ≥ 1.3.0, a *Eines per a desenvolupadors → Estats*:
 i és el primer que s'ha de provar després d'una actualització. Si després d'això segueix sense
 aparèixer, el microprogramari encara no és ≥ 1.3.0.
 
+## 🔴 Quan l'emparellament falla: `PASE timeout`
+
+A la interfície d'HA només hi surt **«Something went wrong»**, que no diu res. El que diu
+alguna cosa és el registre del `matter-server`:
+
+```bash
+ssh local-ha "docker logs --tail 60 matter-server 2>&1 | grep -viE 'Packet too small'"
+```
+
+**Això és el que va sortir el 21/09/2026**, tres vegades seguides:
+
+```
+Starting Matter commissioning using Node ID 2 and IP fe80::…
+Msg Retransmission to 0:0000000000000000 failure (max retries:4)
+PASESession timed out while waiting for a response from the peer. Expected message type was 33
+Secure Pairing Failed  ·  CHIP Error 0x00000003: Incorrect state
+Error while handling: commission_on_network: Commissioning failed for node 2
+```
+
+**Com es llegeix:** el «missatge 33» és la **primera resposta** que ha de donar l'aparell quan
+se li demana d'establir la sessió d'emparellament. No és que la contrasenya sigui dolenta —
+això fallaria més tard i amb un altre error. És que **l'aparell no contesta**.
+
+### Descartar la xarxa en tres ordres
+
+Abans de tocar res, val la pena saber si el problema és de xarxa o de l'aparell:
+
+```bash
+# 1. L'endoll s'anuncia com a emparellable? (CM=2 → finestra oberta)
+ssh local-ha "timeout 8 avahi-browse -rpt _matterc._udp | grep '^='"
+
+# 2. Hi arribem per IPv4?
+ssh local-ha "ping -c2 LA-IP-DE-L-ENDOLL"
+
+# 3. I per IPv6 d'enllaç local, que és el que Matter fa servir de debò?
+ssh local-ha "ping -6 -c3 'fe80::…%enp1s0'"
+```
+
+El 21/09/2026 les tres van sortir bé: l'endoll anunciava `CM=2` —finestra d'emparellament
+**oberta**—, i responia tant per IPv4 com per IPv6 d'enllaç local en 4 ms. **La xarxa no era
+el problema**, i això descarta d'una tacada l'IPv6, el mDNS, l'aïllament de clients del router
+i el tallafoc.
+
+### 🎯 La causa que hi encaixa: per quina interfície surt el servidor
+
+L'adreça a la qual el servidor prova d'emparellar és una **`fe80::`**, i una adreça així **no
+identifica una màquina: identifica una màquina *en un enllaç concret***. Per enviar-hi res,
+cal dir també **per quina interfície** es surt.
+
+I aquest amfitrió en té **quatre** amb adreça `fe80::`:
+
+```
+enp1s0       UP        192.168.1.102/24   fe80::4d20:daf2:d41e:5828/64   ← el cable, l'única bona
+wlp0s20f3    DOWN      (Wi-Fi, apagada)
+tailscale0   UNKNOWN   100.118.82.120/32  fe80::7a7b:7456:3078:32f6/64
+docker0      DOWN      172.17.0.1/16      fe80::7019:aff:fe55:33cb/64
+```
+
+Si el servidor Matter tria la que no toca, els paquets **se'n van a un forat**: l'aparell no
+els rep, no contesta mai, i surt exactament el `PASESession timed out` de dalt. Encaixa amb
+tot el que s'ha vist —l'endoll respon a un `ping` per `fe80::…%enp1s0`, o sigui **quan la
+interfície l'hi diem nosaltres**.
+
+Per això el `matter-server` té una opció que es diu **exactament això**:
+
+```
+--primary-interface PRIMARY_INTERFACE   Primary network interface for link-local addresses
+```
+
+→ Posada al [`docker-compose.yml`](../../docker-compose.yml) el 21/09/2026, amb els dos
+arguments del `CMD` per defecte de la imatge al davant, que `command:` els substitueix
+sencers.
+
+> **Per què el hub no va patir-ho:** el H110 s'anuncia amb la seva **adreça de la xarxa**
+> (`192.168.1.100`), no amb una d'enllaç local. Quan l'adreça és normal, no hi ha cap
+> interfície a triar i el problema no apareix. És el tipus d'error que només es veu amb
+> l'aparell que el destapa.
+
+### 🪟 Des del Windows o des de l'Android?
+
+**Des del navegador, i prou**, mentre l'aparell **ja sigui a la Wi-Fi**: és el cas d'aquí, i
+per això HA fa `commission_on_network`. L'app Companion d'Android **no és obligatòria**.
+
+L'**Android** cal quan l'aparell **encara no és a cap xarxa** —acabat de treure de la caixa o
+de fàbrica—, perquè llavors algú li ha de passar les credencials de la Wi-Fi per **Bluetooth**,
+i això ho fa el mòbil.
+
+> 🎯 **Però com a pla B val la pena.** Quan s'empara des de l'app d'Android, qui fa la
+> conversa amb l'aparell és **el mòbil**, no el servidor: no depèn ni de la interfície ni de
+> l'IPv6 d'enllaç local del portàtil. Si el camí del navegador segueix fallant, el del mòbil
+> **és un camí diferent de debò**, no el mateix intent repetit.
+
+### El que queda, i què s'hi fa
+
+Si l'aparell hi és, s'anuncia i respon a un ping però **no contesta l'emparellament**, la causa
+és de les tres de sota — i totes tres es curen amb la mateixa recepta.
+
+| Causa | Per què dona un timeout |
+|---|---|
+| **El codi ja ha caducat** | El codi que dona l'app de Tapo **val ~15 minuts i un sol ús**. Quan venç, hi ha aparells que **segueixen anunciant `CM=2`** encara que la finestra ja estigui tancada: sembla que estigui a punt i no ho està |
+| **Una sessió a mig fer** | Matter només admet **una** sessió d'emparellament alhora. Un intent que ha fallat pot deixar l'aparell ocupat, i el següent el troba «en estat incorrecte» |
+| **Codi imprès en comptes del de l'app** | El de l'etiqueta és el de fàbrica. Un cop l'aparell és a l'app de Tapo, **el que val és el que genera l'app** en compartir-lo amb una altra plataforma |
+
+**La recepta, i en aquest ordre:**
+
+1. **Desendolla l'endoll 10 segons i torna'l a endollar.** Això tanca qualsevol sessió a mig
+   fer. Espera que torni a la xarxa (mig minut).
+2. **Genera un codi nou a l'app de Tapo** — l'opció d'afegir-lo a una altra plataforma— i
+   **no el generis fins que HA estigui esperant-lo**.
+3. **Enganxa'l a HA de seguida.** Del codi a l'intent, com menys minuts millor.
+4. **Un intent cada cop.** Si falla, torna al pas 1: reintentar amb el mateix codi sobre un
+   aparell ocupat només afegeix un node mort més al comptador.
+5. Si tres rondes netes fallen, prova-ho des de l'**app Companion d'HA** amb el mòbil a la
+   mateixa Wi-Fi: hi entra el **BLE del mòbil**, que és un camí diferent del de la xarxa.
+
+> 📌 **Els intents fallits deixen rastre inofensiu:** cada un consumeix un número de node
+> (2, 3, 4…). No cal netejar res; el node bo serà el següent número lliure.
+
 ## 🪤 Els paranys
 
 ### L'energia acumulada i el rellotge
@@ -171,25 +290,20 @@ Amb la 1.4.1 hi ha qui s'ha trobat **sensors d'energia duplicats**. Si passa enm
 sèrie, **no s'esborra res a la lleugera**: s'anota la data a [pendents.md](../pendents.md) i
 es decideix, que un forat explicat val molt més que un forat net.
 
-## Ara, o quan hi hagi la SIM?
+## ✅ La xarxa ja és la definitiva
 
-Avui l'aparell aniria al Wi-Fi de **casa**, perquè la SIM encara no està contractada (tasca
-0.7). Emparellar-lo ara vol dir **tornar-lo a emparellar** al local: node nou, entitats noves,
-i els noms del pas 6 aplicats **dues vegades**.
+Aquesta secció deia *«espera't a tenir la SIM»*. **Ja no cal:** el **router de la SIM ja hi
+és**, i el 21/09/2026 tot penja d'ell —el servidor per **cable** (`enp1s0`), i el hub, l'endoll
+i el mòbil per Wi-Fi.
 
-**Tot i així val la pena fer-ho ara, i a posta**, per dues coses que no es poden esperar:
+Això vol dir que **l'emparellament que es faci ara ja és el bo**: quan la màquina vagi al
+local, el router hi va amb ella i l'SSID no canvia. La regla de dalt es compleix sola.
 
-1. **Saber si l'energia per Matter surt de debò.** Si no surt —model equivocat,
-   microprogramari vell, o la dependència del núvol—, canvia la manera de mesurar els kWh del
-   deshumidificador, i **això s'ha de saber abans** que arrenqui la sèrie, no al desembre.
-2. **La prova 0.2b**, la del llindar de l'higròstat, que és bloquejant i encara està oberta.
-
-És exactament per a això que hi ha la frontera **B.0**
-([`scripts/inicia-serie.sh`](../../scripts/inicia-serie.sh)): el que es gravi ara és
-**experimentació**, s'arxiva, i la sèrie de debò comença de zero amb els aparells ja a lloc.
-
-> ⚠️ **El que sí que s'ha de fer bé ara mateix és el microprogramari**, perquè aquell no
-> depèn de la xarxa i és el que estalvia un reemparellament futur.
+> ⚠️ **El que encara no és definitiu és la posició dels sensors**, que són a casa fent el
+> calibratge creuat. Per això el que es gravi ara segueix sent **experimentació** i l'arxiva
+> [`scripts/inicia-serie.sh`](../../scripts/inicia-serie.sh) el dia que comenci la sèrie de
+> debò (frontera **B.0**). Emparellar no s'haurà de repetir; els 28 dies, sí que comencen
+> després.
 
 ## Registre
 
