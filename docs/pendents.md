@@ -347,6 +347,24 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       ~150 files/hora cadascuna**, o sigui unes 3.600 al dia i, a 730 dies de retenció,
       **milions de files per no res**. No és urgent —el disc té 99 GB lliures— però és una
       decisió que val més prendre **abans** que comenci la sèrie, no després.
+- [x] ~~Registrar el **període tarifari com a entitat** a HA per calcular el cost real.~~ ✅
+      **Escrit el 21/09/2026:** `packages/consum.yaml` + `custom_templates/tarifa.jinja` donen
+      el tram i el preu d'ara, i el **cost en euros** i els **kWh per tram** acumulats, amb una
+      mostra del comptador de l'endoll per hora. Al tauler, vista *Consum* i watts a
+      *Històric*. El calendari de festius, verificat hora per hora de 2026 a 2036.
+      → [subministraments.md](local/subministraments.md#el-cost-a-home-assistant)
+- [ ] 🆕 **Desplegar el consum i veure'n les dues primeres mostres.** Es recarrega **sense
+      reiniciar** (`reload_custom_templates` + `template.reload`) perquè el calibratge no en
+      noti res. La primera mostra (a l'hh:59:59) només posa la referència; **la segona ja ha de
+      donar euros**. Després, `python3 tools/tarifa.py --prova-ha` perquè el calendari es
+      comprovi també importat des del fitxer, i `comprova.sh`.
+- [ ] 🆕 **Contrastar el cost amb la primera factura real:** els tres preus, l'impost
+      elèctric (5,11269632 %) i l'IVA (21 %), i que les **hores de cada tram** que dona la
+      factura quadrin amb el calendari. *(Que l'IVA és cost ja no és dubte: confirmat el
+      21/09/2026, sempre es paga i no es dedueix.)*
+      ⚠️ Lligat amb el de més amunt: si els kWh de l'endoll depenen d'Internet, el cost també
+      —no se'n perd res, però mentre la SIM estigui caiguda quedarà quiet i en tornar
+      repartirà el forat com a consum uniforme.
 - [x] ~~**Congelar també el `matter-server`** fins al 10/03/2027.~~ ✅ **Sense objecte** des del
       21/09/2026: la congelació de versions va caure amb el canvi d'objectiu. El que **es
       manté** és que va **fixat per digest** i no per etiqueta, perquè la imatge no publica

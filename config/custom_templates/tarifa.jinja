@@ -1,0 +1,91 @@
+{#- ═══════════════════════════════════════════════════════════════════════════
+    LA TARIFA, EN CODI — Naturgy Tarifa Noche sobre els períodes de la 2.0TD
+    Xifres i fonts: docs/local/subministraments.md
+
+    ⚠️ ÉS L'ÚNIC LLOC on hi ha el calendari de trams i els preus. Qui els
+       necessiti, els importa:
+           {% from 'tarifa.jinja' import tram, reparteix, PREUS, IMPOSTOS %}
+       Avui ho fa config/packages/consum.yaml. Dues còpies del calendari
+       acabarien dient coses diferents el primer festiu que en toquéssim una.
+
+    Es recarrega sense reiniciar HA: homeassistant.reload_custom_templates,
+    i després template.reload perquè els sensors el tornin a llegir.
+    Verificació, hora per hora, a casa: python3 tools/tarifa.py --prova-ha
+    ═══════════════════════════════════════════════════════════════════════════ -#}
+
+{#- Terme d'energia en €/kWh, SENSE impostos: el que diu el contracte.
+    ⚠️ Quan canviïn, es canvien AQUÍ i en un commit datat. El cost ja acumulat
+       NO es recalcula, i és correcte: aquells kWh es van pagar al preu vell. -#}
+{%- set PREUS = {'punta': 0.1822, 'pla': 0.1092, 'vall': 0.0739} -%}
+
+{#- Per cada kWh s'hi afegeix l'impost especial sobre l'electricitat (5,11269632 %)
+    i, damunt de tot, l'IVA (21 %), que és cost: no es dedueix (21/09/2026). El
+    terme de potència i el lloguer del comptador NO hi són: són fixos. -#}
+{%- set IMPOSTOS = 1.0511269632 * 1.21 -%}
+
+{#- ─────────────────────────────────────────────────────────────────────────
+    tram(ts) → 'punta' · 'pla' · 'vall'   (ts = segons UNIX)
+
+    Circular CNMC 3/2020, art. 7.3, península:
+      punta 10–14 i 18–22 · pla 8–10, 14–18 i 22–24 · vall 0–8
+      de dilluns a divendres feiners. Vall sencer: dissabtes, diumenges,
+      el 6 de gener i els festius nacionals, «con exclusión tanto de los
+      festivos sustituibles como de los que no tienen fecha fija».
+
+    Per això els festius són una REGLA de data fixa i no una llista per any,
+    i serveix sense tocar-la mentre no canviï la llei. Els nou dies surten del
+    RD 2001/1983, art. 45.1, apartats a), b) i c), més el 6 de gener:
+
+    ⚠️ Divendres Sant NO: és no substituïble però no té data fixa. Alguns
+       calculadors (aiopvpc) el posen en vall; la circular l'exclou.
+    ⚠️ El dilluns que trasllada un festiu caigut en diumenge, NO.
+    ⚠️ Els festius de Catalunya i de Barcelona (Sant Joan, la Diada, Sant
+       Esteve, la Mercè…), NO: són autonòmics o locals.
+    ───────────────────────────────────────────────────────────────────────── -#}
+{%- macro tram(ts) -%}
+  {%- set festius = ['01-01', '01-06', '05-01', '08-15', '10-12',
+                     '11-01', '12-06', '12-08', '12-25'] -%}
+  {%- set h = ts | timestamp_custom('%H', true) | int -%}
+  {%- if ts | timestamp_custom('%w', true) in ['0', '6']
+         or ts | timestamp_custom('%m-%d', true) in festius
+         or h < 8 -%}
+    vall
+  {%- elif h in [10, 11, 12, 13, 18, 19, 20, 21] -%}
+    punta
+  {%- else -%}
+    pla
+  {%- endif -%}
+{%- endmacro -%}
+
+{#- ─────────────────────────────────────────────────────────────────────────
+    reparteix(a, b) → JSON amb la fracció del temps [a, b] que cau a cada
+    tram: {"punta": …, "pla": …, "vall": …}, que sumen 1.
+
+    Totes les fronteres de la 2.0TD cauen en hora en punt, o sigui que
+    s'avalua el tram de cada franja d'una hora sencera pel seu punt mig.
+    Amb una mostra per hora, l'interval és una sola franja i la fracció
+    val 1 en un sol tram: exacte. Només quan hi ha un forat (HA aturat,
+    l'endoll sense resposta) l'interval n'agafa més d'una, i llavors
+    suposa consum uniforme dins del forat, que és el millor que es pot
+    dir sense dades.
+
+    Es treballa en segons UNIX a posta: així el canvi d'hora no pot
+    descomptar res (i a més cau sempre en diumenge de matinada, en vall).
+    Sense referència, o absurda, es pren l'última hora; més de 31 dies de
+    forat es retallen, perquè el bucle ha de tenir sostre.
+    ───────────────────────────────────────────────────────────────────────── -#}
+{%- macro reparteix(a, b) -%}
+  {%- set a = a if a is number else b - 3600 -%}
+  {%- set a = [[a, b - 31 * 86400] | max, b - 60] | min -%}
+  {%- set ns = namespace(punta=0, pla=0, vall=0) -%}
+  {%- for s in range(((a // 3600) * 3600) | int, b | int, 3600) -%}
+    {%- set solap = ([b, s + 3600] | min) - ([a, s] | max) -%}
+    {%- set t = tram(s + 1800) | trim -%}
+    {%- if t == 'punta' -%}{%- set ns.punta = ns.punta + solap -%}
+    {%- elif t == 'pla' -%}{%- set ns.pla = ns.pla + solap -%}
+    {%- else -%}{%- set ns.vall = ns.vall + solap -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {{- {'punta': ns.punta / (b - a), 'pla': ns.pla / (b - a),
+       'vall': ns.vall / (b - a)} | to_json -}}
+{%- endmacro -%}
