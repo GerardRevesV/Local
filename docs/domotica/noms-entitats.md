@@ -47,10 +47,24 @@ sensor.<zona>_<punt>_<magnitud>
 
 | Aparell | Funció | `entity_id` |
 |---|---|---|
-| Tapo P110 | Deshumidificador | `switch.deshumidificador` · `sensor.deshumidificador_potencia` · `sensor.deshumidificador_energia` |
+| Tapo P110M ❓ | Deshumidificador | `switch.deshumidificador` · `sensor.deshumidificador_potencia` · `sensor.deshumidificador_energia` |
 | Tapo S110E | Ventilador 1 | `switch.ventilador_1` · `sensor.ventilador_1_potencia` |
 | Tapo S110E | Ventilador 2 | `switch.ventilador_2` · `sensor.ventilador_2_potencia` |
 | Tapo T300 | Inundació | `binary_sensor.soterrani_inundacio` |
+
+> **La nota, que fins avui faltava (21/09/2026).** Que la font sigui Matter vol dir que
+> l'aparell ha de **parlar Matter**: el hub **H110** i els **S110E** sí, i l'endoll només si
+> és un **P110M** i no un P110 pelat — comprovació pendent a l'etiqueta
+> ([inventari.md](inventari.md)).
+>
+> ⚠️ Matter bateja les entitats amb el model i un tros d'identificador
+> (`sensor.tapo_p110m_power`). **Es renombren immediatament**, abans que gravin res, i es
+> canvia l'**ID d'entitat**, no només el nom visible. Procediment:
+> [emparellar-matter.md](emparellar-matter.md).
+>
+> ❓ **Tensió i corrent no són al conveni a posta.** Un endoll amb mesura també les publica, i
+> no fan falta per a res del projecte. Queda per decidir si entren a `exclude.entities` del
+> `recorder` (mai per glob) o si s'accepten i s'obliden → [pendents.md](../pendents.md).
 
 ### Derivades — les calcula `packages/rosada.yaml`
 

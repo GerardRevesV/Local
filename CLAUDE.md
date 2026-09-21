@@ -87,6 +87,8 @@ docs/
     inventari.md       Aparells existents i candidats
     noms-entitats.md   Conveni de noms d'entitat — es fixa ABANS d'emparellar
     calibratge.md      Procediment del calibratge creuat dels cinc sensors
+    emparellar-matter.md  Com s'afegeix un aparell per Matter sense partir la sèrie
+    requisits.md       El que el sistema ha de saber fer i encara no és decisió
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE
 

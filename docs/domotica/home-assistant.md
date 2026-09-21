@@ -116,7 +116,7 @@ i com s'entra al BIOS és més avall, a [Entrar al BIOS](#entrar-al-bios).
 | 3 | `tailscale status` i `tailscale ping local-ha` des de casa | **Si diu `via DERP` en comptes de directe**, el CGNAT està relegant el trànsit: funciona, però amb latència i consum |
 | 4 | Deixar-ho **72 h** i llegir `vnstat -d` i `vnstat -m` | El consum en repòs, abans d'afegir-hi sensors. És el número que decideix el pla de dades |
 | 5 | Emparellar el **H110 al Wi-Fi de la SIM** | — |
-| 6 | **Només llavors**, emparellar el hub per **Matter** i renombrar les entitats | A partir d'aquí comença a gravar-se l'històric: els noms ja no es toquen |
+| 6 | **Només llavors**, emparellar el hub per **Matter** i renombrar les entitats — procediment a [emparellar-matter.md](emparellar-matter.md) | A partir d'aquí comença a gravar-se l'històric: els noms ja no es toquen |
 
 ## El maquinari del servidor
 
