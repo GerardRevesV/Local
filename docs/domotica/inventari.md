@@ -104,6 +104,10 @@ especificacions completes, el veredicte raonat i les xifres són a
 
 **QLIMA D 825 PA SMART** (ref. Leroy Merlin 91164803, EAN 8713508793047)
 
+> 📘 **Com funciona de debò** —modes, consum de cada estat, memòria, dipòsit, i què n'ha de
+> saber HA— és a **[deshumidificador.md](deshumidificador.md)**, amb els experiments del
+> 21/09/2026.
+
 | Característica | Valor |
 |---|---|
 | Capacitat | **25 L/24 h** |
@@ -183,8 +187,19 @@ funcionamiento y el apagado»**. És una segona capa de seguretat per sota de la
 > l'aparell i necessita que **l'aparell tingui corrent** per comptar. Si Home Assistant li
 > talla l'alimentació, el comptador probablement es perd. **El temps mínim d'aturada de 5
 > minuts s'ha d'implementar igualment a la lògica.**
+>
+> ✅ ***21/09/2026 — el temor era a mitges.*** Després d'un tall de corrent, l'aparell **va
+> esperar ~5 minuts abans d'engegar el compressor**, tot i que el llindar demanava assecar: en
+> arrencar, la protecció es torna a armar. El mínim d'aturada a la lògica **es manté** —és la
+> nostra capa i no depèn de l'aparell—, però ara amb xarxa doble →
+> [deshumidificador.md](deshumidificador.md#3-operació--eco-purificar-deshumidificar).
 
-### 🔴 Una contradicció al manual que cal provar
+### ~~🔴 Una contradicció al manual que cal provar~~ → ✅ resolta: recorda
+
+> ✅ ***21/09/2026:*** provat a distància tallant l'endoll un minut amb una configuració
+> inconfusible: **recorda el mode, el llindar i la velocitat, i es reprèn sol** →
+> [deshumidificador.md](deshumidificador.md#2-memòria-la-prova-02b). El que segueix
+> es conserva pel raonament.
 
 El manual diu dues coses que no encaixen:
 
@@ -362,9 +377,11 @@ feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una
 > (dipòsit ple), que eren el que més ens interessava. Es veurà quina es mou el primer cop que
 > l'aparell en mostri un.
 >
-> ⚠️ **Una lectura estranya:** a les 19:00 l'aparell deia **44 %** mentre els cinc sensors del
-> calibratge en deien **66–72 %**. O és en una altra habitació, o el seu higròmetre va molt
-> desviat. És la dada que decidirà si la seva HR serveix per a res.
+> ✅ **La lectura que semblava estranya, explicada:** a les 19:00 l'aparell deia **44 %** amb
+> els cinc sensors del calibratge al **66–72 %**. És que és **en una altra habitació**, a posta
+> per no influir en el calibratge, i allà hi ha un **aire condicionat** que també asseca. No
+> diu res de la precisió del seu higròmetre: això només es pot saber posant-lo un dia al costat
+> d'un Tapo.
 >
 > **Endollat al P110M a les 18:15**: des de llavors, la sèrie de consum de l'endoll **és la
 > del deshumidificador**. En marxa, **305–393 W** (la placa en diu 470), i cicles de **~2 min

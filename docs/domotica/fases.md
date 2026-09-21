@@ -36,7 +36,7 @@ invalidar.
 |---|---|---|
 | 0.1 | **Prova de fum del camí de l'aire de reposició** amb els extractors en marxa | 👤 Tu |
 | 0.2 | ~~Deshumidificador: arrenca sol? temperatura mínima?~~ ✅ **Resolt pel manual:** sí, i 5–35 °C | — |
-| 0.2b | 🔴 **PROVA: desendollar-lo i tornar-lo a endollar** amb l'higròstat a 45 %. Recorda el llindar o torna a la configuració de fàbrica? | 👤 Tu |
+| 0.2b | ~~**PROVA: desendollar-lo i tornar-lo a endollar**~~ ✅ **Superada el 21/09/2026**, a distància: configuració inconfusible, compressor quiet, un minut sense corrent tallant l'endoll. **Recorda el mode, el llindar i la velocitat, i es reprèn sol** → [deshumidificador.md](deshumidificador.md#2-memòria-la-prova-02b) | 🤖 Fet |
 | 0.3 | **Paret més freda i humida** amb termòmetre IR de mà | 👤 Tu |
 | 0.4 | ~~Prova de cobertura Zigbee.~~ ✅ **No cal:** els Tapo van per 868 MHz. ✅ **I ja està decidit on va cada un** dels cinc, amb el de fora protegit de la pluja | — |
 | 0.5 | **Salut del portàtil:** SMART del disc, capacitat de bateria, pila CMOS, si té Ethernet | 🤝 Tu executes, jo interpreto |
@@ -48,7 +48,7 @@ invalidar.
 
 - [ ] Sé **per on entra l'aire de reposició**.
 - [x] ~~Sé si el deshumidificador es reprèn sol.~~ ✅ Sí, i funciona de 5 a 35 °C.
-- [ ] 🔴 Sé si **recorda el llindar d'humitat** després d'un cicle d'alimentació. Si no el recorda, l'arquitectura del deshumidificador canvia — i la via és `tuya-local` (B.1c).
+- [x] ~~Sé si **recorda el llindar d'humitat** després d'un cicle d'alimentació.~~ ✅ **Sí** (21/09/2026): recorda mode, llindar i velocitat. L'arquitectura (a) es manté. ⚠️ **Però en mode AUTO no fa cas del llindar**: ha d'estar en Manual → [deshumidificador.md](deshumidificador.md)
 - [x] ~~Sé si el Zigbee arriba al soterrani.~~ ✅ No hi ha Zigbee. ⚠️ **Però l'stack ha passat a 2 contenidors** el 21/09/2026: `tplink` rebutja el hub i la via és Matter, que demana el seu propi servidor.
 - [x] ~~Sé **quin model és l'endoll**.~~ ✅ **Tapo P110: mesura consum.** És el que fa
       possible el `utility_meter` del deshumidificador i, amb ell, els kWh/dia de la Porta B.
