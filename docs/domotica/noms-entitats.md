@@ -22,7 +22,7 @@ sensor.<zona>_<punt>_<magnitud>
 |---|---|
 | `zona` | `soterrani` · `baixa` · `exterior` |
 | `punt` | `fons` · `centre` · `gran` · *(buit si la zona té un sol punt)* |
-| `magnitud` | `temperatura` · `humitat` · `rosada` · `bateria` · `potencia` · `energia` |
+| `magnitud` | `temperatura` · `humitat` · `rosada` · `bateria` · `potencia` · `energia` · `cost` |
 
 ## Taula d'entitats
 
@@ -89,6 +89,26 @@ hi consten perquè existeixen i perquè la decisió sobre tensió i corrent és 
 | `sensor.marge_de_condensacio` | `paret més freda − soterrani_rosada` — el KPI del fong |
 | `sensor.residu_del_punt_de_rosada_exterior` | Sensor propi − estació oficial — **salut del sensor** |
 | `sensor.decisio_del_soterrani` | **L'únic punt d'avaluació.** Què s'ha de fer i per què |
+
+### Derivades — consum i tarifa, les calcula `packages/consum.yaml`
+
+*(21/09/2026.)* Totes surten del comptador de l'endoll i del calendari de
+[`tarifa.jinja`](../../config/custom_templates/tarifa.jinja). El perquè de cada decisió és a
+[subministraments.md](../local/subministraments.md#el-cost-a-home-assistant).
+
+| `entity_id` | Què és |
+|---|---|
+| `sensor.tarifa_periode` | Tram d'ara: `punta` · `pla` · `vall` |
+| `sensor.tarifa_preu` | Preu del kWh d'ara, **amb impostos** (`EUR/kWh`); l'atribut `sense_impostos` diu el del contracte |
+| `sensor.deshumidificador_cost` | **Euros acumulats**, una mostra per hora. No es reinicia mai: el dia i el mes els fan les estadístiques. Als atributs hi ha la referència de l'última mostra |
+| `sensor.deshumidificador_energia_punta` *(i `_pla`, `_vall`)* | kWh acumulats **en cada tram**. La pregunta de l'optimització: quina part del consum cau en punta |
+
+> ⚠️ **`sensor.deshumidificador_cost` no es pot renombrar sense tocar el codi:** les variables
+> del bloc el llegeixen pel seu `entity_id` —encara no hi ha `this`—. `comprova.sh` avisa si
+> desapareix.
+>
+> Durant el calibratge (i fins que no s'endolli al local), el «deshumidificador» d'aquests
+> noms és **el que hi hagi endollat**. El nom és el de la funció de l'endoll, com sempre.
 
 ### Paràmetres ajustables
 

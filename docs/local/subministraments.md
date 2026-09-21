@@ -9,9 +9,72 @@ els períodes regulats estàndard de la tarifa 2.0TD.
 
 | Període | Horari | Preu energia |
 |---|---|---|
-| 🟢 **Vall (P3)** | **00:00 – 08:00** de dilluns a divendres<br>**24 h els caps de setmana i festius nacionals** | **0,0739 €/kWh** |
-| 🟡 **Pla (P2)** | 08:00 – 10:00 · 14:00 – 18:00 · 22:00 – 00:00 (tots els dies) | 0,1092 €/kWh |
-| 🔴 **Punta (P1)** | 10:00 – 14:00 · 18:00 – 22:00 (tots els dies) | 0,1822 €/kWh |
+| 🟢 **Vall (P3)** | **00:00 – 08:00** de dilluns a divendres<br>**24 h els caps de setmana i festius nacionals** *(vegeu quins, a sota)* | **0,0739 €/kWh** |
+| 🟡 **Pla (P2)** | 08:00 – 10:00 · 14:00 – 18:00 · 22:00 – 00:00, de dilluns a divendres feiners | 0,1092 €/kWh |
+| 🔴 **Punta (P1)** | 10:00 – 14:00 · 18:00 – 22:00, de dilluns a divendres feiners | 0,1822 €/kWh |
+
+> *(21/09/2026)* Les dues últimes files deien «tots els dies», que contradeia la primera: el
+> cap de setmana és vall sencer. Corregit segons el text de la circular (vegeu a sota), que
+> diu «lunes a viernes laborables».
+
+### Quins festius són vall — la regla, que serveix per a qualsevol any
+
+La **Circular CNMC 3/2020, art. 7.3**, que és la que fixa els períodes de la 2.0TD
+([BOE-A-2020-1066](https://www.boe.es/buscar/act.php?id=BOE-A-2020-1066), sense canvis en
+aquest punt per la Circular 1/2025):
+
+> «Se consideran como horas del periodo 3 (valle) todas las horas de los sábados, domingos,
+> el 6 de enero y los días festivos de ámbito nacional, definidos como tales en el calendario
+> oficial del año correspondiente, con exclusión tanto de los festivos sustituibles como de
+> los que no tienen fecha fija.»
+
+Creuat amb el **RD 2001/1983, art. 45.1** —que diu quins festius nacionals són no
+substituïbles (apartats a, b i c) i quins pot canviar cada comunitat (apartat d)—, surten
+**nou dates fixes, cada any les mateixes**:
+
+**1/1 · 6/1 · 1/5 · 15/8 · 12/10 · 1/11 · 6/12 · 8/12 · 25/12**
+
+Com que la regla és de data fixa, **no cal cap llista per any**: el codi la té escrita com a
+regla i val fins que canviï la llei. Els paranys, que és on s'equivoquen els calculadors:
+
+| No és vall | Per què |
+|---|---|
+| **Divendres Sant** | És festiu nacional no substituïble, però **no té data fixa**. Alguns calculadors (la biblioteca `aiopvpc`, per exemple) el posen en vall; la circular l'exclou |
+| El **dilluns de trasllat** d'un festiu que cau en diumenge | Ni és data fixa ni és un festiu nacional: és un descans traslladat |
+| **Dijous Sant, Sant Josep, Sant Jaume** | Substituïbles (apartat d) |
+| **Sant Joan, la Diada, Sant Esteve, Dilluns de Pasqua, la Mercè** | Autonòmics o locals, no nacionals |
+
+**Els que de debò mouen la factura** són els que cauen entre setmana (en cap de setmana ja
+eren vall). Surten de [`tools/tarifa.py --festius`](../../tools/tarifa.py):
+
+| Any | Festius en vall que cauen entre setmana | Divendres Sant (**no** és vall) |
+|---|---|---|
+| 2026 | 6: dj 1/1 · dt 6/1 · dv 1/5 · dl 12/10 · dt 8/12 · dv 25/12 | 3/4 |
+| 2027 | 6: dv 1/1 · dc 6/1 · dt 12/10 · dl 1/11 · dl 6/12 · dc 8/12 | 26/3 |
+| 2028 | 8: dj 6/1 · dl 1/5 · dt 15/8 · dj 12/10 · dc 1/11 · dc 6/12 · dv 8/12 · dl 25/12 | 14/4 |
+| 2029 | 7: dl 1/1 · dt 1/5 · dc 15/8 · dv 12/10 · dj 1/11 · dj 6/12 · dt 25/12 | 30/3 |
+| 2030 | 6: dt 1/1 · dc 1/5 · dj 15/8 · dv 1/11 · dv 6/12 · dc 25/12 | 19/4 |
+| 2031 | 6: dc 1/1 · dl 6/1 · dj 1/5 · dv 15/8 · dl 8/12 · dj 25/12 | 11/4 |
+| 2032 | 6: dj 1/1 · dt 6/1 · dt 12/10 · dl 1/11 · dl 6/12 · dc 8/12 | 26/3 |
+| 2033 | 6: dj 6/1 · dl 15/8 · dc 12/10 · dt 1/11 · dt 6/12 · dj 8/12 | 15/4 |
+| 2034 | 8: dv 6/1 · dl 1/5 · dt 15/8 · dj 12/10 · dc 1/11 · dc 6/12 · dv 8/12 · dl 25/12 | 7/4 |
+| 2035 | 7: dl 1/1 · dt 1/5 · dc 15/8 · dv 12/10 · dj 1/11 · dj 6/12 · dt 25/12 | 23/3 |
+| 2036 | 5: dt 1/1 · dj 1/5 · dv 15/8 · dl 8/12 · dj 25/12 | 11/4 |
+
+**Com s'ha verificat (21/09/2026):** el calendari de HA
+([`tarifa.jinja`](../../config/custom_templates/tarifa.jinja)) s'ha avaluat amb els filtres
+de la mateixa versió d'HA, dins del contenidor, a **cada hora de 2026 a 2036** —al minut 0, al
+30 i al 59 de cada franja, **289.296 instants**— contra una implementació independent en
+Python: **cap discrepància**. Surten 22.392 hores de punta, 22.392 de pla i 51.648 de vall.
+
+**Què el pot fer fallar en deu anys, i res més:**
+
+- **Un canvi de llei**: una circular nova de la CNMC o un canvi al RD 2001/1983. Es llegeix a
+  la factura —les hores de cada tram hi surten— i es corregeix a `tarifa.jinja`.
+- **Si la UE abandona el canvi d'hora**, les hores locals canvien i HA només ho sabrà si la
+  seva imatge porta la base de dades de zones nova. Amb la versió fixada, vol dir
+  **actualitzar HA** aquell any.
+- **Un canvi de contracte** a una tarifa que no segueixi els períodes regulats.
 
 ### Terme de potència
 
@@ -38,12 +101,73 @@ els períodes regulats estàndard de la tarifa 2.0TD.
 - Això **es combina bé amb la física**: la finestra de ventilació gratuïta a Barcelona és
   sobretot de **nit**, que és justament la franja vall. Les dues lògiques empenyen en la
   mateixa direcció.
-- **Cal registrar el període tarifari com a entitat a Home Assistant** (hi ha integracions i
-  plantilles que ho fan) per poder calcular el cost real i no només els kWh. És la xifra
-  que dirà si l'automatisme val la pena.
+- ✅ **El període tarifari ja és una entitat a Home Assistant** *(21/09/2026)*, i amb ell el
+  cost real i no només els kWh. És la xifra que dirà si l'automatisme val la pena → a
+  sota, *El cost a Home Assistant*.
 
 > ⚠️ **A verificar:** la potència contractada del local i si el contracte és el domèstic de
 > Tarifa Noche o una variant per a negocis. Amb ≤ 15 kW la 2.0TD aplica igual.
+
+### El cost a Home Assistant
+
+Des del 21/09/2026, l'endoll dona **watts, kWh i euros** al tauler del soterrani (vista
+*Consum*, i els watts també a *Històric*). Codi:
+[`packages/consum.yaml`](../../config/packages/consum.yaml); calendari i preus, **en un sol
+lloc**: [`custom_templates/tarifa.jinja`](../../config/custom_templates/tarifa.jinja).
+
+**D'on surt cada número:**
+
+| | Font | Per què així |
+|---|---|---|
+| **W** | L'endoll, tal com la dona | — |
+| **kWh** | El **comptador del mateix endoll** (`sensor.deshumidificador_energia`) | L'endoll integra la potència per dins, molt més sovint del que HA la veu. Integrar-la a HA (Riemann sobre els W) seria pitjor: HA només rep la potència quan canvia i Matter té un interval mínim d'informe |
+| **€** | Una lectura d'aquell comptador **cada hora, al 59:59**, multiplicada pel preu del tram | Vegeu a sota |
+
+**Per què una mostra per hora, i no més:** totes les fronteres de tram de la 2.0TD —les 8, les
+10, les 14, les 18, les 22 i les 00— **cauen en hora en punt**. Cada hora és sencera d'un sol
+tram, o sigui que el delta del comptador en una hora té **un sol preu**, i el cost surt
+exacte. Mostrejar més fi no l'afinaria —la resolució ja la porta el comptador— i només
+gravaria més files.
+
+**Per què al 59:59 i no al 00:00:** perquè la lectura caigui **dins** de la franja horària
+de les estadístiques d'HA. Al 00:00, el cost de 10 a 11 quedaria a la barra de les 11 i les
+barres d'euros anirien una hora desfasades de les d'energia.
+
+**L'error que queda:** a cada frontera, el que l'endoll encara no hagi reportat. El comptador
+va de 0,001 kWh en 0,001 kWh: **menys d'1 Wh mal repartit per frontera**. Amb unes 1.500
+fronteres l'any i 0,14 €/kWh de diferència màxima entre trams, el pitjor cas són **uns 20
+cèntims l'any**, i com que l'error va tant cap a un costat com cap a l'altre, en la pràctica
+molt menys.
+
+**Si hi ha un forat** —HA aturat, o l'endoll sense resposta a l'hora de la mostra—, no es
+perd res: la mostra següent cobreix tot el forat, i si creua trams el reparteix **suposant
+consum uniforme** dins del forat, que és el millor que es pot dir sense dades. La referència
+es guarda als atributs del sensor de cost i HA la restaura en arrencar.
+
+**Què inclou el preu:** el terme d'energia de cada tram, amb **l'impost especial sobre
+l'electricitat (5,11269632 %)** i, damunt, **l'IVA (21 %)**: ×1,2719. Queda:
+
+| Tram | Sense impostos | **Amb impostos** |
+|---|---|---|
+| Vall | 0,0739 €/kWh | **0,0940 €/kWh** |
+| Pla | 0,1092 €/kWh | **0,1389 €/kWh** |
+| Punta | 0,1822 €/kWh | **0,2317 €/kWh** |
+
+**Què NO inclou, a posta:** el **terme de potència**, el **lloguer del comptador** i el
+**bo social**. Són fixos per dia i no canvien pel que s'endolli, o sigui que atribuir-los a
+un aparell seria inventar un repartiment.
+
+> ✅ **L'IVA és cost** *(confirmat el 21/09/2026)*: sempre es paga, no es dedueix. Per això
+> és dins del ×1,2719.
+>
+> ⚠️ **A contrastar amb la primera factura real** → [pendents.md](../pendents.md): que els
+> preus i els dos impostos quadrin.
+>
+> ⚠️ **Quan canviïn els preus** (cada 12 mesos), es canvien a `tarifa.jinja` en un commit
+> datat. **El cost ja acumulat no es recalcula**, i és correcte: aquells kWh es van pagar al
+> preu vell.
+
+**Les entitats** són al [conveni de noms](../domotica/noms-entitats.md#derivades--consum-i-tarifa-les-calcula-packagesconsumyaml).
 
 ## Internet — router amb targeta SIM
 

@@ -160,6 +160,16 @@ views:
           - entity: sensor.decisio_del_soterrani
             name: Què hauria fet
 
+      # Els watts, amb la mateixa finestra que la resta (R3 de requisits.md):
+      # les bandes de funcionament surten de la potència, no de l'estat de
+      # l'endoll. Els kWh i els euros són a la vista «Consum».
+      - type: history-graph
+        title: Potència de l'endoll
+        hours_to_show: 48
+        entities:
+          - entity: sensor.deshumidificador_potencia
+            name: Potència
+
       - type: history-graph
         title: Els tres punts del soterrani — on és el problema
         hours_to_show: 48
@@ -198,6 +208,136 @@ views:
             name: Dalt
           - entity: sensor.exterior_temperatura
             name: Fora
+
+  # ───────────────────────────────────────────────────────────────────────────
+  #  CONSUM — què gasta l'endoll, i quant costa amb els trams de la factura.
+  #  Lògica: config/packages/consum.yaml. Calendari: custom_templates/tarifa.jinja
+  #
+  #  Les barres surten de les ESTADÍSTIQUES d'HA, que no es purguen mai: per
+  #  això valen igual per a les últimes 48 hores que per a l'últim any.
+  # ───────────────────────────────────────────────────────────────────────────
+  - title: Consum
+    path: consum
+    icon: mdi:lightning-bolt
+    cards:
+
+      - type: entities
+        title: Ara
+        entities:
+          - entity: sensor.deshumidificador_potencia
+            name: Potència
+          - entity: sensor.tarifa_periode
+            name: Tram
+          - entity: sensor.tarifa_preu
+            name: Preu del kWh, amb impostos
+          - type: divider
+          - entity: sensor.deshumidificador_energia_diaria
+            name: Energia avui
+          - entity: sensor.deshumidificador_energia_mensual
+            name: Energia aquest mes
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: statistic
+            entity: sensor.deshumidificador_cost
+            name: Cost avui
+            stat_type: change
+            period:
+              calendar:
+                period: day
+          - type: statistic
+            entity: sensor.deshumidificador_cost
+            name: Cost aquest mes
+            stat_type: change
+            period:
+              calendar:
+                period: month
+
+      # Els watts amb el tram a sota: es veu d'un cop d'ull si el consum cau
+      # en punta o en vall.
+      - type: history-graph
+        title: Potència i tram
+        hours_to_show: 48
+        entities:
+          - entity: sensor.deshumidificador_potencia
+            name: Potència
+          - entity: sensor.tarifa_periode
+            name: Tram
+
+      - type: statistics-graph
+        title: Energia per hora
+        chart_type: bar
+        period: hour
+        days_to_show: 2
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.deshumidificador_energia
+            name: Energia
+
+      - type: statistics-graph
+        title: Cost per hora
+        chart_type: bar
+        period: hour
+        days_to_show: 2
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.deshumidificador_cost
+            name: Cost
+
+      # La pregunta de l'optimització: quina part del consum cau en punta.
+      - type: statistics-graph
+        title: Energia per dia i tram
+        chart_type: bar
+        period: day
+        days_to_show: 30
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.deshumidificador_energia_punta
+            name: Punta
+          - entity: sensor.deshumidificador_energia_pla
+            name: Pla
+          - entity: sensor.deshumidificador_energia_vall
+            name: Vall
+
+      - type: statistics-graph
+        title: Cost per dia
+        chart_type: bar
+        period: day
+        days_to_show: 30
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.deshumidificador_cost
+            name: Cost
+
+      - type: markdown
+        content: >
+          ### Com es llegeix
+
+          - **W**: el que mesura l'endoll ara. **kWh**: el comptador del mateix
+          endoll, que integra la potència per dins.
+
+          - **€**: una lectura d'aquell comptador **cada hora**, al 59:59. Totes
+          les fronteres de tram cauen en hora en punt, o sigui que cada hora té
+          **un sol preu** i el càlcul és exacte. Per això els euros van fins a
+          **una hora endarrerits** respecte dels watts.
+
+          - Preus **amb** l'impost elèctric i l'IVA. **Sense** el terme de
+          potència ni el lloguer del comptador: són fixos, no depenen del que
+          s'hi endolli.
+
+          - **Vall** tot el dia els dissabtes, diumenges i festius nacionals de
+          data fixa. Divendres Sant i els festius catalans **no** ho són.
+
+          {% if is_state('input_boolean.mode_calibratge', 'on') %}
+          🧪 **Calibratge en marxa:** el consum és el del que hi hagi endollat
+          ara, no necessàriament el del deshumidificador.
+          {% endif %}
 
   # ───────────────────────────────────────────────────────────────────────────
   - title: Ajustos

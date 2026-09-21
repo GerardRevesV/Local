@@ -287,6 +287,10 @@ targetes —rosades, temperatures i marge, HR, potència— més el registre del
 donen correlació visual per eix compartit. Zero peces noves, i és el 80 % del que es mira el
 dia a dia.
 
+> ✅ *(21/09/2026)* **La de potència ja hi és**, a la vista *Històric* amb les mateixes 48 h que
+> la resta. Els kWh i els euros per hora i per tram són a la vista nova *Consum* →
+> [subministraments.md](../local/subministraments.md#el-cost-a-home-assistant).
+
 **El que no:** una sola targeta nativa amb **dos eixos** (°C i W), bandes ombrejades sobre els
 episodis de ventilació, la previsió superposada a la realitat i anotacions datades. Barrejar
 °C i % en una targeta és directament enganyós: comparteixen eix Y.

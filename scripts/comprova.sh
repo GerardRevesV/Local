@@ -239,7 +239,7 @@ else
     mal "l'API no respon o el testimoni no val"
   else
     ok "$(wc -l < "$REAL") entitats a HA"
-    grep -oE "(states|state_attr|is_state)\(\s*'[a-z_]+\.[a-z0-9_]+'" config/packages/rosada.yaml \
+    grep -ohE "(states|state_attr|is_state)\(\s*'[a-z_]+\.[a-z0-9_]+'" config/packages/*.yaml \
       | grep -oE "[a-z_]+\.[a-z0-9_]+" | sort -u > "$REF"
     trencades=0; pendents=0
     while read -r e; do
@@ -249,7 +249,7 @@ else
         *) mal "referència TRENCADA: $e"; trencades=$((trencades+1)) ;;
       esac
     done < "$REF"
-    [ "$trencades" -eq 0 ] && ok "cap referència trencada a rosada.yaml"
+    [ "$trencades" -eq 0 ] && ok "cap referència trencada als paquets"
     [ "$pendents" -gt 0 ] && avis "$pendents referències esperen maquinari (Tapo, ESP32, AEMET) — és normal fins a la integració"
 
     # El sensor que decideix: ha d'existir. Que digui «sense_dades» és correcte

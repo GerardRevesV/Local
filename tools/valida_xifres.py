@@ -61,7 +61,7 @@ TOLERANCIA_MIN = 10
 # extensions. Sense això, `sensor.decisio_del_soterrani` seria un «fitxer».
 EXTENSIONS = {
     "py", "sh", "yaml", "yml", "md", "json", "js", "ts", "css", "html",
-    "toml", "conf", "ini", "sql", "txt",
+    "toml", "conf", "ini", "sql", "txt", "jinja",
 }
 
 # Noms que els documents fan servir en comptes del camí del fitxer.
