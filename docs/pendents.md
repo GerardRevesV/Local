@@ -108,6 +108,15 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
       i la sèrie de dades fa un forat.
 - [ ] **Col·locar-lo a la planta baixa, no al soterrani** (humitat sobre l'electrònica), en un
       lloc airejat i, si es pot, amb **cable Ethernet**.
+- [ ] 🆕 **Aplicar la llista negra del Bluetooth al servidor, i reiniciar — DESPRÉS del
+      calibratge.** El pas 6 de `prepara-host.sh` escriu `/etc/modprobe.d/99-sense-bluetooth.conf`,
+      però s'hi va afegir el 20/09 a les 22:02, **després** de l'última vegada que el guió es va
+      córrer sencer (el `swappiness` del 21/09 es va aplicar a mà), i al servidor **no hi és**.
+      L'error que omplia el log ja està aturat des del 21/09/2026 desactivant l'entrada d'HA,
+      o sigui que no corre pressa: és la capa que treu l'adaptador del tot. Tornar a córrer el
+      guió (és idempotent, demana `sudo`), reiniciar quan el calibratge hagi acabat i
+      comprovar que `ls /sys/class/bluetooth` surt buit →
+      [runbook](domotica/runbook-servidor.md#-el-bluetooth-omple-el-log)
 
 #### 🔧 Tanda física — mentre el portàtil encara sigui a casa
 

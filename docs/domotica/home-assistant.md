@@ -17,8 +17,10 @@
       *Estat 20/09/2026: `check_config --info recorder` el llegeix com a `730 [source
       /config/configuration.yaml:29]`. Això és el fitxer tal com el llegeix HA, no la
       instància en calent: falta la comprovació per `/api/config` amb el testimoni.*
-- [ ] **Esborrar la integració `bluetooth` d'HA** — vegeu el parany del
-      [runbook](runbook-servidor.md#-el-bluetooth-omple-el-log).
+- [x] ~~**Esborrar la integració `bluetooth` d'HA**~~ ✅ **Desactivada** l'entrada de
+      l'adaptador el 21/09/2026, sense reiniciar. **Desactivar i no esborrar**: esborrada, HA
+      la torna a crear en redescobrir l'adaptador. ⏳ Queda la llista negra del mòdul al
+      servidor, que demana reinici → [runbook](runbook-servidor.md#-el-bluetooth-omple-el-log).
 - [x] ~~Emparellar el hub H110 al **router SIM** i després **emparellar-lo per Matter**.~~ ✅ **Fet el 21/09/2026:** el hub és el **node 1** del `matter-server`, amb els **sis** sensors penjant-ne i els noms del conveni ja aplicats. Per Matter, no per `tplink`, que el rebutja pel xifratge TPAP. ⏳ **Queda l'endoll P110M**, que de moment falla l'emparellament → [emparellar-matter.md](emparellar-matter.md#-quan-lemparellament-falla-pase-timeout).
 - [ ] Decidir la ubicació física definitiva dins del local.
 
@@ -565,3 +567,4 @@ Aquí s'anirà anotant què s'ha fet realment, amb data.
 | 21/09/2026 | ⚡ **`select.deshumidificador_power_on_behavior`, d'`off` a `on`** (tasca C.6). Tal com venia de fàbrica, després d'un tall de corrent l'endoll s'hauria quedat **apagat** i el deshumidificador **no hauria tornat sol** — just el contrari del que tot el disseny dona per fet |
 | 21/09/2026 | 🔗 **`utility_meter` i `history_stats` enganxats.** Després del reinici, `sensor.deshumidificador_energia_diaria` i `…_mensual` deixen de dir `unknown` i `…_hores_avui` ja compta. **Aquesta nit ja mesura** |
 | 21/09/2026 | 💶 **Desplegat el consum de l'endoll** (17:10): watts, kWh i euros amb els trams de la factura. `git pull --ff-only` —que va portar també tres commits del calibratge encara no desplegats, només el text del «motiu»— → `check_config` **net** → `reload_custom_templates` + `template.reload`, **sense reiniciar**: el calibratge no perd cap lectura. Verificat: tram **pla** a **0,1389 €/kWh** a les 17 h, vista *Consum* servida, **48.216 instants de 2026 a 2036 sense cap discrepància** amb el calendari importat des del fitxer (`tools/tarifa.py --prova-ha`) i `comprova.sh` **tot verd**. Desplegat amb una mostra per hora; el mateix dia es passa a **cada 5 minuts** perquè els euros no vagin una hora tard |
+| 21/09/2026 | 🔇 **Aturat l'error de Bluetooth que omplia el log** (~250 al dia, `habluetooth.scanner … Failed to force stop scanner`). Causa: el mòdul del nucli segueix carregat, el contenidor veu `hci0` per `/sys`, HA el descobreix i en crea una entrada, i l'escàner reintenta sense dbus. **La llista negra de `prepara-host.sh` no s'havia aplicat mai**: s'hi va afegir després de l'última passada sencera del guió. Arreglat **desactivant** l'entrada de l'adaptador per l'API (17:31), **sense reiniciar** (`require_restart: false`): **0 errors** en els 10 minuts següents, contra 6 en els 30 d'abans. Desactivar i no esborrar: esborrada, HA la torna a crear. Matter no en depèn (només `after_dependencies`). Queda la llista negra, que demana reinici: després del calibratge → [runbook](runbook-servidor.md#-el-bluetooth-omple-el-log) |

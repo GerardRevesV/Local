@@ -22,8 +22,8 @@
 # El que NO fa, i queda per a tu:
 #   · Desactivar l'expiració de la clau de Tailscale, que es fa al seu web (A.3).
 #     Si no ho fas, d'aquí a uns mesos la clau caduca i perds l'accés al servidor.
-#   · Esborrar la integració «Bluetooth» de Home Assistant, que es fa a la seva
-#     interfície: el mòdul ja no hi serà, però l'entrada guardada sí.
+#   · DESACTIVAR (no esborrar: es tornaria a crear) l'entrada «Bluetooth» d'HA.
+#     Fet el 21/09/2026; cal refer-ho si mai canvia l'adaptador. → runbook.
 #
 # Ja resolt i per tant fora del guió:
 #   · zram — el disc va resultar ser un SSD NVMe, no una eMMC
@@ -146,8 +146,8 @@ blacklist btusb
 blacklist bluetooth
 CONF
 ok "Mòdul de Bluetooth a la llista negra (efectiu al proper reinici)."
-avis "A Home Assistant, esborra també la integració «Bluetooth»: l'entrada guardada"
-avis "seguirà intentant obrir l'adaptador encara que el mòdul ja no hi sigui."
+avis "A Home Assistant, DESACTIVA (no esborris) l'entrada «Bluetooth»: esborrada, HA"
+avis "redescobreix l'adaptador i la torna a crear. Vegeu el runbook."
 
 # ──────────────────────── 7. Actualitzacions: només seguretat ───────────────
 log "unattended-upgrades — només seguretat, i mai Docker"
