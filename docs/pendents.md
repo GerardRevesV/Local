@@ -292,6 +292,29 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [ ] **Emparellar el hub H110 per Matter** i comprovar que apareixen els sis sensors i que
       graven. ⚠️ **No per `tplink`**: el rebutja amb *«Unsupported device»* pel xifratge TPAP
       ([`python-kasa#1590`](https://github.com/python-kasa/python-kasa/issues/1590)).
+- [ ] 🆕 ❓ **Confirmar si l'endoll és un `P110M` o un `P110`** *(obert el 21/09/2026)*. Mirar
+      l'etiqueta: si hi ha **codi Matter imprès** (QR + 11 xifres) és un P110M i tot el
+      disseny escrit s'aguanta; si és un P110 pelat **no parla Matter** i només entra per
+      `tplink`, amb el compte de Tapo que Matter havia tret del mig. Els documents deien
+      «P110» **i** font Matter, que no podia ser.
+      → [emparellar-matter.md](domotica/emparellar-matter.md)
+- [ ] 🆕 🔴 **Microprogramari de l'endoll a ≥ 1.3.0 ABANS d'emparellar-lo.** El consum per
+      Matter només hi és des de Matter 1.3, i actualitzar-lo després d'emparellar ha obligat
+      altra gent a **treure'l d'HA i tornar-lo a emparellar** — que aquí vol dir partir la
+      sèrie. L'actualització es fa des de l'app de Tapo; des d'HA es reporta que falla.
+- [ ] 🆕 **Emparellar l'endoll per Matter i veure si surt l'energia.** Les tres entitats han
+      de ser `switch.deshumidificador`, `sensor.deshumidificador_potencia` i
+      `sensor.deshumidificador_energia` (renombrades **abans** de gravar res): són les que
+      `rosada.yaml` ja té escrites al `utility_meter` i al `history_stats`. Si l'energia no
+      apareix, *re-interview* al dispositiu; si segueix sense sortir, **canvia la manera de
+      mesurar els kWh/dia de la Porta B** i s'ha de saber ara, no al desembre.
+- [ ] 🆕 ⚠️ **Verificar si l'energia acumulada depèn d'Internet.** Es reporta que potència,
+      tensió i corrent van en local però que els **kWh** necessiten que l'endoll sincronitzi
+      l'hora pel núvol. Prova a casa: una hora sense sortida a Internet i mirar les dues
+      entitats. Importa perquè la SIM del local caurà algun dia.
+- [ ] 🆕 ❓ **Decidir què es fa amb tensió i corrent de l'endoll:** a l'`exclude.entities` del
+      `recorder` (mai per glob) o acceptades. No fan falta per a res i es gravarien cada pocs
+      segons durant dos anys.
 - [x] ~~**Congelar també el `matter-server`** fins al 10/03/2027.~~ ✅ **Sense objecte** des del
       21/09/2026: la congelació de versions va caure amb el canvi d'objectiu. El que **es
       manté** és que va **fixat per digest** i no per etiqueta, perquè la imatge no publica
