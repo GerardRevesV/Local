@@ -199,7 +199,7 @@ Surten de [logica-v2-pla.md](logica-v2-pla.md), fase per fase. Les plantilles no
 | `sensor.deshumidificador_hores_filtre` · `input_number.deshumidificador_filtre_netejat` · `script.deshumidificador_filtre_netejat` | Hores des de l'última neteja del filtre (avís a les 360 h) |
 | `sensor.deshumidificador_cost_punta` · `…_pla` · `…_vall` | Euros acumulats en cada tram |
 
-**Fase 3 — actuació**
+**Fase 3 — actuació** (`packages/control.yaml`; els relés, a `custom_templates/ventiladors.jinja`)
 
 | `entity_id` | Què és |
 |---|---|

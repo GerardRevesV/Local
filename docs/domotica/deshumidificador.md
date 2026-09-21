@@ -270,6 +270,10 @@ es valgui per si mateix:
 
 1. **Configuració de repòs: Manual · 55 % · velocitat alta · bomba activada · bloqueig
    infantil.** És on HA el deixa sempre, i on es queda si HA cau.
+   *(22/09/2026: amb la lògica v2 el llindar el posa la decisió —el del tram—, i l'executor de
+   la Fase 3 el torna a posar **quan arrenca HA, quan l'aparell torna del corrent** —pels
+   watts de l'endoll— **i cada 15 minuts** si algú l'ha tocat, sempre en Manual i en l'ordre
+   que ensenyen els experiments. Només amb `input_boolean.actuacio_deshumidificador` encès.)*
 2. **Els canvis de HA, sempre temporals i amb tornada.** Si HA el posa en continu per aprofitar
    la vall i cau enmig, l'aparell es quedaria assecant sense parar: no fa mal, però paga punta.
    Per això HA ha de **restaurar la configuració de repòs cada cop que arrenca**.

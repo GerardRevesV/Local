@@ -212,6 +212,20 @@ dipòsit salta en la propera prova; `analisi.py` treu el primer informe amb dade
 
 ### Fase 3 — Actuació, apagada per defecte
 
+> ✅ **Codificada el 22/09/2026.** El QUÈ dels executors també és en macros
+> (`config/custom_templates/executors.jinja`): quines ordres enviar al deshumidificador i en
+> quin ordre, quan no es pot actuar, i què fer amb els ventiladors. Tenen rèplica i
+> **`--prova-ha` les compara amb HA: 2.000 casos, cap diferència** (i la decisió, els 3.029 de
+> sempre). Els relés són a `config/custom_templates/ventiladors.jinja`, l'únic lloc que diu
+> quins són. Contra l'aparell de debò, sense actuar: per portar-lo de *Manual · 35 · alta* a
+> *Manual · 55 · alta*, enviaria **una sola ordre**, el llindar. `check_config` net.
+> ⏳ **Pendent de desplegar, i tot apagat.**
+>
+> 🔧 *De pas, un canvi a la Fase 1:* els valors de partida van **per versions**
+> (`input_number.parametres_versio`), no amb una marca de sí o no. Amb la marca, el
+> `ventiladors_max_minuts` d'aquesta fase no hauria rebut mai el seu valor i s'hauria quedat
+> al mínim del rang (15 min).
+
 **Entra:** la **interfície dels ventiladors** (`ventiladors.jinja`, dos relés virtuals,
 `binary_sensor.ventiladors_en_marxa`, `sensor.ventiladors_potencia`, `script.ventiladors_engega`
 i `_atura`) · l'executor dels ventiladors, amb `min_on_ventilador`, `min_off_ventilador` i

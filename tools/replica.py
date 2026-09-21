@@ -50,6 +50,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 ARREL = Path(__file__).resolve().parent.parent
 MACRO = ARREL / "config" / "custom_templates" / "decisio.jinja"
+EXECUTORS = ARREL / "config" / "custom_templates" / "executors.jinja"
 CONTROL = ARREL / "config" / "packages" / "control.yaml"
 ROSADA = ARREL / "config" / "packages" / "rosada.yaml"
 
@@ -109,6 +110,7 @@ PARAMETRES_DE_PARTIDA: dict[str, float] = {
 PARAMETRES_EXECUTORS: dict[str, float] = {
     "min_on_ventilador": 12.0,
     "min_off_ventilador": 10.0,
+    "ventiladors_max_minuts": 120.0,
 }
 
 MODES = ("Òptim", "Ocupat", "Prioritzar ventilació", "Assecat intensiu", "Silenci",
@@ -293,6 +295,67 @@ def parametres(**canvis) -> dict:
     p = dict(PARAMETRES_DE_PARTIDA)
     p.update(canvis)
     return p
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  ELS EXECUTORS — rèplica exacta de config/custom_templates/executors.jinja
+# ═════════════════════════════════════════════════════════════════════════════
+
+def ordres_deshumidificador(d: dict, a: dict) -> list:
+    """Quines ordres, i en quin ordre, porten l'aparell d'«a» (com és) a «d»
+    (el que vol la decisió). Només les que calen: cada una és un xiulet."""
+    if d["llindar"] is None:
+        return []
+    llista, mode = [], a["mode"]
+    cal_llindar = a["llindar"] != d["llindar"]
+    cal_velocitat = d["velocitat"] is not None and a["velocitat"] != d["velocitat"]
+    if a["engegat"] is not True:
+        llista.append(["engega", None])
+    if a["operacio"] != "dehumidify":
+        llista.append(["operacio", "dehumidify"])
+    if mode not in ("normal", "sleep") or (cal_velocitat and mode != "normal"):
+        llista.append(["mode", "normal"])
+        mode = "normal"
+    if cal_llindar:
+        llista.append(["llindar", d["llindar"]])
+    if cal_velocitat:
+        llista.append(["velocitat", d["velocitat"]])
+    if mode != d["mode_aparell"]:
+        llista.append(["mode", d["mode_aparell"]])
+    return llista
+
+
+def bloqueig_deshumidificador(x: dict) -> str:
+    """'' si es pot actuar sobre el deshumidificador; si no, per què."""
+    if not x["actuacio"]:
+        return "actuació apagada (ombra)"
+    if x["llindar"] is None:
+        return "la decisió diu que no es toqui"
+    if x["potencia"] is None or x["potencia"] < 0.5:
+        return "sense corrent: tuya-local no ho sap i mostraria l'últim estat"
+    if x["codi"] == 32:
+        return "dipòsit ple o tret: fins que es buidi, cap ordre"
+    if x["estat"] not in ("on", "off"):
+        return f"tuya-local no el veu ({x['estat']})"
+    return ""
+
+
+def accio_ventiladors(v: dict) -> dict:
+    """Engegar, aturar o res, amb els temps mínims i el límit d'engegada."""
+    m = _f(v["minuts"], 0)
+    if v["en_marxa"] and v["minuts"] >= v["max"]:
+        return {"accio": "atura", "motiu": f"fa {m} min que van: el límit és {_f(v['max'], 0)}"}
+    if v["vol"] is None:
+        return {"accio": "res", "motiu": "la decisió diu que no es toquin"}
+    if v["vol"] and not v["en_marxa"]:
+        if v["minuts"] >= v["min_off"]:
+            return {"accio": "engega", "motiu": "la decisió els vol engegats"}
+        return {"accio": "res", "motiu": f"aturats fa {m} min: el mínim és {_f(v['min_off'], 0)}"}
+    if not v["vol"] and v["en_marxa"]:
+        if v["minuts"] >= v["min_on"]:
+            return {"accio": "atura", "motiu": "la decisió els vol aturats"}
+        return {"accio": "res", "motiu": f"engegats fa {m} min: el mínim és {_f(v['min_on'], 0)}"}
+    return {"accio": "res", "motiu": "ja són com diu la decisió"}
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -551,6 +614,81 @@ def tests() -> int:
         ok &= _prop(f"«{estat}»: el llindar és un número (l'aparell s'atura sol en arribar-hi), mai «continu»",
                     d["estat"] == estat and isinstance(d["llindar"], int) and d["llindar"] >= 40, d)
 
+    print("\nEls executors: el deshumidificador")
+    manual = {"llindar": 55, "mode_aparell": "normal", "velocitat": 100}
+    nit = {"llindar": 60, "mode_aparell": "sleep", "velocitat": None}
+
+    def com(**kw):
+        a = {"engegat": True, "operacio": "dehumidify", "mode": "normal", "llindar": 55, "velocitat": 100}
+        a.update(kw)
+        return a
+
+    for nom, d, a, esperat in [
+        ("ja és on toca → cap ordre (cap xiulet)", manual, com(), []),
+        ("la decisió diu que no es toqui → cap ordre", {"llindar": None, "mode_aparell": None, "velocitat": None},
+         com(mode="auto"), []),
+        ("torna del corrent amb la de FÀBRICA (Manual · 35 · mitjana) → llindar i velocitat", manual,
+         com(llindar=35, velocitat=67), [["llindar", 55], ["velocitat", 100]]),
+        ("algú l'ha posat en AUTO → Manual PRIMER, i després el llindar", manual,
+         com(mode="auto", llindar=80), [["mode", "normal"], ["llindar", 55]]),
+        ("purificant i en Roba → operació, Manual, i el que falti", manual,
+         com(operacio="purify", mode="laundry", velocitat=67),
+         [["operacio", "dehumidify"], ["mode", "normal"], ["velocitat", 100]]),
+        ("apagat → engegar-lo primer", manual, com(engegat=False), [["engega", None]]),
+        ("tuya-local sense dades → ho envia tot", manual,
+         com(engegat=None, operacio="unavailable", mode=None, llindar=None, velocitat=None),
+         [["engega", None], ["operacio", "dehumidify"], ["mode", "normal"], ["llindar", 55],
+          ["velocitat", 100]]),
+        ("de Manual a Nit (algú hi dorm) → llindar i Nit, i la velocitat no es toca", nit, com(),
+         [["llindar", 60], ["mode", "sleep"]]),
+        ("de Nit a Manual → Manual abans de la velocitat (en Nit l'aparell la baixa sol)", manual,
+         com(mode="sleep", llindar=60, velocitat=33), [["mode", "normal"], ["llindar", 55], ["velocitat", 100]]),
+        ("en Nit i només canvia el llindar → només el llindar", nit, com(mode="sleep", llindar=55, velocitat=33),
+         [["llindar", 60]]),
+        ("en AUTO i cal Nit → Manual, llindar, Nit", nit, com(mode="auto", llindar=80),
+         [["mode", "normal"], ["llindar", 60], ["mode", "sleep"]]),
+    ]:
+        obtingut = ordres_deshumidificador(d, a)
+        ok &= _prop(nom, obtingut == esperat, obtingut)
+
+    def blq(**kw):
+        x = {"actuacio": True, "llindar": 55, "potencia": 360.0, "codi": 0, "estat": "on"}
+        x.update(kw)
+        return bloqueig_deshumidificador(x)
+
+    ok &= _prop("amb tot bé, es pot actuar", blq() == "")
+    ok &= _prop("en ombra, no", blq(actuacio=False).startswith("actuació apagada"))
+    ok &= _prop("sense corrent (0 W), no: tuya-local mostraria l'últim estat", blq(potencia=0.0).startswith("sense corrent"))
+    ok &= _prop("sense lectura de l'endoll, tampoc", blq(potencia=None).startswith("sense corrent"))
+    ok &= _prop("en espera (1,1 W) sí: té corrent", blq(potencia=1.1) == "")
+    ok &= _prop("DIPÒSIT PLE (codi 32) → cap ordre fins que es buidi", blq(potencia=0.8, codi=32).startswith("dipòsit"))
+    ok &= _prop("HA que arrenca i tuya-local encara no el veu → espera", blq(estat="unavailable").startswith("tuya-local"))
+    ok &= _prop("apagat del botó sí: la primera ordre serà engegar-lo", blq(estat="off") == "")
+
+    print("\nEls executors: els ventiladors")
+    lim = {"min_on": 12.0, "min_off": 10.0, "max": 120.0}
+
+    def acc(**kw):
+        return accio_ventiladors({**lim, **kw})["accio"]
+
+    ok &= _prop("la decisió els vol i fa prou que estan aturats → engega", acc(vol=True, en_marxa=False, minuts=30) == "engega")
+    ok &= _prop("aturats fa 3 min → espera (el mínim és 10)", acc(vol=True, en_marxa=False, minuts=3) == "res")
+    ok &= _prop("engegats fa 5 min i ja no els vol → espera (el mínim és 12)", acc(vol=False, en_marxa=True, minuts=5) == "res")
+    ok &= _prop("engegats fa 12 min i ja no els vol → atura", acc(vol=False, en_marxa=True, minuts=12) == "atura")
+    ok &= _prop("HA que arrenca (el comptador torna a 0): mai escurça un temps mínim",
+                acc(vol=False, en_marxa=True, minuts=0.4) == "res" and acc(vol=True, en_marxa=False, minuts=0.4) == "res")
+    ok &= _prop("fa 120 min que van → s'aturen encara que la decisió els vulgui (res «per sempre»)",
+                acc(vol=True, en_marxa=True, minuts=120) == "atura")
+    ok &= _prop("i també quan la decisió diu que no es toquin (calibratge)",
+                acc(vol=None, en_marxa=True, minuts=130) == "atura")
+    ok &= _prop("si no, «no es toquen» vol dir res", acc(vol=None, en_marxa=True, minuts=30) == "res"
+                and acc(vol=None, en_marxa=False, minuts=30) == "res")
+    ok &= _prop("ja com toca → res", acc(vol=True, en_marxa=True, minuts=30) == "res"
+                and acc(vol=False, en_marxa=False, minuts=3) == "res")
+    ok &= _prop("el motiu diu el temps que falta",
+                accio_ventiladors({**lim, "vol": True, "en_marxa": False, "minuts": 3.4})["motiu"]
+                == "aturats fa 3 min: el mínim és 10")
+
     print("\nEls fitxers diuen el mateix que la rèplica")
     ok &= tests_fitxers()
 
@@ -703,8 +841,62 @@ def casos_limit() -> list[dict]:
     return casos
 
 
+def casos_executors(n: int, llavor: int = 23092026) -> list[dict]:
+    """Casos per als executors: totes les combinacions d'on pot ser l'aparell."""
+    rnd = random.Random(llavor)
+    casos = []
+    for _ in range(n):
+        llindar = rnd.choice([None, 40, 45, 50, 55, 60, 65, 70])
+        nit = rnd.random() < 0.3
+        d = {"llindar": llindar, "mode_aparell": None if llindar is None else ("sleep" if nit else "normal"),
+             "velocitat": None if llindar is None or nit else 100}
+        a = {"engegat": rnd.choice([True, True, True, False, None]),
+             "operacio": rnd.choice(["dehumidify", "dehumidify", "purify", "dehumidify_and_purify", "unavailable"]),
+             "mode": rnd.choice(["normal", "normal", "sleep", "auto", "laundry", None]),
+             "llindar": rnd.choice([None, 35, 40, 50, 55, 60, 65, 70, 80]),
+             "velocitat": rnd.choice([None, 33, 67, 100, 100])}
+        x = {"actuacio": rnd.random() < 0.8, "llindar": llindar,
+             "potencia": rnd.choice([None, 0.0, 0.3, 0.5, 0.8, 1.1, 15.5, 360.0]),
+             "codi": rnd.choice([0, 0, 0, 32, 5]), "estat": rnd.choice(["on", "on", "off", "unavailable", "unknown"])}
+        v = {"vol": rnd.choice([True, False, None]), "en_marxa": rnd.random() < 0.5,
+             "minuts": rnd.choice([0.0, 0.4, 5.0, 9.99, 10.0, 12.0, 30.0, 119.9, 120.0, 300.0, round(rnd.uniform(0, 300), 2)]),
+             "min_on": float(rnd.randint(5, 60)), "min_off": float(rnd.randint(5, 60)),
+             "max": float(rnd.randint(3, 96) * 5)}
+        casos.append({"d": d, "a": a, "x": x, "v": v})
+    return casos
+
+
+def _compara_executors(per_peticio: int = 250) -> tuple[int, int]:
+    font = EXECUTORS.read_text(encoding="utf-8")
+    casos = casos_executors(2000)
+    dolents = 0
+    for i in range(0, len(casos), per_peticio):
+        tanda = casos[i:i + per_peticio]
+        dades = json.dumps(tanda, ensure_ascii=False)
+        if "'" in dades or "\\" in dades:
+            raise SystemExit("Els casos no poden portar cometes simples ni barres: trencarien la plantilla.")
+        plantilla = (font + "{%- for c in ('" + dades + "' | from_json) -%}"
+                     "{{ {'ordres': ordres_deshumidificador(c.d, c.a) | from_json,"
+                     " 'bloqueig': bloqueig_deshumidificador(c.x) | trim,"
+                     " 'accio': accio_ventiladors(c.v) | from_json} | to_json }}\n{% endfor -%}")
+        linies = [l for l in _crida("/api/template", {"template": plantilla}).splitlines() if l.strip()]
+        if len(linies) != len(tanda):
+            print(f"  ❌ executors, tanda {i // per_peticio}: {len(linies)} resultats per a {len(tanda)} casos")
+            dolents += len(tanda)
+            continue
+        for cas, linia in zip(tanda, linies):
+            ha = json.loads(linia)
+            aqui = {"ordres": ordres_deshumidificador(cas["d"], cas["a"]),
+                    "bloqueig": bloqueig_deshumidificador(cas["x"]), "accio": accio_ventiladors(cas["v"])}
+            if ha != aqui:
+                dolents += 1
+                if dolents <= 5:
+                    print(f"  ❌ {json.dumps(cas, ensure_ascii=False)}\n     HA:      {ha}\n     rèplica: {aqui}")
+    return len(casos), dolents
+
+
 def prova_ha(n: int = 3000, per_peticio: int = 250) -> int:
-    """La macro de debò, avaluada per HA, contra la rèplica: cas a cas, camp a camp."""
+    """Les macros de debò, avaluades per HA, contra la rèplica: cas a cas, camp a camp."""
     font = MACRO.read_text(encoding="utf-8")
     casos = casos_limit() + casos_aleatoris(n)
     dolents = 0
@@ -731,9 +923,12 @@ def prova_ha(n: int = 3000, per_peticio: int = 250) -> int:
     estats = {decideix(c["e"], c["p"], c["m"])["estat"] for c in casos}
     print(f"  {len(casos)} casos · estats coberts: {len(estats)} de {len(ESTATS)}"
           + (f" (falten {sorted(set(ESTATS) - estats)})" if estats != set(ESTATS) else ""))
-    print("✅ HA i la rèplica diuen el mateix, motiu inclòs" if not dolents
-          else f"❌ {dolents} casos diferents de {len(casos)}")
-    return 1 if dolents or estats != set(ESTATS) else 0
+    print("✅ La decisió: HA i la rèplica diuen el mateix, motiu inclòs" if not dolents
+          else f"❌ La decisió: {dolents} casos diferents de {len(casos)}")
+    n_exec, dolents_exec = _compara_executors(per_peticio)
+    print(f"✅ Els executors: {n_exec} casos, HA i la rèplica diuen el mateix" if not dolents_exec
+          else f"❌ Els executors: {dolents_exec} casos diferents de {n_exec}")
+    return 1 if dolents or dolents_exec or estats != set(ESTATS) else 0
 
 
 # ─── Test de deriva: el que va gravar el sensor, tornat a decidir ────────────
