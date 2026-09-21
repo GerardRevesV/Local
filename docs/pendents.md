@@ -124,7 +124,7 @@ una diu **com es respon** i **què decideix**: una incògnita que no decideix re
 | Si l'**alarma del dipòsit** xiula | El so: TIMER + SPEED alhora; i omplir-lo amb el so actiu | Res greu: el codi 32 ja arriba a HA |
 | Quina operació és l'**ECO**, i **velocitat alta o baixa** | Litres per kWh de cadascuna (depèn de la primera fila) | L'operació i la velocitat de la configuració de repòs |
 | **La memòria després d'un tall llarg** | Engegat, amb una configuració inconfusible, i 30 min sense corrent; i el mateix apagat | Si HA ha de restaurar-la sempre en tornar el corrent (ja proposat per prudència: el 22/09 va tornar amb la de fàbrica) |
-| **Com comptar l'aigua que surt pel tub** | Un **pluviòmetre de balancí** (15–30 €) a l'ESP32 de la B.2; o les glopades de la bomba als watts, si es veuen (prova de la bomba) | Els litres/dia al soterrani, on amb la bomba no hi ha codi 32. Un cabalímetre normal no serveix: massa poc cabal, a glopades i amb aire |
+| **Com comptar l'aigua que surt pel tub** | Un **pluviòmetre de balancí**. A priori, **escenari C**: Ecowitt WH40 sense fils → [tres escenaris](domotica/inventari.md#comptar-laigua-i-mesurar-la-paret--tres-escenaris-22092026) | Els litres/dia al soterrani, on amb la bomba no hi ha codi 32. Un cabalímetre normal no serveix: massa poc cabal, a glopades i amb aire |
 
 **Quan el muntatge sigui al soterrani i estable**
 
@@ -145,7 +145,7 @@ una diu **com es respon** i **què decideix**: una incògnita que no decideix re
 |---|---|---|
 | **Models, potència i cabal dels ventiladors** | Les fotos de la placa → [installacions.md](local/installacions.md) | Les renovacions en minuts i el ΔTd en litres per kWh: sense el cabal, els llindars de ventilació són provisionals |
 | Els **S110E**: càrrega de motor i temporitzador propi | La fitxa del relé; si els ventiladors van endollats o cablejats | La fallada segura de la ventilació, i si cal instal·lador |
-| El **marge de la paret** i quina paret és la més freda | Els DS18B20 (B.2) i un termòmetre IR de mà | La urgència de debò: avui mira l'aire, no la paret |
+| El **marge de la paret** i quina paret és la més freda | Una sonda a la paret més freda (termòmetre IR de mà per trobar-la). A priori, **escenari C**: dues Ecowitt WN34L sense fils → [tres escenaris](domotica/inventari.md#comptar-laigua-i-mesurar-la-paret--tres-escenaris-22092026) | La urgència de debò: avui mira l'aire, no la paret |
 | El **CO₂** (i potser el radó) | Un SCD40; un detector de radó si cal | Renovar per demanda en comptes de per rellotge |
 
 **A l'hivern**
