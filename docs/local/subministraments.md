@@ -173,6 +173,11 @@ un aparell seria inventar un repartiment.
 > datat. **El cost ja acumulat no es recalcula**, i és correcte: aquells kWh es van pagar al
 > preu vell.
 
+**Els euros de cada tram** *(22/09/2026, lògica v2)*: `sensor.deshumidificador_cost_punta`,
+`…_pla` i `…_vall`, amb la mateixa mostra de 5 minuts. Sumen el cost total **a partir del dia
+que es despleguen**: el passat no es reconstrueix. La pregunta de l'optimització en diners:
+quant es paga en punta.
+
 **Les entitats** són al [conveni de noms](../domotica/noms-entitats.md#derivades--consum-i-tarifa-les-calcula-packagesconsumyaml).
 
 ## Internet — router amb targeta SIM

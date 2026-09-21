@@ -186,6 +186,16 @@ ordre** que no sigui de l'usuari.
 
 ### Fase 2 — Dades i gràfics
 
+> ✅ **Codificada el 22/09/2026.** Les entitats del deshumidificador a
+> `config/packages/deshumidificador.yaml`, que **només mira i avisa**; la dispersió a
+> `rosada.yaml` i els euros per tram a `consum.yaml`. `tools/analisi.py` (tests en verd) ja
+> s'ha passat contra les últimes 30 h reals: hi surt el dipòsit tret a mà el 21/09 a les 21:10,
+> marcat com a «pocs kWh». I va trobar dues coses: `/api/history` torna **només 24 h** si no
+> se li dona el final (`calibratge.py` n'està afectat: pendent a part), i el comptador de
+> l'endoll **pot tornar uns Wh enrere** després d'estar no disponible (22/09, 01:06: −22 Wh),
+> que s'ha de tractar com a rebot i no com a reinici, igual que ja fa `consum.yaml`.
+> ⏳ **Pendent de desplegar.**
+
 **Entra**, al local: `sensor.soterrani_dispersio_rosada` · `sensor.deshumidificador_humitat`
 (la seva HR, només amb el ventilador en marxa) · `sensor.deshumidificador_estat` (compressor,
 ventilador, espera, dipòsit o sense corrent, pels watts) · `binary_sensor.deshumidificador_compressor`
