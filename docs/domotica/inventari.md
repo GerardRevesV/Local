@@ -343,6 +343,21 @@ feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una
 >
 > ⚠️ Si la prova 0.2b surt malament —que torni a la configuració de fàbrica després d'un
 > tall—, això deixa de ser una millora i passa a ser **la via**.
+>
+> ### ▶️ La prova, en marxa — 21/09/2026, vespre
+>
+> | Pas | Estat |
+> |---|---|
+> | 1. A la Wi-Fi del router SIM | ✅ **Ja hi era.** S'anuncia a la xarxa local cada 5 s (port UDP 6667, el dels Tuya): **no cal reemparellar**, i la *local key* d'ara és la bona |
+> | 2. Reserva DHCP | ✅ **`192.168.1.104`**, fixada al router |
+> | 3. `tuya-local` | ✅ **Versió 2026.9.1, fixada per suma i sense HACS** → [`scripts/instala-tuya-local.sh`](../../scripts/instala-tuya-local.sh). La configuració més propera que porta és la del **D820A**, que és d'un aparell amb més funcions (purificador): es veurà quina proposa pel que el D825 publiqui. ⏳ Reinici d'HA i configuració assistida |
+> | 4. Noms abans que gravi res | ⏳ Fixats a [noms-entitats.md](noms-entitats.md); es renombra **el mateix moment** d'afegir-lo |
+>
+> **Endollat al P110M a les 18:15**: des de llavors, la sèrie de consum de l'endoll **és la
+> del deshumidificador**. En marxa, **305–393 W** (la placa en diu 470), i cicles de **~2 min
+> de compressor i 5–6 min aturat** amb el ventilador a ~15 W: l'aturada és la protecció de
+> 5 min que porta l'aparell, i la tanda curta, el seu higròstat en una habitació de casa que
+> ja és seca → [pendents.md](../pendents.md).
 
 *Decisió original del 20/09, conservada pel raonament:*
 
