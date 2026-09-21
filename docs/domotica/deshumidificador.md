@@ -185,10 +185,21 @@ Fase C, no una decisió.
 
 ### 7. Assecat intern — quant va el ventilador després d'aturar-se
 
-⏳ **En curs** (segona tanda, cap a les 22:30). Sense assecat intern, el ventilador segueix
-**~5,5 min a 16 W** després d'aturar el compressor (experiment 1). Falta veure quant s'allarga
-amb l'assecat intern activat, que és el que el protegeix del fong per dins. Resultats en un PR
-següent.
+6 min de compressor i llindar al 80 % per aturar-lo, sense i amb l'assecat intern (22:30–22:57):
+
+| | El ventilador segueix després d'aturar el compressor |
+|---|---|
+| Sense assecat intern | **5,0 min** |
+| Amb assecat intern | **5,0 min** |
+
+**Cap diferència.** Els 5 minuts de ventilador són el comportament normal de l'aparell quan el
+llindar l'atura, i l'assecat intern no els allarga. El més probable és que l'assecat intern actuï
+quan s'**apaga** l'aparell, no quan l'atura el llindar; aquesta prova no ho cobreix →
+[pendents.md](../pendents.md). Per a HA, avui: **l'assecat intern no costa res de més** en el
+funcionament normal.
+
+La tanda va acabar restaurant bé la configuració d'abans (AUTO · 55 % · velocitat alta), ja amb
+la restauració verificada.
 
 ### 8. El dipòsit — per quina dada surt el P2
 
