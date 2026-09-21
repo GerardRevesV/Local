@@ -305,6 +305,86 @@ feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una
 > - Si permeten conservar l'**interruptor físic** com a entrada lògica (l'equivalent del mode
 >   *detached*), que és el que dona el millor control manual.
 
+## Comptar l'aigua i mesurar la paret — tres escenaris (22/09/2026)
+
+> **Preferència de l'usuari, a priori: l'escenari C** (tot sense fils: «no vull cables pel
+> mig»). Queda **provisional fins a veure al soterrani** les distàncies i els endolls. Si es
+> confirma, substitueix el node ESP32 + DS18B20 de les tasques B.2/B.3 de [fases.md](fases.md).
+
+**Què cal mesurar, i per què:**
+
+- **L'aigua que treu el deshumidificador**, en litres. Al soterrani anirà amb la bomba cap al
+  desguàs, i sense dipòsit no hi ha codi 32 que marqui «3,8 L». És la dada que confirma la taula
+  del cost per litre de [logica-v2.md](logica-v2.md), i una casella de la Porta B.
+- **La temperatura de la paret més freda**, amb una sonda enganxada i tapada amb aïllant. És el
+  que diu si la paret s'acosta a condensar: la urgència de debò.
+
+**Per què no un cabalímetre normal:** l'aigua és molt poca (0,3–1 L/h), la bomba la treu a
+glopades i barrejada amb aire. Els sensors de turbina barats comencen a mesurar cap a 0,3 L/min
+i fallen amb bombolles. El que funciona és un **pluviòmetre de balancí**: el tub hi aboca,
+un balancí bascula cada pocs mil·lilitres i un imant marca cada basculada. S'ha de posar
+anivellat i per sobre del desguàs, i es calibra abocant-hi un volum conegut (mig litre) per
+saber els mil·lilitres per basculada.
+
+El pluviòmetre (al costat del desguàs) i la sonda (a la paret freda) **no seran al mateix lloc**.
+
+### A. Un sol Shelly Plus Uni entremig, allargant els cables
+
+- Un [Shelly Plus Uni](https://www.shelly.com/blogs/documentation/shelly-plus-uni): mòdul
+  Wi-Fi amb **entrada comptadora de polsos** i **fins a 3 DS18B20**. Integració oficial de Shelly
+  a HA, **local**, sense programar.
+- El pluviòmetre (un [MISOL WH-SP-RG](https://www.amazon.es/MISOL-Recambio-estaci%C3%B3n-meteorol%C3%B3gica-pluvi%C3%B3metro/dp/B00QDMBXUA),
+  amb contacte magnètic) és un interruptor: els seus dos fils **s'allarguen desenes de metres**.
+  Els DS18B20 aguanten **~10 m** amb cable de tres fils.
+- ⚠️ S'alimenta a **12–36 V de continu**: cal un adaptador de 12 V i un endoll a prop.
+- **Quan:** la paret freda i el desguàs a menys de ~10 m, i un endoll entremig.
+- **Preu:** uns **55–60 €**.
+
+### B. Dos Shelly Plus Uni, un a cada lloc
+
+- Un al desguàs per al pluviòmetre, un a la paret per a les sondes. Tots dos locals.
+- Cal **un endoll a prop de cada un** (dos adaptadors de 12 V).
+- **Quan:** lluny l'un de l'altre, però amb endolls a tots dos llocs.
+- **Preu:** uns **80–90 €**.
+
+### C. Tot sense fils, amb Ecowitt ⭐ preferència a priori
+
+- **Passarel·la [GW1100](https://shop.ecowitt.com/products/gw1100)** (Wi-Fi), a la planta baixa i
+  endollada: és l'única peça que necessita corrent.
+- **Pluviòmetre WH40**: amb piles, al costat del desguàs.
+- **Dues sondes [WN34L](https://shop.ecowitt.com/products/wn34l)**: termòmetre amb **sonda de
+  3 m de cable** (−40 a 60 °C), una pila AA (~12 mesos), una lectura cada **77 s**. La passarel·la
+  n'admet fins a 8.
+- Ràdio de **868 MHz**, com els Tapo: travessa bé el formigó del soterrani.
+- A HA, amb la **[integració oficial d'Ecowitt](https://www.home-assistant.io/integrations/ecowitt/)**,
+  en **local**: la passarel·la envia les dades a HA (opció *Customized* de la seva configuració).
+- **Quan:** sense endolls a prop dels punts de mesura, o sense voler cables pel soterrani.
+- **Preu:** uns **125–135 €**. A canvi, **tres piles cada any**, que s'han de vigilar.
+
+### Comparació
+
+| | Programar | Aigua | Paret | Cables pel soterrani | Endolls als punts | Preu |
+|---|---|---|---|---|---|---|
+| **A** · un Shelly Uni | No | ✅ | ✅ (fins a 3) | Sí, fins a ~10 m | Un | 55–60 € |
+| **B** · dos Shelly Uni | No | ✅ | ✅ | Curts | Dos | 80–90 € |
+| **C** · Ecowitt ⭐ | No | ✅ | ✅ (fins a 8) | **Cap** | **Cap** | 125–135 € |
+| *ESP32 + ESPHome (el pla d'abans)* | *Sí (el YAML el fa Claude)* | ✅ | ✅ | *Sí* | *Un* | *35–45 €* |
+
+> 📌 **Un efecte a favor de B i C, i sobretot de C:** [decisio-stack.md](decisio-stack.md)
+> acceptava ESPHome com a «segon ecosistema» **només** per a les sondes de paret. Amb Ecowitt o
+> Shelly, aquell ecosistema no cal. Ecowitt n'afegeix un altre (la passarel·la), però sense
+> programar res.
+>
+> ⚠️ **Sigui quina sigui**, la sonda de paret s'enganxa a la paret més freda i es **tapa amb
+> aïllant**, perquè mesuri la paret i no l'aire. Quina és la més freda, amb un termòmetre IR de
+> mà abans de muntar-la.
+
+Fonts consultades el 22/09/2026: [Shelly Plus Uni](https://www.shelly.com/blogs/documentation/shelly-plus-uni) ·
+[WN34L](https://shop.ecowitt.com/products/wn34l) · [manual del WN34](https://oss.ecowitt.net/uploads/20250324/FG-WN34.pdf) ·
+[GW1100](https://shop.ecowitt.com/products/gw1100) · [integració Ecowitt](https://www.home-assistant.io/integrations/ecowitt/) ·
+[MISOL WH-SP-RG](https://www.amazon.es/MISOL-Recambio-estaci%C3%B3n-meteorol%C3%B3gica-pluvi%C3%B3metro/dp/B00QDMBXUA).
+Els preus són aproximats i canvien.
+
 ## 🔧 El que encara falta
 
 | Què | Per a què | Estat |

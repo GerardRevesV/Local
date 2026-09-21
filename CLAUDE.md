@@ -84,7 +84,7 @@ docs/
     publicacio-dades.md Com pugen les dades i on s'arxiven
     home-assistant.md  Muntatge del servidor i registre d'instal·lació
     runbook-servidor.md  Refer el servidor de zero: ordres, versions i paranys
-    inventari.md       Aparells existents i candidats
+    inventari.md       Aparells existents i candidats (i els tres escenaris aigua/paret)
     noms-entitats.md   Conveni de noms d'entitat — es fixa ABANS d'emparellar
     calibratge.md      Procediment del calibratge creuat dels cinc sensors
     emparellar-matter.md  Com s'afegeix un aparell per Matter sense partir la sèrie
