@@ -161,7 +161,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       decidides però pendents d'escriure `nit.py`.
 - [ ] Confirmar si la **càmera Tapo C200** que es va investigar era per al local.
 - [x] ~~**Decidir on viu la lògica de control** del punt de rosada.~~ ✅ **HA natiu**, i ja
-      **escrita**: `config/packages/rosada.yaml` (577 línies), amb un únic punt d'avaluació,
+      **escrita**: `config/packages/rosada.yaml` (641 línies), amb un únic punt d'avaluació,
       `sensor.decisio_del_soterrani`. Node-RED, AppDaemon, pyscript i el servei propi en
       Python queden **descartats**. → [decisio-stack.md](domotica/decisio-stack.md)
 - [x] ~~**Decidir la base de dades i l'eina de visualització.**~~ ✅ **SQLite** i els
@@ -182,6 +182,17 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       mecanisme ja funciona per al deshumidificador a `rosada.yaml`; els blocs dels
       ventiladors hi són escrits però **comentats a posta** fins a la Fase C, perquè fins que
       els S110E no estiguin instal·lats quedarien `unavailable` i embrutarien l'històric.*
+- [ ] 🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13). ✅ **Preparat el
+      21/09/2026**, per executar: hi ha el marcador `input_boolean.mode_calibratge` —que posa
+      la decisió a `calibratge` i impedeix que cap automatisme actuï—, el forat dels
+      desplaçaments a les cinc plantilles de `rosada.yaml` (avui identitat, no corregeixen
+      res) i `tools/calibratge.py` per ajustar-ho. ⚠️ **Són rampes lentes en els dos sentits,
+      no 24 h quiets**: amb l'HR en enters, un replà mort no deixa baixar de ±0,5 %, i amb una
+      sola rampa el retard del hub no es distingeix del calibratge.
+      → [calibratge.md](domotica/calibratge.md)
+- [ ] 🔁 **Repetir el calibratge al soterrani a l'hivern.** El primer es farà a casa a 22–28 °C
+      i el soterrani al gener serà de 8 a 15 °C. Els números porten el **rang de validesa**
+      escrit al costat precisament per poder-los comparar quan hi hagi els dos.
 - [ ] Fixar els **noms d'entitat definitius** abans de posar cap sensor en producció. El
       conveni **ja està escrit** a [noms-entitats.md](domotica/noms-entitats.md); el que falta
       és **aplicar-lo** en emparellar el hub per Matter, perquè renombrar després parteix la

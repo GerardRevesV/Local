@@ -30,7 +30,8 @@ views:
                 'deshumidificar': '💧 DESHUMIDIFICAR',
                 'repos': '✅ REPÒS',
                 'bloquejat': '⛔ BLOQUEJAT',
-                'sense_dades': '❓ SENSE DADES'}.get(d, d) }}
+                'sense_dades': '❓ SENSE DADES',
+                'calibratge': '🧪 CALIBRATGE'}.get(d, d) }}
 
           ### {{ m if m else '—' }}
 
@@ -42,6 +43,9 @@ views:
           deshumidificador.
           {% elif d == 'repos' %}
           L'objectiu d'humitat ja està assolit. No cal fer res.
+          {% elif d == 'calibratge' %}
+          Els cinc sensors estan **junts per calibrar-los**, no al seu lloc.
+          Cap lectura d'aquesta pantalla vol dir res del soterrani.
           {% endif %}
 
       # ── EL NÚMERO QUE DECIDEIX ──────────────────────────────────────────────

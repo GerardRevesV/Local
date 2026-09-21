@@ -75,6 +75,14 @@ class Lectura:
     hr_exterior: float | None = None
     marge_condensacio: float | None = None
     plou: bool = False
+    calibratge: bool = False
+    """Els sensors estan tots junts per calibrar-los, no al seu lloc.
+
+    Correspon a `input_boolean.mode_calibratge`. Ha de ser aquí perquè el test
+    de deriva compara amb el que va registrar el sensor de debò: sense això,
+    tot el tram de calibratge sortiria com una divergència entre la rèplica i
+    el YAML, que és precisament el que el test ha de saber distingir.
+    """
 
 
 @dataclass(frozen=True)
@@ -89,6 +97,13 @@ def decideix(lectura: Lectura, llindars: Llindars, estat_previ: str = "repos") -
     Qualsevol canvi aquí s'ha de fer també a `config/packages/rosada.yaml`,
     i el test de deriva ho comprovarà sobre dades reals.
     """
+    # 0. Calibratge: els sensors no són al seu lloc. No es decideix res.
+    if lectura.calibratge:
+        return Decisio(
+            "calibratge",
+            "Mode calibratge: els sensors estan junts, no al seu lloc",
+        )
+
     # 1. Fallada segura: sense dada fiable no es decideix res.
     if lectura.td_interior is None:
         return Decisio("sense_dades", "Sense punt de rosada interior fiable")
@@ -199,6 +214,32 @@ def tests() -> int:
         "estiu: fora al 65 % d'HR i 30 °C porta MÉS aigua que dins al 75 % i 20 °C",
         punt_de_rosada(30, 65) > punt_de_rosada(20, 75),
     )
+
+    print("\nMode calibratge")
+    # Ha de guanyar a TOT, fins i tot a una situacio que cridaria «ventilar»:
+    # amb els sensors damunt d'una taula, cap lectura no vol dir res.
+    cal = dict(td_interior=16.0, td_exterior=13.0, t_interior=20.0, hr_exterior=60.0)
+    ok &= _prop(
+        "amb el mode encès, la decisió és «calibratge»",
+        decideix(Lectura(calibratge=True, **cal), Llindars()).estat == "calibratge",
+    )
+    ok &= _prop(
+        "i guanya fins i tot quan ΔTd demanaria ventilar",
+        decideix(Lectura(calibratge=True, **cal), Llindars(), "ventilar").estat == "calibratge",
+    )
+    ok &= _prop(
+        "guanya també a la fallada segura (sense dades)",
+        decideix(
+            Lectura(calibratge=True, td_interior=None, td_exterior=None, t_interior=None),
+            Llindars(),
+        ).estat
+        == "calibratge",
+    )
+    ok &= _prop(
+        "i amb el mode apagat, tot segueix com abans",
+        decideix(Lectura(**cal), Llindars()).estat == "ventilar",
+    )
+
 
     print("\nHistèresi")
     llindars = Llindars()
