@@ -55,6 +55,56 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ## Domòtica
 
+### 📅 Abans de portar-ho al local — el pla (22–23/09/2026)
+
+*El trasllat, previst per al 23/09 al vespre o el 24/09. El que hi ha aquí és el que **només es
+pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
+
+**Aquesta nit**
+
+- [ ] **Deshumidificador: la prova del dipòsit.** Manual · continu · velocitat alta, dipòsit
+      buit, fins que s'atura sol (codi 32). **En acabar, mesurar l'aigua amb una gerra**:
+      litres ÷ kWh = el primer punt de la taula del cost per litre. Eina:
+      `tools/prova_deshumidificador.py diposit`. ⚠️ L'habitació és petita i ja seca: treurà poc
+      i a HR baixa, o sigui que serà un **mínim**, no la xifra del soterrani.
+- [ ] **Calibratge: la nit sencera**, i demà la **rampa amb el tàper de sal i la nevera** (el
+      tàper fixa el 75 % gairebé a qualsevol temperatura; la nevera hi afegeix el fred de
+      l'hivern) → [calibratge.md](domotica/calibratge.md). En acabar: `tools/calibratge.py`,
+      aplicar els desplaçaments i **apagar el mode calibratge**.
+
+**Demà, a casa**
+
+- [ ] **La bomba, amb el tub de 5 m i una galleda**: que bombi, fins a quina alçada, i si la
+      106 o la 107 es mouen quan està activada. Al soterrani serà obligatòria.
+- [ ] **L'higròmetre del deshumidificador contra un Tapo ja calibrat**, unes hores de costat.
+- [ ] A la pantalla: si el llindar **35 és el «CO»**; el **so de l'alarma** (TIMER + SPEED).
+- [ ] **L'assecat intern en apagar** l'aparell.
+- [ ] **Smart Life**: si avisa del dipòsit ple i de les avaries.
+- [ ] **L'endoll una hora sense internet**: si l'energia s'atura.
+- [ ] Decidir la **configuració de repòs** (proposta: Manual · 55 % · velocitat alta · bloqueig
+      infantil) i deixar-l'hi abans de portar-lo.
+- [ ] **Bateries dels sensors** abans de repartir-los.
+
+**Abans de desendollar res**
+
+- [ ] **La tanda física del portàtil**, si també va al local: BIOS (*restore on AC power loss*,
+      límit de càrrega, disc intern primer), cable RJ-45 → *Tanda física*, més avall. Al local,
+      cada casella és un viatge.
+- [ ] **Còpia de `matter-data/` i de `config/.storage` a casa.** Si el portàtil pateix en el
+      trasllat, sense aquestes claus cal reemparellar-ho tot i la sèrie es parteix.
+- [ ] **Moure-ho tot amb el mateix router de la SIM**: si la xarxa és la mateixa, no cal
+      reemparellar res. Apagar el portàtil net; al local, primer el router, després el hub i
+      l'endoll, i el portàtil l'últim.
+
+**Al local**
+
+- [ ] Repartir els sensors segons l'assignació, i `scripts/inicia-serie.sh` per marcar l'inici
+      de la sèrie de debò.
+- [ ] La **setmana de base**: deshumidificador fix al 55 % i ventiladors com ara
+      ([logica-v2.md](domotica/logica-v2.md)).
+- [ ] **Fotos de les plaques dels ventiladors**, la **porta de l'escala** i, quan es pugui, la
+      **prova de fum**.
+
 ### ❓ El que falta per saber — les incògnites del sistema
 
 *Recollides el 22/09/2026 després dels experiments i de la [lògica v2](domotica/logica-v2.md).
