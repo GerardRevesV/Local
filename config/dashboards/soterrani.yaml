@@ -384,6 +384,22 @@ views:
           - entity: sensor.deshumidificador_cost
             name: Cost
 
+      # Els euros de cada tram (des del 22/09/2026: no es reconstrueix el passat).
+      - type: statistics-graph
+        title: Cost per dia i tram
+        chart_type: bar
+        period: day
+        days_to_show: 30
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.deshumidificador_cost_punta
+            name: Punta
+          - entity: sensor.deshumidificador_cost_pla
+            name: Pla
+          - entity: sensor.deshumidificador_cost_vall
+            name: Vall
+
       - type: markdown
         content: >
           ### Com es llegeix
@@ -407,6 +423,107 @@ views:
           🧪 **Calibratge en marxa:** el consum és el del que hi hagi endollat
           ara, no necessàriament el del deshumidificador.
           {% endif %}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  #  APRENDRE — les dades que corregeixen els paràmetres (logica-v2.md, «Què
+  #  aprèn cada dia»). El que demana episodis o comptes llargs no hi cap: és a
+  #  tools/analisi.py, a casa. Lògica v2, Fase 2.
+  # ───────────────────────────────────────────────────────────────────────────
+  - title: Aprendre
+    path: aprendre
+    icon: mdi:school-outline
+    cards:
+
+      - type: entities
+        title: El deshumidificador, pels watts
+        entities:
+          - entity: sensor.deshumidificador_estat
+            name: Què fa ara
+          - entity: sensor.deshumidificador_potencia
+            name: Potència
+          - entity: sensor.deshumidificador_humitat
+            name: HR que mesura ell (amb el ventilador en marxa)
+          - entity: sensor.soterrani_humitat_maxima
+            name: HR del pitjor racó (Tapo, calibrada)
+          - type: divider
+          - entity: sensor.deshumidificador_hores_compressor
+            name: Hores de compressor, acumulades
+          - entity: sensor.deshumidificador_hores_filtre
+            name: Hores des de l'última neteja del filtre (avís a 360)
+          - entity: script.deshumidificador_filtre_netejat
+            name: Filtre netejat ara
+
+      # L'higròmetre de l'aparell contra el dels Tapo: la dada que desbloqueja
+      # el segon nivell (Fase 4). Si es desvien sempre igual, és un desplaçament.
+      - type: history-graph
+        title: L'higròmetre de l'aparell contra el pitjor racó
+        hours_to_show: 48
+        entities:
+          - entity: sensor.deshumidificador_humitat
+            name: Aparell
+          - entity: sensor.soterrani_humitat_maxima
+            name: Pitjor racó
+          - entity: sensor.decisio_llindar_deshumidificador
+            name: Llindar que vol la decisió
+
+      - type: history-graph
+        title: Què ha fet l'aparell
+        hours_to_show: 48
+        entities:
+          - entity: sensor.deshumidificador_estat
+            name: Estat
+          - entity: sensor.decisio_del_soterrani
+            name: Decisió
+
+      - type: statistics-graph
+        title: Hores de compressor per dia
+        chart_type: bar
+        period: day
+        days_to_show: 30
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.deshumidificador_hores_compressor
+            name: Compressor
+
+      # La pregunta de la Porta B: quantes hores HAURIA ventilat. En ombra,
+      # són les de la decisió; amb els relés actuant, les de debò.
+      - type: statistics-graph
+        title: Minuts de ventilació per dia
+        chart_type: bar
+        period: day
+        days_to_show: 30
+        stat_types:
+          - max
+        entities:
+          - entity: sensor.ventilacio_minuts_avui
+            name: Ventilació
+
+      - type: history-graph
+        title: Dispersió dels tres punts — general o d'un racó?
+        hours_to_show: 168
+        entities:
+          - entity: sensor.soterrani_dispersio_rosada
+            name: Td més alt − Td més baix
+
+      - type: history-graph
+        title: Marge de la paret (per sota de 3 °C, el fong hi té condicions)
+        hours_to_show: 168
+        entities:
+          - entity: sensor.marge_de_condensacio
+            name: Marge
+
+      - type: markdown
+        content: >
+          ### El que no cap aquí
+
+          A casa, contra l'històric: `python3 tools/analisi.py`. **Dipòsits**
+          (litres per kWh i cost per litre), **ventilació** (quant asseca cada
+          episodi, i quin ΔTd ho prediu millor: planta baixa o fora),
+          **rebot** (quant aguanta la sequedat després d'aturar el
+          compressor), **dispersió** (quin racó és el pitjor, i quanta
+          estona), **cost** per dia i tram, **marge** de la paret, i les hores
+          de cada estat de la **decisió**.
 
   # ───────────────────────────────────────────────────────────────────────────
   - title: Ajustos

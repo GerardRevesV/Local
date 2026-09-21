@@ -173,3 +173,42 @@ template:
         state_class: total_increasing
         icon: mdi:transmission-tower
         state: "{{ ((this.state | float(0)) + delta * trams.vall) | round(6) }}"
+
+      # ─────────────────────────────────────────────────────────────────────
+      #  ELS EUROS DE CADA TRAM (22/09/2026, lògica v2, Fase 2). La pregunta
+      #  de l'optimització en diners: quant es paga en punta. Són els kWh del
+      #  tram pel seu preu, o sigui que els tres sumen sensor.deshumidificador_cost
+      #  —a partir del dia que es despleguen: no es reconstrueix el passat—.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: "Deshumidificador — cost (punta)"
+        unique_id: deshumidificador_cost_punta
+        default_entity_id: sensor.deshumidificador_cost_punta
+        unit_of_measurement: "EUR"
+        device_class: monetary
+        state_class: total
+        icon: mdi:cash-remove
+        state: >
+          {% from 'tarifa.jinja' import PREUS, IMPOSTOS %}
+          {{ ((this.state | float(0)) + delta * trams.punta * PREUS.punta * IMPOSTOS) | round(6) }}
+
+      - name: "Deshumidificador — cost (pla)"
+        unique_id: deshumidificador_cost_pla
+        default_entity_id: sensor.deshumidificador_cost_pla
+        unit_of_measurement: "EUR"
+        device_class: monetary
+        state_class: total
+        icon: mdi:cash
+        state: >
+          {% from 'tarifa.jinja' import PREUS, IMPOSTOS %}
+          {{ ((this.state | float(0)) + delta * trams.pla * PREUS.pla * IMPOSTOS) | round(6) }}
+
+      - name: "Deshumidificador — cost (vall)"
+        unique_id: deshumidificador_cost_vall
+        default_entity_id: sensor.deshumidificador_cost_vall
+        unit_of_measurement: "EUR"
+        device_class: monetary
+        state_class: total
+        icon: mdi:cash-check
+        state: >
+          {% from 'tarifa.jinja' import PREUS, IMPOSTOS %}
+          {{ ((this.state | float(0)) + delta * trams.vall * PREUS.vall * IMPOSTOS) | round(6) }}

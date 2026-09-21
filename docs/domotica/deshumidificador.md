@@ -257,6 +257,11 @@ Per ordre d'importància. El que ja té entitat hi surt; el que no, és pendent.
 | **El temporitzador** | Si algú el posa a mà, s'apagarà sol | `sensor.deshumidificador_temps_restant` |
 | **El bloqueig infantil** | En un local, que ningú no li canviï el mode des dels botons | `lock.deshumidificador_bloqueig_infantil` |
 
+> ✅ ***22/09/2026 — a HA** (lògica v2, Fase 2, `config/packages/deshumidificador.yaml`):* l'estat
+> real pels watts (`sensor.deshumidificador_estat`), les hores de compressor i de
+> funcionament, les hores del filtre, la seva HR com a sensor (només amb el ventilador en
+> marxa), i els avisos de dipòsit (codi 32), d'avaria i de mode AUTO o Roba.
+
 ## Si HA cau: el pla B ja hi és, i no demana programar res a l'aparell
 
 L'experiment 2 ho confirma: **l'higròstat de l'aparell regula sol, recorda la configuració i es

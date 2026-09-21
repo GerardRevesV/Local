@@ -186,15 +186,16 @@ Surten de [logica-v2-pla.md](logica-v2-pla.md), fase per fase. Les plantilles no
 | `input_number.parametres_versio` | Fins a quina versió s'han posat els valors de partida (cada fase que afegeix paràmetres, un bloc) |
 | `input_number.hr_vall` · `hr_pla` · `hr_punta` · `hr_fix` · `hr_urgencia` · `hr_urgencia_objectiu` · `hr_mentre_ventila` · `delta_td_higiene` · `renovacions_dia` · `renovacions_absencia` · `cabal_ventiladors` · `volum_soterrani` | Els paràmetres nous |
 
-**Fase 2 — dades i gràfics**
+**Fase 2 — dades i gràfics** (`packages/deshumidificador.yaml`; la dispersió a `rosada.yaml` i els euros per tram a `consum.yaml`)
 
 | `entity_id` | Què és |
 |---|---|
 | `sensor.soterrani_dispersio_rosada` | Td més alt − Td més baix dels tres punts |
 | `sensor.deshumidificador_humitat` | L'HR que mesura l'aparell, **només amb el ventilador en marxa** |
-| `sensor.deshumidificador_estat` | `compressor` · `ventilador` · `espera` · `diposit` · `sense_corrent`, pels watts |
+| `sensor.deshumidificador_estat` | `compressor` · `ventilador` · `espera` · `apagat` · `diposit` · `avaria` · `sense_corrent`, pels watts i el codi d'avaria |
 | `binary_sensor.deshumidificador_compressor` | Compressor en marxa (> 150 W) |
-| `sensor.deshumidificador_hores_compressor` | Hores de compressor acumulades |
+| `sensor.deshumidificador_hores_compressor` | Hores de compressor acumulades (els minuts, en enters, a l'atribut `minuts`) |
+| `sensor.deshumidificador_hores_funcionament` | Hores amb compressor o ventilador (≥ 5 W): les que compten per al filtre |
 | `sensor.deshumidificador_hores_filtre` · `input_number.deshumidificador_filtre_netejat` · `script.deshumidificador_filtre_netejat` | Hores des de l'última neteja del filtre (avís a les 360 h) |
 | `sensor.deshumidificador_cost_punta` · `…_pla` · `…_vall` | Euros acumulats en cada tram |
 

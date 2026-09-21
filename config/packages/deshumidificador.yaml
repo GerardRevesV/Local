@@ -1,0 +1,289 @@
+# ═════════════════════════════════════════════════════════════════════════════
+#  EL DESHUMIDIFICADOR, VIST DES DE FORA — estat real, hores, filtre i avisos
+#  Com es comporta de debò: docs/domotica/deshumidificador.md
+#  Lògica v2, Fase 2 (docs/domotica/logica-v2-pla.md): NOMÉS MIRA I AVISA.
+#  Cap ordre a l'aparell: qui l'ajusta és l'executor de la Fase 3, i només
+#  si input_boolean.actuacio_deshumidificador és encès.
+#
+#  LA REGLA: l'estat real es llegeix als WATTS de l'endoll (P110M), mai a
+#  tuya-local sol, que no s'assabenta quan l'aparell es queda sense corrent.
+#  La signatura, mesurada el 21/09/2026:
+#     compressor 345–370 W  ·  ventilador sol 15 / 31 / 48 W
+#     en espera ~1,1 W      ·  aturat pel dipòsit ~0,8 W (i codi d'avaria 32)
+#  D'aquí els dos llindars de sempre: 150 W i 5 W, lluny de totes les zones.
+#
+#  ⚠️ Tot es RECARREGA sense reiniciar: template.reload, input_number.reload,
+#     script.reload i automation.reload.
+# ═════════════════════════════════════════════════════════════════════════════
+
+input_number:
+  # Les hores de funcionament que marcava el comptador el dia que es va
+  # netejar el filtre. Sense «initial:»: la primera vegada val el mínim, 0,
+  # que és el que toca. El posa script.deshumidificador_filtre_netejat.
+  deshumidificador_filtre_netejat:
+    name: Hores de funcionament a l'última neteja del filtre
+    min: 0
+    max: 100000
+    step: 0.01
+    mode: box
+    unit_of_measurement: h
+    icon: mdi:air-filter
+
+template:
+  - binary_sensor:
+      - name: "Deshumidificador — compressor"
+        unique_id: deshumidificador_compressor
+        default_entity_id: binary_sensor.deshumidificador_compressor
+        device_class: running
+        availability: "{{ is_number(states('sensor.deshumidificador_potencia')) }}"
+        state: "{{ states('sensor.deshumidificador_potencia') | float > 150 }}"
+
+    sensor:
+      # ───────────────────────────────────────────────────────────────────────
+      #  QUÈ FA DE DEBÒ, pels watts. Els codis d'avaria van abans que els
+      #  watts: amb el dipòsit ple consumeix com en espera, i només el codi
+      #  32 ho distingeix (experiment 8).
+      # ───────────────────────────────────────────────────────────────────────
+      - name: "Deshumidificador — estat"
+        unique_id: deshumidificador_estat
+        default_entity_id: sensor.deshumidificador_estat
+        icon: >
+          {{ {'compressor': 'mdi:snowflake', 'ventilador': 'mdi:fan', 'espera': 'mdi:sleep',
+              'apagat': 'mdi:power-off', 'diposit': 'mdi:cup-water', 'avaria': 'mdi:alert',
+              'sense_corrent': 'mdi:power-plug-off'}.get(this.state, 'mdi:air-humidifier') }}
+        availability: "{{ is_number(states('sensor.deshumidificador_potencia')) }}"
+        state: >
+          {% set w = states('sensor.deshumidificador_potencia') | float %}
+          {% set codi = state_attr('binary_sensor.deshumidificador_avaria', 'fault_code') | int(0) %}
+          {% if w < 0.5 %}sense_corrent
+          {% elif codi == 32 %}diposit
+          {% elif codi != 0 %}avaria
+          {% elif w > 150 %}compressor
+          {% elif w >= 5 %}ventilador
+          {% elif is_state('humidifier.deshumidificador', 'off') %}apagat
+          {% else %}espera{% endif %}
+
+      # ───────────────────────────────────────────────────────────────────────
+      #  L'HR QUE MESURA L'APARELL — per compararla amb la dels Tapo calibrats
+      #  (la dada que desbloqueja el segon nivell de la v2). És un atribut de
+      #  tuya-local, que no fa estadístiques; aquí passa a ser un sensor.
+      #  ⚠️ Només val amb el VENTILADOR EN MARXA: aturat, llegeix l'aire quiet
+      #     del seu voltant (experiment 2). Per això, per sota de 5 W, no n'hi ha.
+      # ───────────────────────────────────────────────────────────────────────
+      - name: "Deshumidificador — humitat"
+        unique_id: deshumidificador_humitat
+        default_entity_id: sensor.deshumidificador_humitat
+        unit_of_measurement: "%"
+        device_class: humidity
+        state_class: measurement
+        availability: >
+          {{ is_number(states('sensor.deshumidificador_potencia'))
+             and states('sensor.deshumidificador_potencia') | float >= 5
+             and state_attr('humidifier.deshumidificador', 'current_humidity') is number }}
+        state: "{{ state_attr('humidifier.deshumidificador', 'current_humidity') }}"
+
+      # El filtre: l'aparell avisa a les 360 h de funcionament (manual). Les
+      # nostres comencen a comptar el dia que es desplega, no el de l'aparell:
+      # el dia que es netegi, script.deshumidificador_filtre_netejat.
+      - name: "Deshumidificador — hores del filtre"
+        unique_id: deshumidificador_hores_filtre
+        default_entity_id: sensor.deshumidificador_hores_filtre
+        unit_of_measurement: h
+        state_class: measurement
+        icon: mdi:air-filter
+        availability: "{{ is_number(states('sensor.deshumidificador_hores_funcionament')) }}"
+        state: >
+          {{ ([states('sensor.deshumidificador_hores_funcionament') | float
+               - states('input_number.deshumidificador_filtre_netejat') | float(0), 0] | max) | round(1) }}
+        attributes:
+          avis_a: 360
+
+  # ─────────────────────────────────────────────────────────────────────────
+  #  HORES ACUMULADES — un minut cada minut, en enters (atribut «minuts»), i
+  #  l'estat en hores. En enters perquè sumar 1/60 arrodonit cada minut
+  #  s'esbiaixaria: 0,00005 h per minut són 3 h cada 1.000.
+  #  No es reinicien mai: el dia, la setmana i el mes els fan les estadístiques.
+  #  Es restauren en arrencar, com tots els sensors per disparador.
+  # ─────────────────────────────────────────────────────────────────────────
+  - triggers:
+      - trigger: time_pattern
+        minutes: "/1"
+    sensor:
+      - name: "Deshumidificador — hores de compressor"
+        unique_id: deshumidificador_hores_compressor
+        default_entity_id: sensor.deshumidificador_hores_compressor
+        unit_of_measurement: h
+        state_class: total_increasing
+        icon: mdi:engine
+        state: >
+          {% set n = (this.attributes.get('minuts', 0) | int(0))
+                     + (1 if is_state('binary_sensor.deshumidificador_compressor', 'on') else 0) %}
+          {{ (n / 60) | round(2) }}
+        attributes:
+          minuts: >
+            {{ (this.attributes.get('minuts', 0) | int(0))
+               + (1 if is_state('binary_sensor.deshumidificador_compressor', 'on') else 0) }}
+
+      # Compressor o ventilador sol: el que compta per al filtre.
+      - name: "Deshumidificador — hores de funcionament"
+        unique_id: deshumidificador_hores_funcionament
+        default_entity_id: sensor.deshumidificador_hores_funcionament
+        unit_of_measurement: h
+        state_class: total_increasing
+        icon: mdi:timer-cog-outline
+        state: >
+          {% set n = (this.attributes.get('minuts', 0) | int(0))
+                     + (1 if states('sensor.deshumidificador_potencia') | float(0) >= 5 else 0) %}
+          {{ (n / 60) | round(2) }}
+        attributes:
+          minuts: >
+            {{ (this.attributes.get('minuts', 0) | int(0))
+               + (1 if states('sensor.deshumidificador_potencia') | float(0) >= 5 else 0) }}
+
+script:
+  deshumidificador_filtre_netejat:
+    alias: "Deshumidificador — filtre netejat"
+    icon: mdi:air-filter
+    sequence:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.deshumidificador_filtre_netejat
+        data:
+          value: "{{ states('sensor.deshumidificador_hores_funcionament') | float(0) }}"
+      - action: persistent_notification.dismiss
+        data:
+          notification_id: deshumidificador_filtre
+      - action: logbook.log
+        data:
+          name: Deshumidificador
+          message: >
+            filtre netejat, a les {{ states('sensor.deshumidificador_hores_funcionament') }} h
+            de funcionament
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  AVISOS — no actuen: diuen què passa perquè algú hi vagi
+# ═════════════════════════════════════════════════════════════════════════════
+automation:
+  # El P2: dipòsit ple O TRET donen el mateix codi 32, i només es comprova
+  # quan deshumidifica (experiment 8). Cap xiulet a l'aparell: l'avís és aquí.
+  - id: avis_deshumidificador_avaria
+    alias: "Avís — el deshumidificador marca una avaria"
+    mode: queued
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.deshumidificador_avaria
+        attribute: fault_code
+    action:
+      - variables:
+          codi: "{{ trigger.to_state.attributes.fault_code | int(0) if trigger.to_state else 0 }}"
+      - choose:
+          - conditions: "{{ codi == 32 }}"
+            sequence:
+              - action: persistent_notification.create
+                data:
+                  notification_id: deshumidificador_avaria
+                  title: "Deshumidificador: dipòsit ple o tret"
+                  message: >
+                    Codi 32 des de les {{ now().strftime('%H:%M') }}: l'aparell s'ha aturat i
+                    **no asseca**. Buidar el dipòsit (o posar-lo bé) i l'avís marxa sol.
+          - conditions: "{{ codi != 0 }}"
+            sequence:
+              - action: persistent_notification.create
+                data:
+                  notification_id: deshumidificador_avaria
+                  title: "Deshumidificador: avaria (codi {{ codi }})"
+                  message: >
+                    Codi d'avaria {{ codi }} des de les {{ now().strftime('%H:%M') }}. Mirar la
+                    pantalla: el manual dona C1, C2, C8 i P4 (sensors) i **P34, fuita de
+                    refrigerant** (és propà: ventilar i desendollar). Vegeu inventari.md.
+        default:
+          - action: persistent_notification.dismiss
+            data:
+              notification_id: deshumidificador_avaria
+
+  # En AUTO i en Roba l'aparell REBUTJA el llindar sense dir res
+  # (experiments 1 i 6). Cinc minuts de marge: les proves hi passen de pas.
+  - id: avis_deshumidificador_mode
+    alias: "Avís — el deshumidificador en un mode que no obeeix el llindar"
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: humidifier.deshumidificador
+        attribute: mode
+        to:
+          - auto
+          - laundry
+        for: "00:05:00"
+        id: surt
+      - platform: state
+        entity_id: humidifier.deshumidificador
+        attribute: mode
+        to:
+          - normal
+          - sleep
+        id: torna
+    action:
+      - choose:
+          - conditions: "{{ trigger.id == 'surt' }}"
+            sequence:
+              - action: persistent_notification.create
+                data:
+                  notification_id: deshumidificador_mode
+                  title: "Deshumidificador en mode {{ 'AUTO' if trigger.to_state.attributes.mode == 'auto' else 'Roba' }}"
+                  message: >
+                    En aquest mode l'aparell **no fa cas del llindar** i HA no el pot governar.
+                    Ha d'estar en Manual (o Nit). {% if is_state('input_boolean.actuacio_deshumidificador', 'on') %}HA
+                    el tornarà a Manual.{% else %}L'actuació és apagada: cal fer-ho a mà.{% endif %}
+        default:
+          - action: persistent_notification.dismiss
+            data:
+              notification_id: deshumidificador_mode
+
+  # Apagat del botó (en espera) i amb corrent: no asseca. La v2 no l'apaga mai.
+  - id: avis_deshumidificador_apagat
+    alias: "Avís — el deshumidificador està apagat"
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: sensor.deshumidificador_estat
+        to: apagat
+        for: "00:10:00"
+        id: apagat
+      - platform: state
+        entity_id: sensor.deshumidificador_estat
+        from: apagat
+        id: torna
+    action:
+      - choose:
+          - conditions: "{{ trigger.id == 'apagat' }}"
+            sequence:
+              - action: persistent_notification.create
+                data:
+                  notification_id: deshumidificador_apagat
+                  title: "Deshumidificador apagat"
+                  message: >
+                    Té corrent però està apagat des de fa 10 minuts: **no asseca**. La lògica
+                    no l'apaga mai; si no és a posta, cal tornar-lo a engegar.
+        default:
+          - action: persistent_notification.dismiss
+            data:
+              notification_id: deshumidificador_apagat
+
+  - id: avis_deshumidificador_filtre
+    alias: "Avís — toca netejar el filtre del deshumidificador"
+    mode: single
+    trigger:
+      - platform: time
+        at: "10:00:00"
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.deshumidificador_hores_filtre
+        above: 360
+    action:
+      - action: persistent_notification.create
+        data:
+          notification_id: deshumidificador_filtre
+          title: "Toca netejar el filtre del deshumidificador"
+          message: >
+            {{ states('sensor.deshumidificador_hores_filtre') }} h de funcionament des de l'última
+            neteja (el manual en diu 360). Un cop net: script «Deshumidificador — filtre netejat».
