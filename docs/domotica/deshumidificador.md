@@ -114,11 +114,23 @@ Mode normal i llindar en continu, 8 min per operació (20:12–20:49):
 
 ### 4. Ventilador — les tres velocitats amb el compressor
 
-⏳ **En curs** (21:34, segona tanda). La primera tanda es va espatllar: la prova del dipòsit
-(experiment 8) va aturar l'aparell just durant les velocitats mitjana i alta, i les va mesurar a
-0,8 W. El que sí que es va veure: passar de velocitat mitjana a baixa amb el compressor en
-marxa **baixa el consum ~3 W**, o sigui que amb el compressor, el ventilador és gairebé res.
-Resultats en un PR següent.
+Mode normal, llindar en continu, 5 min per velocitat (segona tanda, 21:34–21:54; la primera es
+va espatllar perquè la prova del dipòsit va aturar l'aparell enmig):
+
+| Velocitat | Watts |
+|---|---|
+| Baixa (33 %) | **356 W** |
+| Mitjana (67 %) | **358 W** |
+| Alta (100 %) | **363 W** |
+
+**Amb el compressor en marxa, la velocitat gairebé no hi compta: ~7 W de la baixa a l'alta**, i
+ni tan sols són tots del ventilador, perquè el compressor puja sol mentre s'escalfa. Sol, en
+canvi, el ventilador va de 15 a 48 W (experiment 5): amb el compressor, l'aparell no el deu fer
+anar igual.
+
+**Conseqüència per a l'eficiència: quan asseca, velocitat alta.** Per ~7 W més mou molt més
+aire, i un deshumidificador treu més aigua com més aire passa per la bateria freda. *(A
+comprovar en litres; i amb fred, al soterrani, velocitat alta també ajuda a no glaçar-se.)*
 
 ### 5. El ventilador sol — què costa només moure aire
 
@@ -153,9 +165,23 @@ Fase C, no una decisió.
 
 ### 6. Modes — Manual, Nit, Roba i AUTO amb el llindar en continu
 
-⏳ **En curs** (segona tanda, cap a les 21:54). La pregunta: si en AUTO, amb el llindar al
-mínim, el compressor va a la seva (el manual diu que el llindar s'ignora) i què gasta cada
-mode. Resultats en un PR següent.
+8 min per mode (10 en AUTO), segona tanda (21:54–22:28), HR de l'habitació 46–47 %:
+
+| Mode | Watts | Compressor | Què hi canvia l'aparell sol |
+|---|---|---|---|
+| Manual (`normal`) | **366 W** | 100 % | — |
+| Nit (`sleep`) | **374 W** | 100 % | Posa la velocitat **baixa** |
+| Roba (`laundry`) | **374 W** | 100 % | — |
+| AUTO | **366 W** | 100 % | — |
+
+- **Els modes no canvien què gasta el compressor**: les diferències són l'escalfament. Només
+  canvien el ventilador i **quan decideix engegar-lo**.
+- **En AUTO, al 46–47 %, va assecar sense parar**; aquell mateix vespre en AUTO, al 44 %, feia
+  tandes de 2 min i s'aturava 5. **Sembla que en AUTO manté cap al 45 %** pel seu compte, i no
+  el llindar, que en AUTO no es pot canviar (experiment 1). És una estimació de dues
+  observacions, no una mesura.
+- **Per a HA: Manual.** És l'únic mode en què el llindar mana, que és la palanca de tota la
+  lògica.
 
 ### 7. Assecat intern — quant va el ventilador després d'aturar-se
 
@@ -197,13 +223,14 @@ Per ordre d'importància. El que ja té entitat hi surt; el que no, és pendent.
 
 | Què | Per què | D'on |
 |---|---|---|
-| **El mode** | En AUTO i en Roba el llindar **no fa res**. Si algú el posa en AUTO, HA ha de saber que ja no el governa | `humidifier.deshumidificador` (mode) |
+| **El mode** | En AUTO i en Roba el llindar **no fa res** (en AUTO sembla mantenir cap al 45 % pel seu compte). Si algú el posa en AUTO, HA ha de saber que ja no el governa | `humidifier.deshumidificador` (mode) |
 | **L'estat real, pels watts** | «Endollat» no vol dir «assecant». Compressor / ventilador / espera, amb la signatura de dalt | `sensor.deshumidificador_potencia` |
 | **Dipòsit ple (P2)** | S'atura i no seca. **Codi d'avaria 32** (experiment 8). I es confirma amb els watts: ~0,8 W quan li tocaria assecar | `binary_sensor.deshumidificador_avaria` (`fault_code` 32) + watts |
 | **Avaries** | Sobretot **P34, fuita de refrigerant** (és propà) | `binary_sensor.deshumidificador_avaria` |
 | **Desgebratge (P1)** | L'hivern al soterrani: estona descongelant en comptes d'assecar | ⏳ per identificar |
 | **Hores de compressor** | El filtre cada 360 h, i les hores al dia són una casella de la Porta B. Es compten amb els watts, sense dependre de l'aparell | Watts |
 | **L'operació** | **Purificar no asseca** i posa l'aparell en mode Roba: si hi és, HA no el governa | `select.deshumidificador_mode_aire` |
+| **La velocitat** | Quan asseca, **alta**: amb el compressor només hi suma ~7 W (experiment 4). En mode Nit l'aparell la baixa sol | `fan.deshumidificador` |
 | **El temporitzador** | Si algú el posa a mà, s'apagarà sol | `sensor.deshumidificador_temps_restant` |
 | **El bloqueig infantil** | En un local, que ningú no li canviï el mode des dels botons | `lock.deshumidificador_bloqueig_infantil` |
 
@@ -222,6 +249,9 @@ es valgui per si mateix:
    sol (experiment 2).
 4. **L'app Smart Life**, pel núvol, segueix sent una via manual independent d'HA. Per això no
    s'ha tret l'aparell de l'app.
+
+> 📌 Què passa amb tot el sistema —no només amb el deshumidificador— si cau la llum, el portàtil
+> o internet: [home-assistant.md](home-assistant.md#què-passa-si-cau-la-llum-el-portàtil-o-internet).
 
 > ⚠️ **En AUTO, com venia, no és una configuració de repòs vàlida**: HA no li pot canviar el
 > llindar, i el que decideix l'aparell no es pot llegir enlloc.
