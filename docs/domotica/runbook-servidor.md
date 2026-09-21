@@ -227,6 +227,44 @@ s'ha de mantenir, i és la línia més important de tot el projecte.
 `NET_RAW`. Es podrien donar aquestes capacitats, però seria regalar privilegis per una funció
 que no volem: els sensors van per 868 MHz amb el hub. Es desactiva el servei al sistema.
 
+**El símptoma**, cada 5–10 minuts al registre d'HA (~250 al dia):
+
+```
+ERROR (MainThread) [habluetooth.scanner] hci0 (…): Failed to force stop scanner
+AttributeError: 'NoneType' object has no attribute 'send'
+```
+
+**La cadena, diagnosticada el 21/09/2026:** el mòdul del nucli segueix carregat → l'adaptador
+`hci0` existeix a `/sys/class/bluetooth` → el contenidor el veu (hi té `/sys`) → HA el
+**descobreix sol** i en crea una **entrada de configuració** → l'escàner intenta arrencar per
+dbus, i el contenidor no té `/run/dbus` a posta → falla, reintenta, falla. Aturar
+`bluetooth.service` no hi fa res: l'adaptador és del nucli, no del servei.
+
+**Les tres capes, i quina fa què:**
+
+| Capa | Què fa | Estat |
+|---|---|---|
+| **Desactivar l'entrada** de l'adaptador a HA | Para l'error. En calent, **sense reiniciar** | ✅ **Fet el 21/09/2026** |
+| **Llista negra del mòdul** (`/etc/modprobe.d/99-sense-bluetooth.conf`) | Treu `hci0` del tot. Cal `sudo` i **un reinici** | ⏳ Pendent: el guió que l'escriu es va córrer **abans** que la hi afegíssim |
+| Treure `bluetooth` de `default_config` | **No serveix sol**: una entrada existent carrega la integració igualment. I mantenir la llista a mà a cada versió d'HA és feina per res | ❌ Descartat |
+
+> ⚠️ **Desactivar, no esborrar.** Aquest runbook deia «esborrar la integració». Si s'esborra,
+> HA torna a descobrir `hci0` i la torna a crear al cap de poc. **Desactivada**, l'entrada
+> queda al registre i bloqueja el redescobriment del mateix adaptador. Es fa a *Configuració →
+> Dispositius i serveis → Bluetooth → ⋮ → Desactiva*, o per l'API de WebSocket
+> (`config_entries/disable` amb `disabled_by: user`), com la resta de receptes d'aquest runbook.
+>
+> 📌 Si algun dia es canvia de portàtil o d'adaptador, l'adaptador nou és un altre i HA el
+> descobrirà: s'ha de tornar a desactivar.
+>
+> 📌 **Matter no en depèn.** Té `bluetooth` com a `after_dependencies` —només ordre
+> d'arrencada—, i l'emparellament el fa el mòbil, no el servidor
+> ([emparellar-matter.md](emparellar-matter.md)).
+
+**Com es comprova:** `docker logs --since 30m homeassistant 2>&1 | grep -c "force stop scanner"`
+ha de donar **0**. I, un cop aplicada la llista negra i reiniciat, `ls /sys/class/bluetooth`
+ha de sortir buit.
+
 ### 🪤 `docker compose ps` amaga els contenidors aturats
 
 Sense `-a`, `docker compose ps` **només llista els que corren**. Un contenidor aturat no hi
