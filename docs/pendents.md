@@ -244,15 +244,16 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       Ara va servei per servei amb `-a`, distingeix `Exited (137)` i canta si al compose hi ha
       un servei que ningú no comprova.
       → [runbook-servidor.md](domotica/runbook-servidor.md#-docker-compose-ps-amaga-els-contenidors-aturats)
-- [ ] 🔁 **Desplegar els sostres al local i comprovar-los.** Els sostres són al repositori,
-      **no a la màquina**: `mem_limit` només s'aplica **recreant el contenidor**
-      (`docker compose up -d`, no un `restart`). Fins llavors `comprova.sh` els marcarà en
-      vermell — que és exactament el que ha de fer. ⚠️ **I el `comprova.sh` corregit encara
-      no s'ha corregut mai contra la màquina real:** la lògica nova està provada amb escenaris
-      simulats, que no és el mateix.
-- [ ] 🔁 **Reiniciar la màquina perquè el `swappiness` nou tingui efecte real.** El valor ja
-      hi serà, però els **667 MB que ja eren a l'intercanvi** el 21/09 no es mouen sols. Es pot
-      ajuntar amb el desplegament dels sostres i amb el pas a `multi-user.target`.
+- [x] ~~🔁 **Desplegar els sostres al local i comprovar-los.**~~ ✅ **Desplegat el
+      21/09/2026.** El servidor anava 15 commits enrere. `check_config` net, `docker compose
+      up -d` (recrear és l'únic que aplica `mem_limit`), i **HA responent al cap de 15 s**.
+      Sostres verificats a la màquina: HA **1.536 MB** (en consumeix 432) i `matter-server`
+      **512 MB** (87). `comprova.sh` **tot verd**, i per fi corregut contra la màquina de
+      debò, no contra escenaris simulats.
+- [ ] 🔁 **Reiniciar la màquina per buidar l'intercanvi.** ✅ El `vm.swappiness=10` **ja està
+      aplicat** (`/etc/sysctl.d/99-memoria.conf`, 21/09/2026) i `comprova.sh` el veu. Però és
+      la política d'ara endavant: **queden 442 MB al swap** que no es mouran sols. Sense
+      pressa —el PSI marca `0.00`— i es pot ajuntar amb el pas a `multi-user.target`.
 - [ ] 📝 **Que un OOM deixi rastre permanent.** ⚠️ **No al `desplegaments.log`:** aquell fitxer
       l'escriu `desplega.sh` i només quan despleguem; un OOM a les 04:00 no hi cauria mai. Va
       al **guió nocturn `nit.py`** (que corre cada dia) i, com a avís, al **cos del ping de
