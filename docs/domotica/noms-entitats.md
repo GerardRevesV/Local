@@ -114,6 +114,10 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 > Qui l'engega i l'atura per a la lògica segueix sent `switch.deshumidificador`, el P110M. Que
 > el `humidifier` mani també és una decisió que es prendrà a posta, no per accident.
 >
+> ✅ ***22/09/2026 — presa, a posta:*** amb la lògica v2 **mana el `humidifier`**, pel llindar,
+> i l'endoll **només mesura** i queda sempre encès. Segueix havent-hi un sol amo: ha canviat
+> quin → [decisio-stack.md](decisio-stack.md).
+>
 > ⚠️ `tuya-local` bateja les entitats amb el nom del dispositiu i el de la funció en anglès.
 > **Es renombren el mateix moment d'afegir-lo**, abans que gravin res, com es va fer amb el
 > P110M ([runbook](runbook-servidor.md#-renombrar-entitats-sense-tocar-storage)).
@@ -128,7 +132,7 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 | `sensor.dtd_interior_exterior` | `soterrani_rosada − exterior_rosada` — el criteri |
 | `sensor.marge_de_condensacio` | `paret més freda − soterrani_rosada` — el KPI del fong |
 | `sensor.residu_del_punt_de_rosada_exterior` | Sensor propi − estació oficial — **salut del sensor** |
-| `sensor.decisio_del_soterrani` | **L'únic punt d'avaluació.** Què s'ha de fer i per què |
+| `sensor.decisio_del_soterrani` | **L'únic punt d'avaluació.** Què s'ha de fer i per què. *(Des de la Fase 1 de la v2, a `packages/control.yaml`: vegeu més avall)* |
 
 ### Derivades — consum i tarifa, les calcula `packages/consum.yaml`
 
@@ -157,6 +161,53 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 `min_off_deshumidificador`
 
 `input_select.mode_soterrani` · `timer.override_manual`
+
+> 🔄 **22/09/2026 — la lògica v2 en canvia la llista.** `hr_objectiu` i
+> `min_off_deshumidificador` **surten** amb la Fase 1 (el seu històric es queda); la resta
+> segueix amb el mateix nom i passa a `packages/control.yaml`. Els nous són a la secció de sota.
+
+### La lògica v2 — fixats el 22/09/2026, ABANS de crear-los
+
+Surten de [logica-v2-pla.md](logica-v2-pla.md), fase per fase. Les plantilles noves porten
+`default_entity_id`, o sigui que **el nom no depèn del nom visible**: és aquest.
+
+**Fase 1 — la decisió en ombra** (`packages/control.yaml`, i les dues de física a `rosada.yaml`)
+
+| `entity_id` | Què és |
+|---|---|
+| `sensor.decisio_del_soterrani` | **El mateix de sempre**, amb la v2 a dins (mateix `unique_id`). Atributs nous: `llindar`, `mode_aparell`, `velocitat`, `ventiladors`, `urgencia`, `dtd`, `referencia`, `tram`, `llindar_tram`, `higiene_pendent`, `actuacio`, `versio` i `entrades` |
+| `sensor.decisio_llindar_deshumidificador` | El llindar que la decisió vol a l'aparell (%). *No es toca* = no disponible |
+| `binary_sensor.decisio_ventiladors` | Si la decisió vol els ventiladors engegats. *No es toquen* = no disponible |
+| `sensor.ventilacio_minuts_avui` | Minuts de ventilació d'avui: els que la decisió **hauria** fet mentre és en ombra; els dels relés quan actua (Fase 3) |
+| `sensor.dtd_interior_planta_baixa` | `soterrani_rosada − planta_baixa_rosada`: el ΔTd contra l'altra referència |
+| `sensor.soterrani_humitat_maxima` | La HR **calibrada** més alta dels tres punts; el punt, a l'atribut `punt` |
+| `input_select.referencia_ventilacio` | *Planta baixa* · *Exterior* |
+| `input_boolean.actuacio_deshumidificador` · `…_ventiladors` | Els dos interruptors del mode ombra: **apagats**, no s'actua |
+| `input_boolean.parametres_inicialitzats` | Els valors de partida ja s'han posat una vegada |
+| `input_number.hr_vall` · `hr_pla` · `hr_punta` · `hr_fix` · `hr_urgencia` · `hr_urgencia_objectiu` · `hr_mentre_ventila` · `delta_td_higiene` · `renovacions_dia` · `renovacions_absencia` · `cabal_ventiladors` · `volum_soterrani` | Els paràmetres nous |
+
+**Fase 2 — dades i gràfics**
+
+| `entity_id` | Què és |
+|---|---|
+| `sensor.soterrani_dispersio_rosada` | Td més alt − Td més baix dels tres punts |
+| `sensor.deshumidificador_humitat` | L'HR que mesura l'aparell, **només amb el ventilador en marxa** |
+| `sensor.deshumidificador_estat` | `compressor` · `ventilador` · `espera` · `diposit` · `sense_corrent`, pels watts |
+| `binary_sensor.deshumidificador_compressor` | Compressor en marxa (> 150 W) |
+| `sensor.deshumidificador_hores_compressor` | Hores de compressor acumulades |
+| `sensor.deshumidificador_hores_filtre` · `input_number.deshumidificador_filtre_netejat` · `script.deshumidificador_filtre_netejat` | Hores des de l'última neteja del filtre (avís a les 360 h) |
+| `sensor.deshumidificador_cost_punta` · `…_pla` · `…_vall` | Euros acumulats en cada tram |
+
+**Fase 3 — actuació**
+
+| `entity_id` | Què és |
+|---|---|
+| `input_boolean.ventilador_1_virtual` · `…_2_virtual` | Els relés de mentida, fins als S110E |
+| `binary_sensor.ventiladors_en_marxa` | Si algun relé de la interfície és encès (i, amb els S110E, si consumeix) |
+| `sensor.ventiladors_potencia` | Suma dels watts dels relés; no disponible mentre siguin virtuals |
+| `script.ventiladors_engega` · `script.ventiladors_atura` | L'**única** porta cap als relés |
+| `script.deshumidificador_aplica` | Porta l'aparell a la configuració de la decisió, verificant cada pas |
+| `input_number.ventiladors_max_minuts` | Cap engegada més llarga que això |
 
 ## Com s'apliquen
 

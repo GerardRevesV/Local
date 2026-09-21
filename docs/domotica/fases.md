@@ -177,8 +177,8 @@ feina i tu menys.
 |---|---|---|
 | C.1 | Fixar Δ_ON/Δ_OFF **amb les dades pròpies** de la Fase B | 🤝 Jo calculo, tu valides |
 | C.2 | Instal·lar relés als ventiladors | 👤 **Instal·lador autoritzat** si són cablejats |
-| C.3 | Enclavament dur ventilador/deshumidificador | 🤖 Jo |
-| C.4 | Selector de mode amb caducitat i override físic | 🤖 Jo |
+| C.3 | ~~Enclavament dur ventilador/deshumidificador~~ — **superat el 22/09/2026** per la [lògica v2](logica-v2-pla.md): el deshumidificador no s'apaga mai; mentre ventila, al 70 %, i en urgència treballen tots dos | 🤖 Jo |
+| C.4 | Selector de mode amb caducitat i override físic. *(22/09/2026: els modes de la v2 —Òptim, Ocupat, Prioritzar ventilació, Assecat intensiu, Silenci, Impressió, Absència, Llindar fix, Tot aturat— entren a la Fase 1 del [pla](logica-v2-pla.md); l'override físic, amb els S110E)* | 🤖 Jo |
 | C.5 | Anti-cicle curt **també configurat al dispositiu**, no només a HA | 🤝 Jo indico, tu configures |
 | C.6 | Comportament d'arrencada de cada endoll: deshumidificador ON, ventiladors OFF. ✅ **La meitat feta el 21/09/2026**: el P110M venia en `off` —no hauria tornat sol després d'un tall— i s'ha posat a **`on`** des d'HA (`select.deshumidificador_power_on_behavior`). Queden els S110E | 🤝 Jo ho poso, tu ho verifiques |
 | C.7 | ~~Congelació total de versions fins al 10/03/2027~~ — ✅ **sense objecte** des del 21/09/2026. Les versions segueixen fixades i s'actualitzen només a posta | 🤖 Jo |

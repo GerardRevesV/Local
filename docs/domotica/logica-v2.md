@@ -1,11 +1,13 @@
 # Lògica de control v2 — deshumidificador i ventilació
 
-> **Estat: proposta (21/09/2026), no decidida ni codificada.** Surt d'una conversa amb
+> **Estat: decidida per codificar (22/09/2026).** Surt d'una conversa amb
 > l'usuari després dels experiments amb el deshumidificador ([deshumidificador.md](deshumidificador.md)),
 > i d'una revisió feta el mateix vespre des de la física i el càlcul (vegeu *La revisió*, al
-> final). Quan es decideixi, [decisio-stack.md](decisio-stack.md) hi apuntarà i es codificarà a
-> `config/packages/rosada.yaml`, amb la rèplica de [`tools/replica.py`](../../tools/replica.py)
-> al costat.
+> final). [decisio-stack.md](decisio-stack.md) hi apunta des del 22/09/2026, i **com es
+> codifica** —per fases, primer en ombra, i amb les poques diferències que el codi hi
+> introdueix— és a **[logica-v2-pla.md](logica-v2-pla.md)**. El codi viurà a
+> `config/packages/control.yaml` i `config/custom_templates/decisio.jinja`, amb la rèplica de
+> [`tools/replica.py`](../../tools/replica.py) al costat.
 >
 > **Què canvia respecte del que hi ha avui** (la Fase B de `rosada.yaml`, que només registra):
 >
