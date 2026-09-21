@@ -173,7 +173,22 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
       l'aire.
 - [ ] **Si els S110E tenen temporitzador propi**, perquè els ventiladors s'apaguin sols si HA
       cau engegant-los.
-- [ ] **Decidir la v2** i, llavors, codificar-la a `rosada.yaml` amb la rèplica offline.
+- [x] ~~**Decidir la v2** i, llavors, codificar-la a `rosada.yaml` amb la rèplica offline.~~ ✅
+      **Decidida el 22/09/2026**, i el pla per codificar-la és a
+      [logica-v2-pla.md](domotica/logica-v2-pla.md): va a `packages/control.yaml` i a la macro
+      `custom_templates/decisio.jinja`, no a `rosada.yaml`. Cada fase, un PR:
+  - [ ] **Fase 1 — la decisió en ombra**: grava què faria, sense tocar res. Desplegar-la
+        **recarregant**, mai mentre corri la prova del dipòsit ni el calibratge.
+  - [ ] **Porta 1**: 24 h de `replica.py --deriva` sense cap discrepància.
+  - [ ] **Fase 2 — dades i gràfics**: hores de compressor i filtre, € per tram, avisos del
+        dipòsit i de l'AUTO, vista *Aprendre*, i `tools/analisi.py` a casa.
+  - [ ] **Fase 3 — actuació, apagada per defecte**: interfície dels ventiladors (relés
+        virtuals), executors, i la configuració restaurada quan l'aparell torna del corrent.
+  - [ ] **La setmana de base**, en mode *Llindar fix* amb `actuacio_deshumidificador` encès.
+  - [ ] **Fase 4 — el segon nivell**, quan se sàpiga la desviació de l'higròmetre de l'aparell.
+  - [ ] **Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.
+- [ ] ❓ **El volum del soterrani**: la v2 fa servir **115 m³** (~46 m² per l'alçada), però
+      l'alçada no s'ha mesurat mai. Amb el cabal, és el que converteix renovacions en minuts.
 - [ ] 📌 **Filament en caixes estanques amb dessecant**: a un 55 % ja agafa massa humitat.
 - [ ] **Provar l'assecat intern apagant l'aparell**, no amb el llindar: amb el llindar no allarga
       els 5 min de ventilador (21/09/2026), i probablement només actua en apagar-lo.
@@ -208,11 +223,15 @@ raonament sencer, amb el que desbloqueja cadascuna, és a
       segueix. La documentació d'HA diu que amb `initial:` **no** hi segueix, i els nou helpers
       de `rosada.yaml` en porten. Si es confirma, cada reinici esborra l'ajust de tot un
       hivern **sense dir res**.
+      *22/09/2026: **confirmat llegint el codi de la 2026.9.3** —amb `initial:` arrenca sempre
+      amb ell; sense, restaura; sense estat previ, el mínim del rang—. La Fase 1 de la
+      [v2](domotica/logica-v2-pla.md) treu els `initial:` i posa els valors de partida un sol
+      cop. La prova del reinici queda com a confirmació, el primer dia que calgui reiniciar.*
 - [ ] 🔴 **R2 — Garantir que els `input_number` es graven i s'exporten.** Mai a l'`exclude` del
       `recorder`, i sempre a la llista d'entitats de `nit.py`. Sense això, *«quin llindar
       regia el 3 de gener»* no té resposta.
 - [ ] **R2 — Detectar paràmetres incoherents** (Δ_OFF ≥ Δ_ON) al sensor de decisió, amb pas a
-      `bloquejat` i avís. Un `min:`/`max:` no ho pot impedir.
+      `bloquejat` i avís. Un `min:`/`max:` no ho pot impedir. *(Entra amb la Fase 1 de la v2.)*
 - [ ] 🔴 **R3 — Gravar la previsió des del primer dia de sèrie.** Des de 2024 les previsions
       ja no són atributs: cal un sensor per disparador que cridi `weather.get_forecasts` i
       deixi el Td previst a +3 h, +12 h i +24 h **com a estat**. El que no es gravi al

@@ -89,7 +89,8 @@ docs/
     calibratge.md      Procediment del calibratge creuat dels cinc sensors
     emparellar-matter.md  Com s'afegeix un aparell per Matter sense partir la sèrie
     deshumidificador.md  Com funciona de debò, què n'ha de saber HA, i els experiments
-    logica-v2.md       Proposta: llindar per tram, ventilació contra la planta baixa, estats
+    logica-v2.md       La lògica v2: llindar per tram, ventilació contra la planta baixa, estats
+    logica-v2-pla.md   ⭐ Com es codifica la v2: modes, estats, paràmetres i fases
     requisits.md       El que el sistema ha de saber fer i encara no és decisió
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE

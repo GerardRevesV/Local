@@ -39,6 +39,10 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
   l'stack són dos contenidors i no un:** el hub Tapo xifra amb TPAP i la integració `tplink`
   el rebutja, així que la via és **Matter**, que demana el seu propi servidor.
   → [decisio-stack.md](docs/domotica/decisio-stack.md) · [fases.md](docs/domotica/fases.md)
+- **Lògica de control:** des del 22/09/2026, la **v2** —llindar del deshumidificador per tram
+  de la tarifa, urgència per sobre del preu, ventilació contra la planta baixa o l'exterior, i
+  modes— **es codifica per fases, primer en ombra**: grava què faria sense tocar cap aparell.
+  → [logica-v2-pla.md](docs/domotica/logica-v2-pla.md)
 
 ## Privacitat
 
