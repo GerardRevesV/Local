@@ -304,6 +304,50 @@ o s'engega el guió per un temporitzador, ha de fer el mateix.
 Imatge d'HA: **3,43 GB**. Actualitzacions d'una Mint acabada d'instal·lar: **434 paquets**.
 Si això passa per la SIM del local, és un disgust. **Tot es baixa a casa.**
 
+### 🪤 Renombrar entitats sense tocar `.storage`
+
+La temptació, quan s'han de renombrar dotze entitats de cop, és editar
+`config/.storage/core.entity_registry` amb l'editor. **No es pot, i és millor així:**
+
+```
+cp: cannot create regular file 'config/.storage/core.entity_registry.bak': Permission denied
+```
+
+`.storage` és de **root** —el contenidor hi escriu com a root— i aquest usuari **no té `sudo`
+sense contrasenya**. I encara que el tingués: HA té el registre **carregat a memòria** i el
+torna a escriure en aturar-se, o sigui que una edició en calent es perd i una en fred és
+exactament el tipus de cosa que deixa un fitxer JSON a mitges.
+
+**La via bona és l'API de WebSocket**, que és literalment el que fa la interfície quan canvies
+un ID d'entitat. El testimoni de llarga durada és a `~/.ha_token` i `python3` ja porta
+`websockets` instal·lat:
+
+```python
+import asyncio, json, websockets
+TOKEN = open("/home/<usuari>/.ha_token").read().strip()
+
+async def main():
+    async with websockets.connect("ws://localhost:8123/api/websocket") as ws:
+        await ws.recv()
+        await ws.send(json.dumps({"type": "auth", "access_token": TOKEN}))
+        assert json.loads(await ws.recv())["type"] == "auth_ok"
+        await ws.send(json.dumps({"id": 1, "type": "config/entity_registry/update",
+                                  "entity_id": "switch.vell", "new_entity_id": "switch.nou"}))
+        print(await ws.recv())
+
+asyncio.run(main())
+```
+
+Amb `config/entity_registry/list` se saben els noms reals abans de tocar res, i amb
+`config/device_registry/update` (`name_by_user`) es canvia el nom del dispositiu.
+
+> ⚠️ **Renombrar parteix l'històric de l'entitat**: el que hi havia gravat amb el nom vell
+> queda orfe. Per això es fa **el mateix dia de l'emparellament** i mai dins de la sèrie.
+>
+> 📌 **I després, un reinici d'HA.** El `utility_meter` i el `history_stats` de
+> `rosada.yaml` s'enganxen a la seva font **en arrencar**: fins que no es reinicia, els
+> comptadors segueixen dient `unknown` encara que l'entitat nova ja existeixi.
+
 ---
 
 ## 9. Si s'ha de refer perquè s'ha mort el disc

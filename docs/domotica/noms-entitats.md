@@ -52,13 +52,22 @@ sensor.<zona>_<punt>_<magnitud>
 | Tapo S110E | Ventilador 2 | `switch.ventilador_2` · `sensor.ventilador_2_potencia` |
 | Tapo T300 | Inundació | `binary_sensor.soterrani_inundacio` |
 
+**L'endoll en publica nou més**, que Matter bateja sol i que en renombrar el dispositiu han
+quedat amb el mateix prefix: `sensor.deshumidificador_effective_voltage` i
+`…_effective_current` (tensió i corrent), `…_energy_exported`,
+`select.deshumidificador_power_on_behavior` —el **comportament després d'un tall**, que ha
+d'estar en `on`—, `update.deshumidificador_microprogramari`, `button.deshumidificador_identifica`
+i tres sensors de diagnòstic desactivats. **No són al conveni perquè no els fa servir ningú**;
+hi consten perquè existeixen i perquè la decisió sobre tensió i corrent és oberta.
+
 > **La nota, que fins avui faltava (21/09/2026).** Que la font sigui Matter vol dir que
 > l'aparell ha de **parlar Matter**: el hub **H110** i els **S110E** sí, i l'endoll també,
 > perquè és un **P110M** i no un P110 pelat — confirmat pel que anuncia a la xarxa
 > ([inventari.md](inventari.md)).
 >
-> ✅ **Els sis del hub ja estan renombrats** (verificat al registre d'entitats el 21/09/2026).
-> ⏳ **Falten els tres de l'endoll**, que es posen just després d'emparellar-lo.
+> ✅ **Tots renombrats** (verificat el 21/09/2026): els **sis del hub** i, amb l'emparellament
+> de l'endoll, els **dotze del P110M**. La casella A.8 queda tancada per al maquinari que hi
+> ha avui; queden els **S110E** de la Fase C.
 >
 > ⚠️ Matter bateja les entitats amb el model i un tros d'identificador
 > (`sensor.tapo_p110m_power`). **Es renombren immediatament**, abans que gravin res, i es

@@ -311,34 +311,30 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       llegida a l'app de Tapo el 21/09/2026 — per damunt de l'1.3.0 que cal perquè el consum
       surti per Matter, i **feta abans d'emparellar**, que és l'ordre que estalvia haver de
       reemparellar.
-- [ ] 🆕 🔴 **L'emparellament de l'endoll falla** *(21/09/2026)*. HA diu només «Something went
-      wrong»; el `matter-server` diu `PASESession timed out … Expected message type was 33`,
-      o sigui que **l'aparell no contesta**. Xarxa descartada: s'anuncia amb `CM=2` (finestra
-      oberta) i respon a un ping per IPv4 **i** per IPv6 d'enllaç local. Queden el codi caducat
-      —val ~15 min i un sol ús—, una sessió a mig fer, o el codi imprès en comptes del de
-      l'app. Recepta i diagnòstic:
-      [emparellar-matter.md](domotica/emparellar-matter.md#-quan-lemparellament-falla-pase-timeout)
-      → 🎯 **La causa que hi encaixa: per quina interfície surt el servidor.** L'amfitrió té
-      quatre interfícies amb adreça `fe80::` i l'endoll s'anuncia amb una d'enllaç local:
-      `--primary-interface enp1s0`, ja escrit al `docker-compose.yml`.
-      ✅ **Desplegat el 21/09/2026 a les 03:34** i verificat a la màquina: `docker inspect`
-      mostra `--primary-interface enp1s0`, el contenidor s'ha **recreat** i el hub ha tornat a
-      subscriure's. Amb ell hi ha entrat el paquet del calibratge (65 entitats) i
-      `comprova.sh` ha quedat **tot verd**. ⏳ **Queda la ronda neta de la recepta**, que
-      s'haurà de fer **des del mòbil**: el navegador no pot emparellar per Matter.
-- [ ] 🆕 **Un cop emparellat, veure si surt l'energia.** Les tres entitats han
-      de ser `switch.deshumidificador`, `sensor.deshumidificador_potencia` i
-      `sensor.deshumidificador_energia` (renombrades **abans** de gravar res): són les que
-      `rosada.yaml` ja té escrites al `utility_meter` i al `history_stats`. Si l'energia no
-      apareix, *re-interview* al dispositiu; si segueix sense sortir, **canvia la manera de
-      mesurar els kWh/dia de la Porta B** i s'ha de saber ara, no al desembre.
+- [x] ~~🆕 🔴 **L'emparellament de l'endoll falla.**~~ ✅ **Resolt el 21/09/2026 a les 03:45.**
+      Cinc intents morien amb `PASESession timed out` —l'aparell no contestava— amb la xarxa
+      ja descartada (s'anunciava amb `CM=2` i responia als pings). La causa que hi encaixava:
+      l'amfitrió té **quatre interfícies amb adreça `fe80::`** i l'endoll s'anuncia amb una
+      d'enllaç local, o sigui que el servidor sortia per on no tocava. Amb
+      `--primary-interface enp1s0` desplegat (03:34), **va entrar a la primera** com a node 9.
+      ⚠️ No és una prova controlada —també es va desendollar l'endoll—, però era l'única cosa
+      canviada al servidor.
+      → [emparellar-matter.md](domotica/emparellar-matter.md#-com-va-acabar-21092026-0345)
+- [x] ~~🆕 **Un cop emparellat, veure si surt l'energia.**~~ ✅ **Surt** *(21/09/2026)*. El
+      P110M publica per Matter `switch.deshumidificador`, `sensor.deshumidificador_potencia`
+      (W) i `sensor.deshumidificador_energia` (kWh), més tensió i corrent. Renombrades al
+      conveni el mateix dia i, després del reinici, el `utility_meter` i el `history_stats`
+      de `rosada.yaml` s'hi han enganxat: els comptadors diari i mensual ja no diuen
+      `unknown`. **Els kWh/dia de la Porta B tenen font**, en local i sense compte de Tapo.
 - [ ] 🆕 ⚠️ **Verificar si l'energia acumulada depèn d'Internet.** Es reporta que potència,
       tensió i corrent van en local però que els **kWh** necessiten que l'endoll sincronitzi
       l'hora pel núvol. Prova a casa: una hora sense sortida a Internet i mirar les dues
       entitats. Importa perquè la SIM del local caurà algun dia.
 - [ ] 🆕 ❓ **Decidir què es fa amb tensió i corrent de l'endoll:** a l'`exclude.entities` del
-      `recorder` (mai per glob) o acceptades. No fan falta per a res i es gravarien cada pocs
-      segons durant dos anys.
+      `recorder` (mai per glob) o acceptades. **Mesurat el 21/09/2026 amb un portàtil endollat:
+      ~150 files/hora cadascuna**, o sigui unes 3.600 al dia i, a 730 dies de retenció,
+      **milions de files per no res**. No és urgent —el disc té 99 GB lliures— però és una
+      decisió que val més prendre **abans** que comenci la sèrie, no després.
 - [x] ~~**Congelar també el `matter-server`** fins al 10/03/2027.~~ ✅ **Sense objecte** des del
       21/09/2026: la congelació de versions va caure amb el canvi d'objectiu. El que **es
       manté** és que va **fixat per digest** i no per etiqueta, perquè la imatge no publica

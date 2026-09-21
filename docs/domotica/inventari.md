@@ -11,7 +11,7 @@
 | Aparell | Model | Ubicació | Estat |
 |---|---|---|---|
 | Hub | **Tapo H110** ✅ *(hub IR + sub-GHz)* | corridor | Actiu |
-| Endoll intel·ligent | **Tapo P110M** ✅ *(Matter — mesura consum)* | corridor | A la xarxa; ⏳ **pendent d'emparellar a HA** |
+| Endoll intel·ligent | **Tapo P110M** ✅ *(Matter — mesura consum)* | corridor | **Actiu a HA** — node 9, mesurant |
 | **Mòduls de relé** | **2× Tapo S110E** | — | ⏳ **Comprats, sense instal·lar** |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Centre* | Actiu |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Fons* | Actiu |
@@ -31,8 +31,13 @@
 > partir del microprogramari 1.3.0** (el que hi va portar Matter 1.3). L'aparell porta la
 > **1.4.3**, llegida a l'app de Tapo. Els kWh/dia de la Porta B tenen font.
 >
-> ⏳ **El que queda és l'emparellament**, que el 21/09/2026 encara falla —vegeu
-> [emparellar-matter.md](emparellar-matter.md#-quan-lemparellament-falla-pase-timeout).
+> ✅ **Emparellat el 21/09/2026 a les 03:45** (node 9), després de dir-li al `matter-server`
+> per quina interfície ha de sortir. Publica `switch.deshumidificador`,
+> `sensor.deshumidificador_potencia` (W) i `sensor.deshumidificador_energia` (kWh) —**el
+> consum per Matter existeix**— i el `utility_meter` de `rosada.yaml` ja hi menja. El
+> comportament d'arrencada, que venia en `off`, s'ha posat a **`on`**: si no, després d'un
+> tall el deshumidificador no tornaria sol.
+> → [emparellar-matter.md](emparellar-matter.md#-com-va-acabar-21092026-0345)
 
 ### Distribució dels sensors
 
