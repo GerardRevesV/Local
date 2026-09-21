@@ -16,7 +16,8 @@ comprovar d'aquí a un any, o al soterrani a l'hivern.
     python3 tools/prova_deshumidificador.py ventilador_sol  # només moure aire, sense assecar: què gasta
     python3 tools/prova_deshumidificador.py modes        # manual / nit / roba / auto, amb el llindar al mínim
     python3 tools/prova_deshumidificador.py assecat      # quant dura el ventilador després d'aturar-se
-    python3 tools/prova_deshumidificador.py tots         # tot això seguit, menys «resposta»
+    python3 tools/prova_deshumidificador.py diposit      # en continu fins que s'omple: els litres per kWh
+    python3 tools/prova_deshumidificador.py tots         # tot això seguit, menys «resposta» i «diposit»
 
 Fa servir HA_URL i HA_TOKEN (o HA_TOKEN_FILE), com calibratge.py i tarifa.py.
 Deixa cada mostra a un CSV (--csv FITXER, per defecte a /tmp). Només
@@ -30,9 +31,10 @@ COM ES LLEGEIXEN ELS WATTS (mesurat el 21/09/2026)
   Per això els llindars són 150 W i 5 W: queden lluny de totes tres zones.
 
 ⚠️ EL COMPRESSOR MANA SOBRE LES PROVES. Cap pas no el fa arrencar i aturar en
-   menys de 5 minuts: repicar-lo el mata, i la protecció de 5 min de l'aparell
-   no ho cobreix tot (es perd si li tallen el corrent). La prova de memòria
-   només talla el corrent amb el compressor aturat de fa més de 6 minuts.
+   menys de 5 minuts: repicar-lo el mata. L'aparell té la seva protecció de
+   5 min, i en tornar el corrent també espera ~5 min (provat el 21/09/2026),
+   però les proves no s'hi recolzen. La de memòria només talla el corrent amb
+   el compressor aturat de fa més de 6 minuts.
 
 ⚠️ ES DEIXA COM ESTAVA, passi el que passi: si falla, si s'interromp amb
    Ctrl-C o si arriba SIGTERM/SIGHUP. Es restauren el mode, el llindar, la
@@ -67,7 +69,8 @@ ASSECAT = "switch.deshumidificador_assecat_intern"
 AVARIA = "binary_sensor.deshumidificador_avaria"
 POTENCIA = "sensor.deshumidificador_potencia"    # P110M, per Matter
 ENDOLL = "switch.deshumidificador"
-TOTES = (APARELL, VENTILADOR, OPERACIO, ASSECAT, AVARIA, POTENCIA, ENDOLL)
+ENERGIA = "sensor.deshumidificador_energia"      # el comptador de l'endoll (kWh)
+TOTES = (APARELL, VENTILADOR, OPERACIO, ASSECAT, AVARIA, POTENCIA, ENDOLL, ENERGIA)
 
 W_COMPRESSOR = 150
 W_VENTILADOR = 5
@@ -385,9 +388,37 @@ def exp_assecat(reg: Registre) -> None:
               f"{'—' if corre is None else f'{corre / 60:.1f} min'} després d'aturar el compressor")
 
 
+def exp_diposit(reg: Registre, max_hores: float = 16) -> None:
+    """Els litres per kWh: en continu fins que el dipòsit s'omple i l'aparell s'atura sol (codi 32).
+    Els litres els ha de mesurar algú amb una gerra: el flotador salta abans dels 3,8 L nominals.
+    ⚠️ La safata interior s'omple abans que el dipòsit: si l'aparell no ha treballat abans, el
+       primer dipòsit surt car. Es fa amb la safata ja mullada (21/09/2026)."""
+    global PAS_S
+    PAS_S = 60     # una nit sencera: una mostra per minut n'hi ha prou
+    e0 = estats()
+    kwh0 = _num(e0, ENERGIA)
+    t0 = time.time()
+    files = pas(reg, "diposit", "continu fins al codi 32", max_hores * 3600,
+                operacio("dehumidify"), mode("normal"), llindar(CONTINU), velocitat(100),
+                fins=lambda fs: fs[-1]["codi_falla"] == 32)
+    e1 = estats()
+    kwh1 = _num(e1, ENERGIA)
+    ple = bool(files) and files[-1]["codi_falla"] == 32
+    hores = (time.time() - t0) / 3600
+    comp = sum(f["classe"] == "compressor" for f in files) / len(files) if files else 0
+    hr = [f["hr"] for f in files if isinstance(f["hr"], (int, float))]
+    print("\n═══ diposit ═══")
+    print(f"  {'✅ dipòsit ple (codi 32)' if ple else '⚠️ NO s´ha omplert'} en {hores:.1f} h · compressor {comp:.0%}"
+          f" del temps · HR de l'aparell {hr[0] if hr else '—'} → {hr[-1] if hr else '—'} %")
+    if kwh0 is not None and kwh1 is not None:
+        kwh = kwh1 - kwh0
+        print(f"  energia: {kwh:.3f} kWh · litres per kWh = LITRES MESURATS / {kwh:.3f}")
+        print(f"  (amb els 3,8 L nominals, com a sostre: {3.8 / kwh:.2f} L/kWh si kWh > 0)" if kwh > 0 else "")
+
+
 EXPERIMENTS = {"resposta": exp_resposta, "memoria": exp_memoria, "operacio": exp_operacio,
                "ventilador": exp_ventilador, "ventilador_sol": exp_ventilador_sol,
-               "modes": exp_modes, "assecat": exp_assecat}
+               "modes": exp_modes, "assecat": exp_assecat, "diposit": exp_diposit}
 
 
 # ─── Marc: comprovar abans, restaurar després ────────────────────────────────
@@ -423,7 +454,8 @@ def main(argv: list[str]) -> int:
     if not noms:
         print(__doc__)
         return 1
-    triats = [n for n in EXPERIMENTS if n != "resposta"] if "tots" in noms else noms
+    # «tots» no inclou «resposta» (és la prova de punta a punta) ni «diposit» (dura una nit)
+    triats = [n for n in EXPERIMENTS if n not in ("resposta", "diposit")] if "tots" in noms else noms
     cami = Path(argv[argv.index("--csv") + 1]) if "--csv" in argv \
         else Path(f"/tmp/deshumidificador-{'-'.join(triats)}-{datetime.now():%Y%m%d-%H%M}.csv")
 
