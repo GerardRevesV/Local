@@ -346,6 +346,30 @@ template:
             {{ ns.punt }}
 
       # ─────────────────────────────────────────────────────────────────────
+      #  LA DISPERSIÓ DELS TRES PUNTS: Td més alt − Td més baix. Diu si la
+      #  humitat és general o d'un racó, que és on el deshumidificador pot
+      #  estar mal posat, i si val la pena remenar l'aire. Ja era un atribut
+      #  de la referència; com a sensor, fa estadístiques i es pot dibuixar.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: "Soterrani — dispersió del punt de rosada"
+        unique_id: soterrani_dispersio_rosada
+        default_entity_id: sensor.soterrani_dispersio_rosada
+        unit_of_measurement: "°C"
+        state_class: measurement
+        icon: mdi:arrow-expand-vertical
+        availability: >
+          {{ [ states('sensor.soterrani_fons_punt_de_rosada'),
+               states('sensor.soterrani_centre_punt_de_rosada'),
+               states('sensor.soterrani_gran_punt_de_rosada') ]
+             | select('is_number') | list | count > 1 }}
+        state: >
+          {% set v = [ states('sensor.soterrani_fons_punt_de_rosada'),
+                       states('sensor.soterrani_centre_punt_de_rosada'),
+                       states('sensor.soterrani_gran_punt_de_rosada') ]
+                     | select('is_number') | map('float') | list %}
+          {{ (v | max - v | min) | round(2) }}
+
+      # ─────────────────────────────────────────────────────────────────────
       #  LA DECISIÓ (sensor.decisio_del_soterrani) ja no és aquí: des del
       #  22/09/2026 és a packages/control.yaml, amb la lògica v2 en una macro
       #  (custom_templates/decisio.jinja) que s'avalua un sol cop.

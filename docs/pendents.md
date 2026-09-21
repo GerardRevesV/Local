@@ -182,7 +182,13 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
         corri la prova del dipòsit ni el calibratge, i datar-ho al registre d'instal·lació.
   - [ ] **Porta 1**: 24 h de `replica.py --deriva` sense cap discrepància.
   - [ ] **Fase 2 — dades i gràfics**: hores de compressor i filtre, € per tram, avisos del
-        dipòsit i de l'AUTO, vista *Aprendre*, i `tools/analisi.py` a casa.
+        dipòsit i de l'AUTO, vista *Aprendre*, i `tools/analisi.py` a casa. ✅ Codificada
+        (22/09/2026). ⏳ Desplegar-la recarregant, i **posar a zero el comptador del filtre**
+        (script) el dia que es netegi: les hores comencen a comptar quan es desplega.
+  - [ ] 🐛 **`tools/calibratge.py --descarrega` només rep 24 h**: sense `end_time`, l'API
+        d'històric de HA torna 24 h des de l'inici, o sigui **les més antigues** de les 72 que
+        demana per defecte. Trobat el 22/09/2026 escrivint `analisi.py`. Qualsevol ajust fet
+        amb `--descarrega` s'ha de refer un cop corregit.
   - [ ] **Fase 3 — actuació, apagada per defecte**: interfície dels ventiladors (relés
         virtuals), executors, i la configuració restaurada quan l'aparell torna del corrent.
   - [ ] **La setmana de base**, en mode *Llindar fix* amb `actuacio_deshumidificador` encès.
@@ -336,7 +342,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       decidides però pendents d'escriure `nit.py`.
 - [ ] Confirmar si la **càmera Tapo C200** que es va investigar era per al local.
 - [x] ~~**Decidir on viu la lògica de control** del punt de rosada.~~ ✅ **HA natiu**, i ja
-      **escrita**: `config/packages/rosada.yaml` (445 línies), amb un únic punt d'avaluació,
+      **escrita**: `config/packages/rosada.yaml` (469 línies), amb un únic punt d'avaluació,
       `sensor.decisio_del_soterrani`. *(22/09/2026: la decisió passa a
       `config/packages/control.yaml` (626 línies), amb la lògica v2.)* Node-RED, AppDaemon, pyscript i el servei propi en
       Python queden **descartats**. → [decisio-stack.md](domotica/decisio-stack.md)
