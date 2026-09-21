@@ -202,13 +202,13 @@
 
 **Sintaxis (8):** Python · bash · YAML d'HA · Jinja2 · YAML de compose (149 línies) · YAML d'ESPHome (40 línies) · SQL (40 línies dins de `nit.py`) · unitat systemd.
 
-**Fitxers que editaràs de debò: dotze.** L'estimació original deia cinc i **~635 línies**; el
+**Fitxers que editaràs de debò: tretze.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~2.150 línies**):* `packages/rosada.yaml` (**577**), `scripts/comprova.sh` (295), `tools/replica.py` (276), `scripts/prepara-host.sh` (270), `tools/valida_xifres.py` (249), `scripts/inicia-serie.sh` (167), `docker-compose.yml` (**149**), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
+- *Ja escrits (**~2.720 línies**):* `packages/rosada.yaml` (**641**), `tools/calibratge.py` (457), `tools/replica.py` (317), `scripts/comprova.sh` (302), `scripts/prepara-host.sh` (270), `tools/valida_xifres.py` (249), `scripts/inicia-serie.sh` (167), `docker-compose.yml` (**149**), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
-**~2.570 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
+**~3.140 línies en total.** La desviació més grossa és de `rosada.yaml`: les ~200 línies
 estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
 d'`utility_meter` i `history_stats`. La resta són **eines de verificació i de frontera** que
 l'estimació no preveia perquè no preveia que calguessin: comprovar el host, validar el YAML

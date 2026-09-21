@@ -109,6 +109,37 @@ input_number:
     unit_of_measurement: min
     icon: mdi:timer-lock
 
+input_boolean:
+  # ───────────────────────────────────────────────────────────────────────────
+  #  MODE CALIBRATGE
+  #
+  #  S'engega mentre els sensors estan TOTS JUNTS per calibrar-los, i es torna
+  #  a apagar en repartir-los. Mentre està encès, sensor.decisio_del_soterrani
+  #  val «calibratge» i, per tant, cap automatisme no actua: llegeixen aquella
+  #  decisió i prou (vegeu el principi d'arquitectura de dalt).
+  #
+  #  ⚠️ És un helper i per tant queda REGISTRAT a l'històric. Aquest és tot el
+  #     truc: d'aquí a un any, l'arxiu explica sol per què hi ha un tram on
+  #     cinc sensors del soterrani deien el mateix des d'una taula del menjador.
+  #     Per això es MARCA el període en comptes d'apartar-ne les dades: la
+  #     desviació entre sensors només es pot mesurar una vegada, i perdre'n la
+  #     procedència seria pitjor que tenir-la barrejada.
+  #
+  #  El procediment és a docs/domotica/calibratge.md.
+  # ───────────────────────────────────────────────────────────────────────────
+  mode_calibratge:
+    name: Mode calibratge (sensors junts)
+    icon: mdi:flask-outline
+    # ⚠️ SENSE «initial:» a posta, i aquí el motiu importa més que de costum.
+    #    Amb «initial: off» l'helper arrencaria APAGAT a cada reinici d'HA
+    #    (vegeu la nota de R2 més amunt). Enmig d'una prova de 36 h, un
+    #    desplegament o un tall de corrent l'apagarien sol: la finestra
+    #    semblaria acabada, la decisió tornaria a actuar i l'arxiu etiquetaria
+    #    malament mitja prova, sense que ningú se n'assabentés.
+    #    Sense «initial:» restaura l'estat previ. I si mai no en té cap, val
+    #    «off» o «unknown», i totes dues coses donen funcionament normal:
+    #    la fallada, si n'hi ha, cau del costat segur.
+
 input_select:
   mode_soterrani:
     name: Mode del soterrani
@@ -155,8 +186,13 @@ template:
           {{ is_number(states('sensor.soterrani_fons_temperatura'))
              and is_number(states('sensor.soterrani_fons_humitat')) }}
         state: >
-          {% set t  = states('sensor.soterrani_fons_temperatura') | float + 0.0 %}
-          {% set rh = states('sensor.soterrani_fons_humitat')     | float + 0.0 %}
+          {#- CALIBRATGE: c_t °C, i HR corregida com a c_rh_a·HR + c_rh_b.
+              (0, 1, 0) = identitat = encara SENSE calibrar. Els posa
+              tools/calibratge.py; el procediment i el rang de validesa,
+              a docs/domotica/calibratge.md. -#}
+          {% set c_t = 0.0 %}{% set c_rh_a = 1.0 %}{% set c_rh_b = 0.0 %}
+          {% set t  = (states('sensor.soterrani_fons_temperatura') | float + 0.0) + c_t %}
+          {% set rh = (states('sensor.soterrani_fons_humitat')     | float + 0.0) * c_rh_a + c_rh_b %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
@@ -171,8 +207,13 @@ template:
           {{ is_number(states('sensor.soterrani_centre_temperatura'))
              and is_number(states('sensor.soterrani_centre_humitat')) }}
         state: >
-          {% set t  = states('sensor.soterrani_centre_temperatura') | float + 0.0 %}
-          {% set rh = states('sensor.soterrani_centre_humitat')     | float + 0.0 %}
+          {#- CALIBRATGE: c_t °C, i HR corregida com a c_rh_a·HR + c_rh_b.
+              (0, 1, 0) = identitat = encara SENSE calibrar. Els posa
+              tools/calibratge.py; el procediment i el rang de validesa,
+              a docs/domotica/calibratge.md. -#}
+          {% set c_t = 0.0 %}{% set c_rh_a = 1.0 %}{% set c_rh_b = 0.0 %}
+          {% set t  = (states('sensor.soterrani_centre_temperatura') | float + 0.0) + c_t %}
+          {% set rh = (states('sensor.soterrani_centre_humitat')     | float + 0.0) * c_rh_a + c_rh_b %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
@@ -187,8 +228,13 @@ template:
           {{ is_number(states('sensor.soterrani_gran_temperatura'))
              and is_number(states('sensor.soterrani_gran_humitat')) }}
         state: >
-          {% set t  = states('sensor.soterrani_gran_temperatura') | float + 0.0 %}
-          {% set rh = states('sensor.soterrani_gran_humitat')     | float + 0.0 %}
+          {#- CALIBRATGE: c_t °C, i HR corregida com a c_rh_a·HR + c_rh_b.
+              (0, 1, 0) = identitat = encara SENSE calibrar. Els posa
+              tools/calibratge.py; el procediment i el rang de validesa,
+              a docs/domotica/calibratge.md. -#}
+          {% set c_t = 0.0 %}{% set c_rh_a = 1.0 %}{% set c_rh_b = 0.0 %}
+          {% set t  = (states('sensor.soterrani_gran_temperatura') | float + 0.0) + c_t %}
+          {% set rh = (states('sensor.soterrani_gran_humitat')     | float + 0.0) * c_rh_a + c_rh_b %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
@@ -203,8 +249,13 @@ template:
           {{ is_number(states('sensor.baixa_temperatura'))
              and is_number(states('sensor.baixa_humitat')) }}
         state: >
-          {% set t  = states('sensor.baixa_temperatura') | float + 0.0 %}
-          {% set rh = states('sensor.baixa_humitat')     | float + 0.0 %}
+          {#- CALIBRATGE: c_t °C, i HR corregida com a c_rh_a·HR + c_rh_b.
+              (0, 1, 0) = identitat = encara SENSE calibrar. Els posa
+              tools/calibratge.py; el procediment i el rang de validesa,
+              a docs/domotica/calibratge.md. -#}
+          {% set c_t = 0.0 %}{% set c_rh_a = 1.0 %}{% set c_rh_b = 0.0 %}
+          {% set t  = (states('sensor.baixa_temperatura') | float + 0.0) + c_t %}
+          {% set rh = (states('sensor.baixa_humitat')     | float + 0.0) * c_rh_a + c_rh_b %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
@@ -219,8 +270,13 @@ template:
           {{ is_number(states('sensor.exterior_temperatura'))
              and is_number(states('sensor.exterior_humitat')) }}
         state: >
-          {% set t  = states('sensor.exterior_temperatura') | float + 0.0 %}
-          {% set rh = states('sensor.exterior_humitat')     | float + 0.0 %}
+          {#- CALIBRATGE: c_t °C, i HR corregida com a c_rh_a·HR + c_rh_b.
+              (0, 1, 0) = identitat = encara SENSE calibrar. Els posa
+              tools/calibratge.py; el procediment i el rang de validesa,
+              a docs/domotica/calibratge.md. -#}
+          {% set c_t = 0.0 %}{% set c_rh_a = 1.0 %}{% set c_rh_b = 0.0 %}
+          {% set t  = (states('sensor.exterior_temperatura') | float + 0.0) + c_t %}
+          {% set rh = (states('sensor.exterior_humitat')     | float + 0.0) * c_rh_a + c_rh_b %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
@@ -327,7 +383,7 @@ template:
       # ═════════════════════════════════════════════════════════════════════
       #  L'ÚNIC PUNT D'AVALUACIÓ
       #
-      #  Estat: ventilar · deshumidificar · repos · bloquejat · sense_dades
+      #  Estat: ventilar · deshumidificar · repos · bloquejat · sense_dades · calibratge
       #  El motiu i tots els valors que l'han produït van als atributs, de
       #  manera que la decisió i la seva explicació SEMPRE són coherents.
       # ═════════════════════════════════════════════════════════════════════
@@ -335,7 +391,8 @@ template:
         unique_id: decisio_soterrani
         icon: >
           {% set s = this.state %}
-          {{ 'mdi:fan' if s == 'ventilar'
+          {{ 'mdi:flask-outline' if s == 'calibratge'
+             else 'mdi:fan' if s == 'ventilar'
              else 'mdi:air-humidifier' if s == 'deshumidificar'
              else 'mdi:cancel' if s == 'bloquejat'
              else 'mdi:help-circle-outline' if s == 'sense_dades'
@@ -346,8 +403,12 @@ template:
           {%- set t_int   = states('sensor.soterrani_centre_temperatura') -%}
           {%- set hr_ext  = states('sensor.exterior_humitat') -%}
 
+          {#- 0. CALIBRATGE: els sensors no són al seu lloc. No es decideix res. -#}
+          {%- if is_state('input_boolean.mode_calibratge', 'on') -%}
+            calibratge
+
           {#- 1. FALLADA SEGURA: sense dada fiable no es decideix res -#}
-          {%- if not (is_number(td_int) and is_number(td_ext) and is_number(t_int)) -%}
+          {%- elif not (is_number(td_int) and is_number(td_ext) and is_number(t_int)) -%}
             sense_dades
           {%- else -%}
             {%- set td_int = td_int | float -%}
@@ -393,7 +454,9 @@ template:
             {%- set td_ext = states('sensor.exterior_punt_de_rosada') -%}
             {%- set t_int  = states('sensor.soterrani_centre_temperatura') -%}
             {%- set hr_ext = states('sensor.exterior_humitat') -%}
-            {%- if not is_number(td_int) -%}
+            {%- if is_state('input_boolean.mode_calibratge', 'on') -%}
+              Mode calibratge: els sensors estan junts, no al seu lloc
+            {%- elif not is_number(td_int) -%}
               Sense punt de rosada interior fiable
             {%- elif not is_number(td_ext) -%}
               Sense punt de rosada exterior fiable
@@ -423,6 +486,7 @@ template:
           punt_mes_humit: >
             {{ state_attr('sensor.soterrani_punt_de_rosada_de_referencia', 'punt_mes_humit') }}
           mode: "{{ states('input_select.mode_soterrani') }}"
+          calibratge: "{{ states('input_boolean.mode_calibratge') }}"
           fase: "B — registra sense actuar"
 
 # ═════════════════════════════════════════════════════════════════════════════

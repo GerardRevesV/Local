@@ -86,6 +86,7 @@ docs/
     runbook-servidor.md  Refer el servidor de zero: ordres, versions i paranys
     inventari.md       Aparells existents i candidats
     noms-entitats.md   Conveni de noms d'entitat — es fixa ABANS d'emparellar
+    calibratge.md      Procediment del calibratge creuat dels cinc sensors
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE
 
@@ -102,6 +103,7 @@ tools/                 Eines que corren a casa, no al local (Python stdlib)
   replica.py           Rèplica offline de la lògica + test de deriva
   valida_yaml.py       Valida el YAML abans de desplegar
   valida_xifres.py     Comprova les xifres de línies citades als docs, abans del PR
+  calibratge.py        Calcula els desplaçaments de calibratge des de l'històric
 ```
 
 ## Dades personals — regla dura

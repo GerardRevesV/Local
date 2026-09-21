@@ -255,6 +255,30 @@ guió**, no deduïda de `docker compose config --services`. Un guió que s'adapt
 ha no s'adona mai que falta alguna cosa. `comprova.sh` ara compara les dues llistes en tots
 dos sentits i es queixa si no quadren.
 
+### 🪤 `check_config` diu que tot va bé amb la configuració trencada
+
+**Surt amb codi 0 encara que la configuració sigui invàlida.** I el text que escriu no conté
+«ERROR», ni «Failed», ni «Fatal»: diu **`Incorrect config`** i **`Invalid config for ...`**.
+
+Comprovat el 21/09/2026 posant una clau inventada a un `input_boolean` d'una còpia de la
+configuració:
+
+```
+Testing configuration at /config
+Incorrect config
+  input_boolean:
+    - Invalid config for 'input_boolean' at packages/rosada.yaml, line 132: …
+Successful config (partial)
+```
+
+Fixa't en l'última línia: **«Successful config (partial)»**. Qui només miri el codi de sortida,
+o hi busqui la paraula «error», donarà per bona una configuració que HA carregarà **a
+mitges** — i un paquet que cau a mitges és el que ja va passar amb `history_stats`, en silenci.
+
+`scripts/comprova.sh` ja busca els dos textos. **Qualsevol cosa que validi configuració —i molt
+especialment el futur `desplega.sh`— ha de fer el mateix**, perquè aquí el codi de sortida no
+serveix de res.
+
 ### 🪤 `docker compose exec -T` s'empassa l'entrada estàndard
 
 `exec -T` s'enganxa a l'entrada estàndard de qui el crida. Si el guió que el conté **arriba

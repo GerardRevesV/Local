@@ -87,8 +87,8 @@ feina i tu menys.
 | A.10 | `desplega.sh` amb totes les portes | 🤖 Jo |
 | A.11 | Compte de healthchecks.io i els dos checks | 👤 Tu |
 | A.12 | **Restauració de prova manual verificada** | 🤝 Jo escric el procediment, tu l'executes |
-| A.13 | **24 h amb tots els sensors junts** a la mateixa habitació → *offsets* | 👤 Tu |
-| A.14 | ✅ **Fet** — `scripts/comprova.sh` (295 línies): verifica d'una passada el host, la suspensió, la tapa, Docker, **els dos contenidors un per un**, HA, els sostres de memòria i Tailscale. És el que es corre **després de cada canvi al host** i abans de donar una porta per tancada | 🤖 Jo |
+| A.13 | **~36 h amb tots els sensors junts** → *offsets*. ⚠️ No són 24 h quiets: són **rampes lentes** d'humitat en els dos sentits, perquè els Tapo donen l'HR en enters i un replà mort no deixa baixar de ±0,5 %. Procediment, pressupost d'error i criteri d'acceptació a [calibratge.md](calibratge.md); el càlcul el fa `tools/calibratge.py` | 🤝 Tu el fas, jo l'ajusto |
+| A.14 | ✅ **Fet** — `scripts/comprova.sh` (302 línies): verifica d'una passada el host, la suspensió, la tapa, Docker, **els dos contenidors un per un**, HA, els sostres de memòria i Tailscale. És el que es corre **després de cada canvi al host** i abans de donar una porta per tancada | 🤖 Jo |
 | A.15 | ✅ **Fet** — `tools/valida_yaml.py` (100 línies): valida el YAML **des de casa**, abans de desplegar, sense esperar el `check_config` del contenidor | 🤖 Jo |
 | A.16 | 🔴 **Que els paràmetres sobrevisquin un reinici** ([R2](requisits.md#r2--tocar-els-paràmetres-de-lalgoritme-des-de-la-web)): provar-ho al banc de casa, decidir què es fa amb `initial:` i garantir que els `input_number` **no s'exclouen mai del `recorder`** ni de l'exportació | 🤝 Tu fas la prova de 3 min, jo corregeixo el YAML |
 | A.17 | 🔴 **Gravar la previsió des del primer dia** ([R3](requisits.md#-la-previsió-lúnica-part-que-no-té-arreglada-a-posteriori)): sensors per disparador que materialitzin el Td previst a +3 h, +12 h i +24 h. Una previsió que no es grava **no es pot reconstruir després** | 🤖 Jo |
@@ -127,10 +127,10 @@ feina i tu menys.
 | B.1c | 🆕 **Provar `tuya-local`** amb el deshumidificador: emparellar-lo a la Wi-Fi del router SIM, configuració assistida, i veure si el reconeix. Si sí, noms fixats abans, i al principi **només lectura i llindar**. Opcional, excepte si 0.2b surt malament → [inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local) | 🤝 Tu emparelles, jo configuro |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
-| B.4 | ✅ **Fet** — `packages/rosada.yaml` (577 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
+| B.4 | ✅ **Fet** — `packages/rosada.yaml` (641 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
-| B.7 | ✅ **Fet** — `tools/replica.py` (276 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
+| B.7 | ✅ **Fet** — `tools/replica.py` (317 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
 | B.8 | **Filtratge d'espuris en paral·lel, sense decidir res** ([R1](requisits.md#r1--netejar-les-lectures-espúries-sense-perdre-la-prova)): primer mesurar cadència, soroll base i pendent màxima creïble; després escriure'l. La sèrie crua **no es toca** | 🤖 Jo |
 | B.9 | **Avançar el guió de gràfics del dossier** (era D.1) i fer-hi la **correlació creuada Td soterrani ↔ Td exterior**: és la resposta continuada a *per on entra l'aire* | 🤖 Jo |
 | B.10 | Obrir `diari-de-la-serie.md` i anotar-hi els esdeveniments externs —pluges, visites, un sensor agafat amb la mà— perquè cada pic tingui explicació | 🤝 Tu aportes els fets, jo els munto |

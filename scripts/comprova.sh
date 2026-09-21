@@ -120,6 +120,13 @@ codi=$(curl -s -o /dev/null -w '%{http_code}' -m 10 http://127.0.0.1:8123 2>/dev
 # quan no hi ha ningú mirant. Comprovat el 21/09/2026: 4 s amb la redirecció,
 # més de 280 s sense.
 #
+# ⚠️ I BUSCAR-HI «Incorrect config», que no diu «ERROR» enlloc.
+#    Comprovat el 21/09/2026 amb una clau invàlida posada a posta: check_config
+#    surt amb CODI 0 i escriu «Incorrect config» i «Invalid config for ...»,
+#    sense la paraula ERROR, Failed ni Fatal. Amb el patró antic, aquest guió
+#    hauria dit «check_config net» amb la configuració rebentada. El codi de
+#    sortida no serveix per a això, i el text només si s'hi busca el que toca.
+#
 # ⚠️ Cal mirar el CODI DE SORTIDA, no només el text. Si `docker compose exec`
 # falla (contenidor mort, dimoni caigut), el missatge no conté «ERROR» ni
 # «Failed», i només buscant text s'imprimiria «check_config net» amb el
@@ -130,9 +137,9 @@ sortida=$(printf '%s' "$sortida" | sed -e 's/\x1b\[[0-9;]*m//g')
 if [ "$codi_cc" -ne 0 ]; then
   mal "check_config NO s'ha pogut executar (codi $codi_cc):"
   printf '%s\n' "$sortida" | head -2 | sed 's/^/      /'
-elif printf '%s' "$sortida" | grep -qiE 'ERROR|Failed|Fatal'; then
+elif printf '%s' "$sortida" | grep -qiE 'ERROR|Failed|Fatal|Incorrect config|Invalid config'; then
   mal "check_config amb errors:"
-  printf '%s\n' "$sortida" | grep -iE 'ERROR|Failed|Fatal' | head -3 | sed 's/^/      /'
+  printf '%s\n' "$sortida" | grep -iE 'ERROR|Failed|Fatal|Incorrect config|Invalid config' | head -3 | sed 's/^/      /'
 else
   ok "check_config net"
 fi
