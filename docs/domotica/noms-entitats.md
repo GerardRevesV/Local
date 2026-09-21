@@ -80,6 +80,10 @@ hi consten perquè existeixen i perquè la decisió sobre tensió i corrent és 
 
 ### El deshumidificador per `tuya-local` — fixat el 21/09/2026, ABANS d'afegir-lo
 
+> ✅ **Aplicat el mateix 21/09/2026:** afegit a les 18:57 i **les dotze entitats renombrades a
+> les 18:59**, abans que gravessin res que valgués la pena. El dispositiu es diu
+> *Deshumidificador Qlima*. La taula de sota és la definitiva.
+
 El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 [inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)).
 És **el mateix aparell** que alimenta el P110M, i per això comparteix el prefix
@@ -87,11 +91,24 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 
 | `entity_id` | Què és |
 |---|---|
-| `humidifier.deshumidificador` | **L'aparell**: engegat, **llindar d'HR**, mode, i l'HR que mesura ell (atribut) |
-| `sensor.deshumidificador_temperatura` | La temperatura que mesura ell, si la publica |
-| `binary_sensor.deshumidificador_avaria` | Avaria o avís. Aquí hi han de sortir el **P1** (desgebrant) i el **P2** (dipòsit ple) |
-| `fan.deshumidificador` | La velocitat del ventilador, si la publica |
-| La resta | `deshumidificador_<funció en català>`, decidit en veure què publica. El que no es faci servir, desactivat |
+| `humidifier.deshumidificador` | **L'aparell**: engegat, **llindar d'HR** (35–80 %, de 5 en 5), mode (`auto` · `normal` · `sleep` · `laundry`), i l'HR que mesura ell (atribut `current_humidity`) |
+| `sensor.deshumidificador_temperatura` | La temperatura que mesura ell (°C, en enters) |
+| `binary_sensor.deshumidificador_avaria` | Avaria (codi de falla a l'atribut `fault_code`). ⚠️ **Encara no se sap si hi surten el P1 i el P2**: vegeu la nota de sota |
+| `fan.deshumidificador` | La velocitat del ventilador |
+| `select.deshumidificador_mode_aire` | Deshumidificar · purificar · totes dues |
+| `switch.deshumidificador_silenci` · `_nit` · `_assecat_intern` | Configuració de l'aparell |
+| `select.deshumidificador_indicadors` · `_temporitzador` | Configuració de l'aparell |
+| `lock.deshumidificador_bloqueig_infantil` | El bloqueig dels botons |
+| `sensor.deshumidificador_temps_restant` | El que queda del temporitzador (min) |
+
+> **Les de configuració es graven, a posta.** Pensàvem desactivar el que no es fes servir, però
+> un canvi de mode, de silenci o de nit **explica** un canvi de rendiment, i aquestes entitats
+> només escriuen quan algú les toca: cap volum.
+>
+> ❓ **El P1 i el P2.** L'aparell publica dues dades que la configuració del D820A no coneix
+> (les **106** i **107**, totes dues a 0 el 21/09/2026). Poden ser just el desgebratge i el
+> dipòsit ple. Es mirarà quin número es mou el primer cop que l'aparell en mostri un →
+> [pendents.md](../pendents.md).
 
 > ⚠️ **Dos amos no.** Al principi, d'aquest aparell **només es llegeix i s'ajusta el llindar**.
 > Qui l'engega i l'atura per a la lògica segueix sent `switch.deshumidificador`, el P110M. Que

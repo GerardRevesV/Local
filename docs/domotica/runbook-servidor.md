@@ -262,7 +262,9 @@ dbus, i el contenidor no té `/run/dbus` a posta → falla, reintenta, falla. At
 > ([emparellar-matter.md](emparellar-matter.md)).
 
 **Com es comprova:** `docker logs --since 30m homeassistant 2>&1 | grep -c "force stop scanner"`
-ha de donar **0**. I, un cop aplicada la llista negra i reiniciat, `ls /sys/class/bluetooth`
+ha de donar **0**. *(En cada arrencada en surt igualment **un** de diferent —«Missing required permissions for
+Bluetooth management»—, perquè la integració segueix carregada per `default_config`. És d'esperar i
+només desapareixerà amb la llista negra.)* I, un cop aplicada la llista negra i reiniciat, `ls /sys/class/bluetooth`
 ha de sortir buit.
 
 ### 🪤 `docker compose ps` amaga els contenidors aturats

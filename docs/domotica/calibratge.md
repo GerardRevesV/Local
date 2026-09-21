@@ -289,3 +289,11 @@ hores. Amb sal no hi arriba; amb aigua sola, sí.
 | Data | Rang assolit | Dispersió abans → després | Notes |
 |---|---|---|---|
 | 21/09/2026 | HR 49–59 % · T 25,9–27,0 °C | **0,95 → 0,24 °C** (només desplaçament) | ~11 h a casa, marcador sense encendre. Temperatura sense correcció. **No aplicat**: falta la franja humida |
+
+> **Incidències de la tanda en marxa** (marcador encès des de les 12:09 del 21/09/2026):
+>
+> - **18:15** — el **deshumidificador** s'endolla i arrenca. ❓ Pendent de saber si és a la
+>   mateixa habitació que els sensors: ell llegia 44 % amb els sensors al 66–72 %.
+> - **18:49:41** — **reinici d'HA** per carregar `tuya-local`, decidit amb l'usuari. L'API
+>   torna al cap de **9 s**, i als cinc sensors **no hi queda cap `unavailable` gravat** ni
+>   cap salt: la rampa humida segueix llisa.
