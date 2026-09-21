@@ -9,9 +9,12 @@
 #    s'ha de fer surten d'aquell mateix resultat: no es poden desquadrar.
 #    Els automatismes NO tornen a avaluar res: llegeixen els seus atributs.
 #
-#  FASE 1: EN OMBRA. La decisió calcula i grava què FARIA. Cap automatisme
-#          d'aquí no actua sobre cap aparell: els dos interruptors d'actuació
-#          existeixen, apagats, i els executors arriben a la Fase 3.
+#  EN OMBRA PER DEFECTE. La decisió calcula i grava què FARIA. Els executors
+#  (Fase 3, al final d'aquest fitxer) només actuen sobre un aparell si el seu
+#  interruptor és encès: input_boolean.actuacio_deshumidificador i
+#  input_boolean.actuacio_ventiladors. Apagats, no toquen res.
+#  Els ventiladors, a més, van per una interfície: el fitxer
+#  custom_templates/ventiladors.jinja és l'únic que diu quins relés són.
 #
 #  La física (punts de rosada, ΔTd, HR màxima, marge) és a rosada.yaml.
 #
@@ -190,6 +193,18 @@ input_number:
     unit_of_measurement: min
     icon: mdi:timer-pause
 
+  # Principi 6 de la v2: cap engegada dels ventiladors no dura «per sempre».
+  # Després, el temps mínim aturats, i si la decisió els segueix volent,
+  # tornen a engegar. És el cicle que farà el temporitzador propi del S110E,
+  # si en té (pendents.md): el dia que se sàpiga, que coincideixin.
+  ventiladors_max_minuts:
+    name: Engegada màxima dels ventiladors
+    min: 15
+    max: 480
+    step: 5
+    unit_of_measurement: min
+    icon: mdi:timer-stop
+
   # Fins a quina versió s'han posat els valors de partida (vegeu l'automatisme
   # «parametres_valors_de_partida»). Sense estat previ val 0: tots per posar.
   parametres_versio:
@@ -214,6 +229,20 @@ input_boolean:
   actuacio_ventiladors:
     name: Actuar sobre els ventiladors
     icon: mdi:fan
+
+  # ───────────────────────────────────────────────────────────────────────────
+  #  ELS RELÉS DE MENTIDA, fins als S110E (Fase 5). Són els que anomena
+  #  custom_templates/ventiladors.jinja —l'únic lloc que diu quins relés són—,
+  #  perquè tota la cadena es pugui provar sense maquinari. Encendre'ls a mà
+  #  no fa res: no hi ha res connectat.
+  # ───────────────────────────────────────────────────────────────────────────
+  ventilador_1_virtual:
+    name: Ventilador 1 (relé de mentida)
+    icon: mdi:fan-alert
+
+  ventilador_2_virtual:
+    name: Ventilador 2 (relé de mentida)
+    icon: mdi:fan-alert
 
 
 input_select:
@@ -421,14 +450,19 @@ template:
   # ───────────────────────────────────────────────────────────────────────────
   #  MINUTS DE VENTILACIÓ D'AVUI — per a la renovació d'aire, i per a la
   #  pregunta de la Porta B: quantes hores hauria ventilat.
-  #  Fase 1: els de la decisió (el que HAURIA fet). A la Fase 3, quan
-  #  s'actuï, comptarà els relés de debò.
+  #  En ombra, els de la decisió (el que HAURIA fet). Amb l'actuació dels
+  #  ventiladors encesa, els dels relés: el que ha passat de debò.
   #  Un comptador per disparador i no un history_stats: es recarrega igual, i
   #  compta exactament el que veu la decisió, minut a minut.
   # ───────────────────────────────────────────────────────────────────────────
   - triggers:
       - trigger: time_pattern
         minutes: "/1"
+    variables:
+      reals: "{{ is_state('input_boolean.actuacio_ventiladors', 'on') }}"
+      en_marxa: >
+        {{ is_state('binary_sensor.ventiladors_en_marxa', 'on') if reals
+           else is_state('binary_sensor.decisio_ventiladors', 'on') }}
     sensor:
       - name: "Ventilació — minuts avui"
         unique_id: ventilacio_minuts_avui
@@ -439,13 +473,216 @@ template:
         state: >
           {% set avui = now().date().isoformat() %}
           {% set previ = this.state | float(0) if this.attributes.get('dia') == avui else 0 %}
-          {{ (previ + (1 if is_state('binary_sensor.decisio_ventiladors', 'on') else 0)) | int }}
+          {{ (previ + (1 if en_marxa else 0)) | int }}
         attributes:
           dia: "{{ now().date().isoformat() }}"
-          font: "la decisió: els minuts que hauria ventilat"
+          font: >
+            {{ 'els relés: el que ha ventilat' if reals
+               else 'la decisió: els minuts que hauria ventilat' }}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  #  ELS VENTILADORS, VISTOS DES DE FORA — per la interfície (ventiladors.jinja)
+  #  Amb potències (els S110E), «en marxa» es llegeix als WATTS; si en falta
+  #  alguna, o mentre siguin virtuals, als relés.
+  # ───────────────────────────────────────────────────────────────────────────
+  - binary_sensor:
+      - name: "Ventiladors — en marxa"
+        unique_id: ventiladors_en_marxa
+        default_entity_id: binary_sensor.ventiladors_en_marxa
+        device_class: running
+        icon: mdi:fan
+        state: >
+          {% from 'ventiladors.jinja' import RELES, POTENCIES, W_MINIM %}
+          {% set w = POTENCIES | map('states') | select('is_number') | map('float') | list %}
+          {% if POTENCIES | count > 0 and w | count == POTENCIES | count %}
+            {{ w | sum > W_MINIM }}
+          {% else %}
+            {{ RELES | select('is_state', 'on') | list | count > 0 }}
+          {% endif %}
+        attributes:
+          reles: "{% from 'ventiladors.jinja' import RELES %}{{ RELES }}"
+          virtuals: >
+            {% from 'ventiladors.jinja' import RELES %}
+            {{ RELES | select('search', '_virtual$') | list | count > 0 }}
+          font: >
+            {% from 'ventiladors.jinja' import POTENCIES %}
+            {% set w = POTENCIES | map('states') | select('is_number') | list %}
+            {{ 'watts' if POTENCIES | count > 0 and w | count == POTENCIES | count else 'relés' }}
+    sensor:
+      - name: "Ventiladors — potència"
+        unique_id: ventiladors_potencia
+        default_entity_id: sensor.ventiladors_potencia
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        availability: >
+          {% from 'ventiladors.jinja' import POTENCIES %}
+          {{ POTENCIES | count > 0
+             and POTENCIES | map('states') | select('is_number') | list | count == POTENCIES | count }}
+        state: >
+          {% from 'ventiladors.jinja' import POTENCIES %}
+          {{ POTENCIES | map('states') | map('float') | sum | round(1) }}
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  AUTOMATISMES — cap no actua sobre cap aparell
+#  SCRIPTS — L'ÚNICA PORTA CAP ALS APARELLS (Fase 3)
+#  Només els criden els executors (més avall) i, si cal, algú a mà.
+# ═════════════════════════════════════════════════════════════════════════════
+script:
+  # Els relés, pel nom que diu ventiladors.jinja. homeassistant.turn_on/off
+  # serveix igual per als input_boolean d'avui que per als switch dels S110E.
+  ventiladors_engega:
+    alias: "Ventiladors — engega"
+    icon: mdi:fan
+    mode: queued
+    fields:
+      motiu:
+        description: Per què, per al registre
+    sequence:
+      - action: homeassistant.turn_on
+        target:
+          entity_id: "{% from 'ventiladors.jinja' import RELES %}{{ RELES }}"
+      - action: logbook.log
+        data:
+          name: Ventiladors
+          message: "engegats: {{ motiu | default('a mà') }}"
+
+  ventiladors_atura:
+    alias: "Ventiladors — atura"
+    icon: mdi:fan-off
+    mode: queued
+    fields:
+      motiu:
+        description: Per què, per al registre
+    sequence:
+      - action: homeassistant.turn_off
+        target:
+          entity_id: "{% from 'ventiladors.jinja' import RELES %}{{ RELES }}"
+      - action: logbook.log
+        data:
+          name: Ventiladors
+          message: "aturats: {{ motiu | default('a mà') }}"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  #  EL DESHUMIDIFICADOR, A LA CONFIGURACIÓ QUE DIU LA DECISIÓ
+  #  Quines ordres i en quin ordre, ho diu ordres_deshumidificador()
+  #  (executors.jinja, amb rèplica i prova contra HA). Aquí només s'executen:
+  #  · cada una, NOMÉS si l'aparell encara no hi és (l'aparell canvia coses
+  #    tot sol uns segons després d'una ordre, i cada ordre és un xiulet);
+  #  · comprovant-la, i fins a TRES intents (deshumidificador.md: l'ordre de
+  #    restaurar importa, i cal verificar cada pas i repetir-lo);
+  #  · i al final, si encara no quadra, un avís.
+  #  «restart»: una configuració nova passa per davant d'una a mig aplicar.
+  # ───────────────────────────────────────────────────────────────────────────
+  deshumidificador_aplica:
+    alias: "Deshumidificador — aplica la configuració de la decisió"
+    icon: mdi:air-humidifier
+    mode: restart
+    fields:
+      desitjat:
+        description: "{'llindar': 55, 'mode_aparell': 'normal', 'velocitat': 100}"
+    sequence:
+      - variables:
+          ordres: >
+            {% from 'executors.jinja' import ordres_deshumidificador %}
+            {{ ordres_deshumidificador(desitjat, {
+                 'engegat': is_state('humidifier.deshumidificador', 'on'),
+                 'operacio': states('select.deshumidificador_mode_aire'),
+                 'mode': state_attr('humidifier.deshumidificador', 'mode'),
+                 'llindar': state_attr('humidifier.deshumidificador', 'humidity'),
+                 'velocitat': state_attr('fan.deshumidificador', 'percentage') }) | from_json }}
+      - repeat:
+          for_each: "{{ ordres }}"
+          sequence:
+            - variables:
+                ordre: "{{ repeat.item[0] }}"
+                valor: "{{ repeat.item[1] }}"
+            - repeat:
+                sequence:
+                  - if:
+                      - condition: template
+                        value_template: >
+                          {% from 'executors.jinja' import aplicada %}{{ aplicada(ordre, valor) != 'si' }}
+                    then:
+                      - choose:
+                          - conditions: "{{ ordre == 'engega' }}"
+                            sequence:
+                              - action: humidifier.turn_on
+                                target:
+                                  entity_id: humidifier.deshumidificador
+                          - conditions: "{{ ordre == 'operacio' }}"
+                            sequence:
+                              - action: select.select_option
+                                target:
+                                  entity_id: select.deshumidificador_mode_aire
+                                data:
+                                  option: "{{ valor }}"
+                          - conditions: "{{ ordre == 'mode' }}"
+                            sequence:
+                              - action: humidifier.set_mode
+                                target:
+                                  entity_id: humidifier.deshumidificador
+                                data:
+                                  mode: "{{ valor }}"
+                          - conditions: "{{ ordre == 'llindar' }}"
+                            sequence:
+                              - action: humidifier.set_humidity
+                                target:
+                                  entity_id: humidifier.deshumidificador
+                                data:
+                                  humidity: "{{ valor | int }}"
+                          - conditions: "{{ ordre == 'velocitat' }}"
+                            sequence:
+                              - action: fan.set_percentage
+                                target:
+                                  entity_id: fan.deshumidificador
+                                data:
+                                  percentage: "{{ valor | int }}"
+                      - wait_template: >
+                          {% from 'executors.jinja' import aplicada %}{{ aplicada(ordre, valor) == 'si' }}
+                        timeout: "00:00:20"
+                        continue_on_timeout: true
+                until:
+                  - condition: template
+                    value_template: >
+                      {% from 'executors.jinja' import aplicada %}
+                      {{ aplicada(ordre, valor) == 'si' or repeat.index >= 3 }}
+      # L'aparell canvia coses sol uns segons després: es mira al cap d'una estona.
+      - delay: "00:00:10"
+      - variables:
+          pendents: >
+            {% from 'executors.jinja' import ordres_deshumidificador %}
+            {{ ordres_deshumidificador(desitjat, {
+                 'engegat': is_state('humidifier.deshumidificador', 'on'),
+                 'operacio': states('select.deshumidificador_mode_aire'),
+                 'mode': state_attr('humidifier.deshumidificador', 'mode'),
+                 'llindar': state_attr('humidifier.deshumidificador', 'humidity'),
+                 'velocitat': state_attr('fan.deshumidificador', 'percentage') }) | from_json }}
+      - if:
+          - condition: template
+            value_template: "{{ pendents | count > 0 }}"
+        then:
+          - action: persistent_notification.create
+            data:
+              notification_id: deshumidificador_aplica
+              title: "El deshumidificador no ha agafat la configuració"
+              message: >
+                Després de tres intents per ordre, encara hi falta: {{ pendents }}. Es tornarà a
+                provar en el repàs de cada 15 minuts. Si persisteix, mirar-lo (mode AUTO o Roba
+                des de l'app? sense connexió?).
+        else:
+          - action: persistent_notification.dismiss
+            data:
+              notification_id: deshumidificador_aplica
+      - action: logbook.log
+        data:
+          name: Deshumidificador
+          message: >
+            {{ 'aplicat' if pendents | count == 0 else 'a mitges' }}: {{ desitjat }}
+            ({{ ordres | count }} ordre(s): {{ ordres | map('first') | join(', ') }})
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  AUTOMATISMES — els de dalt no toquen cap aparell; els executors, al final,
+#  només si l'interruptor d'actuació de l'aparell és encès.
 # ═════════════════════════════════════════════════════════════════════════════
 automation:
   # ───────────────────────────────────────────────────────────────────────────
@@ -469,7 +706,7 @@ automation:
       - platform: event
         event_type: automation_reloaded
     variables:
-      ultima: 1
+      ultima: 2
       versio: "{{ states('input_number.parametres_versio') | int(0) }}"
     condition:
       - condition: template
@@ -537,6 +774,14 @@ automation:
           - service: input_number.set_value
             target: { entity_id: input_number.min_off_ventilador }
             data: { value: 10 }
+      # ── Versió 2 (22/09/2026): la Fase 3, els executors
+      - if:
+          - condition: template
+            value_template: "{{ versio < 2 }}"
+        then:
+          - service: input_number.set_value
+            target: { entity_id: input_number.ventiladors_max_minuts }
+            data: { value: 120 }
       - service: input_number.set_value
         target:
           entity_id: input_number.parametres_versio
@@ -624,3 +869,158 @@ automation:
             {{ states.input_select.mode_soterrani.last_changed
                | as_local | as_timestamp | timestamp_custom('%d/%m a les %H:%M') }}.
           notification_id: tot_aturat
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  #  ELS EXECUTORS (Fase 3) — fan que els aparells facin el que diu la decisió.
+  #  No decideixen res: el QUÈ és de sensor.decisio_del_soterrani, i el COM,
+  #  de les macros d'executors.jinja. Cadascun, NOMÉS amb el seu interruptor.
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # ── El deshumidificador ──────────────────────────────────────────────────
+  #  Quan canvia el que vol la decisió; quan s'encén l'actuació; quan arrenca
+  #  HA; QUAN L'APARELL TORNA DEL CORRENT —els watts, no tuya-local, que no
+  #  se n'assabenta: el 22/09/2026 va tornar d'un tall llarg amb la
+  #  configuració de fàbrica (deshumidificador.md)—; quan es buida el
+  #  dipòsit; i cada 15 minuts, per si algú l'ha tocat des de l'app o els
+  #  botons. Si ja és on toca, no s'envia res: cada ordre és un xiulet.
+  - id: executa_deshumidificador
+    alias: "Executa — el deshumidificador, a la configuració de la decisió"
+    mode: queued
+    max: 3
+    trigger:
+      - platform: state
+        entity_id: sensor.decisio_del_soterrani
+        attribute: llindar
+        id: decisio
+      - platform: state
+        entity_id: sensor.decisio_del_soterrani
+        attribute: mode_aparell
+        id: decisio
+      - platform: state
+        entity_id: sensor.decisio_del_soterrani
+        attribute: velocitat
+        id: decisio
+      - platform: state
+        entity_id: input_boolean.actuacio_deshumidificador
+        to: "on"
+        id: actuacio
+      - platform: homeassistant
+        event: start
+        id: arrenca
+      - platform: numeric_state
+        entity_id: sensor.deshumidificador_potencia
+        above: 0.5
+        id: torna_corrent
+      - platform: state
+        entity_id: binary_sensor.deshumidificador_avaria
+        attribute: fault_code
+        to: 0
+        id: buidat
+      - platform: time_pattern
+        minutes: "/15"
+        id: repas
+    condition:
+      - condition: state
+        entity_id: input_boolean.actuacio_deshumidificador
+        state: "on"
+    action:
+      # En arrencar HA o en tornar el corrent, tuya-local triga a reconnectar
+      # i fins llavors mostra l'últim estat que coneixia, no el de debò. I
+      # l'aparell mateix espera ~5 min abans d'engegar el compressor.
+      - if:
+          - condition: template
+            value_template: "{{ trigger.id in ['arrenca', 'torna_corrent'] }}"
+        then:
+          - delay: "00:03:00"
+      - variables:
+          bloqueig: >
+            {% from 'executors.jinja' import bloqueig_deshumidificador %}
+            {{ bloqueig_deshumidificador({
+                 'actuacio': is_state('input_boolean.actuacio_deshumidificador', 'on'),
+                 'llindar': state_attr('sensor.decisio_del_soterrani', 'llindar'),
+                 'potencia': states('sensor.deshumidificador_potencia') | float(none),
+                 'codi': state_attr('binary_sensor.deshumidificador_avaria', 'fault_code') | int(0),
+                 'estat': states('humidifier.deshumidificador') }) | trim }}
+          desitjat: >
+            {{ {'llindar': state_attr('sensor.decisio_del_soterrani', 'llindar'),
+                'mode_aparell': state_attr('sensor.decisio_del_soterrani', 'mode_aparell'),
+                'velocitat': state_attr('sensor.decisio_del_soterrani', 'velocitat')} }}
+          ordres: >
+            {% from 'executors.jinja' import ordres_deshumidificador %}
+            {{ ordres_deshumidificador(desitjat, {
+                 'engegat': is_state('humidifier.deshumidificador', 'on'),
+                 'operacio': states('select.deshumidificador_mode_aire'),
+                 'mode': state_attr('humidifier.deshumidificador', 'mode'),
+                 'llindar': state_attr('humidifier.deshumidificador', 'humidity'),
+                 'velocitat': state_attr('fan.deshumidificador', 'percentage') }) | from_json }}
+      - condition: template
+        value_template: "{{ bloqueig == '' and ordres | count > 0 }}"
+      - action: script.deshumidificador_aplica
+        data:
+          desitjat: "{{ desitjat }}"
+
+  # ── Els ventiladors ─────────────────────────────────────────────────────
+  #  Cada minut (al segon 45, després de la decisió del segon 30) i quan
+  #  canvia el que vol la decisió. El que s'hi fa ho diu accio_ventiladors():
+  #  temps mínims d'engegada i d'aturada, i cap engegada més llarga que
+  #  ventiladors_max_minuts, ni tan sols quan la decisió diu que no es toquin.
+  - id: executa_ventiladors
+    alias: "Executa — els ventiladors, com diu la decisió"
+    mode: single
+    max_exceeded: silent
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.decisio_ventiladors
+      - platform: time_pattern
+        minutes: "/1"
+        seconds: 45
+      - platform: state
+        entity_id: input_boolean.actuacio_ventiladors
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.actuacio_ventiladors
+        state: "on"
+    action:
+      - variables:
+          a: >
+            {% from 'executors.jinja' import accio_ventiladors %}
+            {% set d = states('binary_sensor.decisio_ventiladors') %}
+            {% set rel = states.binary_sensor.ventiladors_en_marxa %}
+            {{ accio_ventiladors({
+                 'vol': true if d == 'on' else (false if d == 'off' else none),
+                 'en_marxa': is_state('binary_sensor.ventiladors_en_marxa', 'on'),
+                 'minuts': ((now() - rel.last_changed).total_seconds() / 60) if rel else 0,
+                 'min_on': states('input_number.min_on_ventilador') | float(12),
+                 'min_off': states('input_number.min_off_ventilador') | float(10),
+                 'max': states('input_number.ventiladors_max_minuts') | float(120) }) | from_json }}
+      - choose:
+          - conditions: "{{ a.accio == 'engega' }}"
+            sequence:
+              - action: script.ventiladors_engega
+                data:
+                  motiu: "{{ a.motiu }}"
+          - conditions: "{{ a.accio == 'atura' }}"
+            sequence:
+              - action: script.ventiladors_atura
+                data:
+                  motiu: "{{ a.motiu }}"
+
+  # En apagar l'actuació, els ventiladors que HA havia engegat s'aturen: si
+  # no, es quedarien engegats «per sempre» (principi 6).
+  - id: ventiladors_actuacio_apagada
+    alias: "Executa — en apagar l'actuació, els ventiladors s'aturen"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: input_boolean.actuacio_ventiladors
+        from: "on"
+        to: "off"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.ventiladors_en_marxa
+        state: "on"
+    action:
+      - action: script.ventiladors_atura
+        data:
+          motiu: "s'ha apagat l'actuació"

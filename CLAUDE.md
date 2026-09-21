@@ -103,6 +103,8 @@ config/                Configuració de Home Assistant (es desplega al local)
   packages/deshumidificador.yaml  Estat real pels watts, hores, filtre i avisos
   custom_templates/tarifa.jinja  El calendari de trams i els preus — l'ÚNIC lloc
   custom_templates/decisio.jinja La lògica v2, en una macro que només crida la decisió
+  custom_templates/executors.jinja  Com s'hi arriba: ordres al deshumidificador, ventiladors
+  custom_templates/ventiladors.jinja  L'ÚNIC lloc que diu quins relés són els ventiladors
 docker-compose.yml     Els DOS contenidors: HA (versió fixada) i matter-server
                        (digest fixat). Matter, perquè «tplink» rebutja el hub
 scripts/               Guions per al host del local (bash)
