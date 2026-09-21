@@ -318,6 +318,14 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       —val ~15 min i un sol ús—, una sessió a mig fer, o el codi imprès en comptes del de
       l'app. Recepta i diagnòstic:
       [emparellar-matter.md](domotica/emparellar-matter.md#-quan-lemparellament-falla-pase-timeout)
+      → 🎯 **La causa que hi encaixa: per quina interfície surt el servidor.** L'amfitrió té
+      quatre interfícies amb adreça `fe80::` i l'endoll s'anuncia amb una d'enllaç local:
+      `--primary-interface enp1s0`, ja escrit al `docker-compose.yml`.
+      ✅ **Desplegat el 21/09/2026 a les 03:34** i verificat a la màquina: `docker inspect`
+      mostra `--primary-interface enp1s0`, el contenidor s'ha **recreat** i el hub ha tornat a
+      subscriure's. Amb ell hi ha entrat el paquet del calibratge (65 entitats) i
+      `comprova.sh` ha quedat **tot verd**. ⏳ **Queda la ronda neta de la recepta**, que
+      s'haurà de fer **des del mòbil**: el navegador no pot emparellar per Matter.
 - [ ] 🆕 **Un cop emparellat, veure si surt l'energia.** Les tres entitats han
       de ser `switch.deshumidificador`, `sensor.deshumidificador_potencia` i
       `sensor.deshumidificador_energia` (renombrades **abans** de gravar res): són les que

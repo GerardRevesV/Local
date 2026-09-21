@@ -94,7 +94,7 @@ ho delata:
 | # | On | Què |
 |---|---|---|
 | 1 | **App de Tapo** | L'endoll → engranatge de configuració → **Matter** → *afegir-lo a una altra plataforma* / *vincular a altres plataformes*. En surten un **QR i 11 xifres noves**, amb compte enrere |
-| 2 | **HA → Afegeix dispositiu → Matter** | Quan pregunti si l'aparell **ja és a una altra app**, digues-li que **sí**: és el que fa que esperi un codi de compartició i no el de fàbrica |
+| 2 | **App Companion d'HA → Afegeix dispositiu → Matter** | ⚠️ **Des del mòbil: el navegador no ho pot fer** (vegeu [Des del Windows o des de l'Android?](#-des-del-windows-o-des-de-landroid)). Quan pregunti si l'aparell **ja és a una altra app**, digues-li que **sí** |
 | 3 | **El codi nou** | El de l'app, **no** el de l'etiqueta |
 | 4 | Si s'acaba el compte enrere | No es reaprofita: se'n genera un altre i es torna a començar |
 
@@ -102,6 +102,12 @@ ho delata:
 > per **mDNS i IPv6** i l'emparellament és *on-network*. El BLE només cal en el cas del
 > parpelleig, quan encara se li han de passar les credencials de la xarxa. Per al servidor,
 > igual: `/run/dbus` segueix sense fer falta en cap dels dos casos.
+
+> 🎯 **I el que més importa: el LED no diu si la finestra d'emparellament és oberta.** Tapo no
+> el canvia quan l'app comparteix l'aparell. El senyal de debò és el **`CM=2`** de
+> l'`avahi-browse` —vegeu [Descartar la xarxa](#descartar-la-xarxa-en-tres-ordres)—, i el
+> 21/09 hi era. Quan l'emparellament falla, doncs, **mirar el LED no hi afegeix informació**:
+> l'estat de l'aparell ja està descartat com a causa.
 
 > ⚠️ **No el restauris de fàbrica per tornar al parpelleig.** Funciona, però perdries el Wi-Fi
 > i la configuració de l'app —i amb ella **la via d'actualitzar el microprogramari**— per no
@@ -242,6 +248,26 @@ Per això el `matter-server` té una opció que es diu **exactament això**:
 arguments del `CMD` per defecte de la imatge al davant, que `command:` els substitueix
 sencers.
 
+> 🪤 **I AIXÒ NO FA RES FINS QUE ES DESPLEGA.** Comprovat el **21/09/2026**, després
+> d'escriure-ho: el contenidor que corria al servidor seguia amb els arguments vells
+>
+> ```bash
+> ssh local-ha "docker inspect matter-server --format '{{.Args}}'"
+> # → [--storage-path /data --paa-root-cert-dir /data/credentials]   ← hi falta la interfície
+> ```
+>
+> …perquè el repositori del servidor anava **quatre commits enrere**. Escriure-ho al compost
+> i tornar a provar l'emparellament és **reintentar amb el mateix programa**. La correcció
+> entra així, i `up -d` **recrea**, que és l'únic que aplica un `command:` nou:
+>
+> ```bash
+> ssh local-ha "cd ~/Local && git pull --ff-only && docker compose up -d && bash scripts/comprova.sh"
+> ```
+>
+> Recrear el `matter-server` **no perd cap emparellament** —les claus són a `./matter-data`,
+> que és un volum—, però el **hub queda uns segons desconnectat** i torna sol. Verifica amb
+> el mateix `docker inspect` que els arguments nous hi són **abans** de tornar a provar-ho.
+
 > **Per què el hub no va patir-ho:** el H110 s'anuncia amb la seva **adreça de la xarxa**
 > (`192.168.1.100`), no amb una d'enllaç local. Quan l'adreça és normal, no hi ha cap
 > interfície a triar i el problema no apareix. És el tipus d'error que només es veu amb
@@ -249,38 +275,31 @@ sencers.
 
 ### 🪟 Des del Windows o des de l'Android?
 
-**Des del navegador, i prou**, mentre l'aparell **ja sigui a la Wi-Fi**: és el cas d'aquí, i
-per això HA fa `commission_on_network`. L'app Companion d'Android **no és obligatòria**.
+**Des del navegador no es pot. Punt.** Comprovat el 21/09/2026: el navegador obre el diàleg
+*«Afegeix dispositiu Matter»* i l'únic que hi diu és
 
-L'**Android** cal quan l'aparell **encara no és a cap xarxa** —acabat de treure de la caixa o
-de fàbrica—, perquè llavors algú li ha de passar les credencials de la Wi-Fi per **Bluetooth**,
-i això ho fa el mòbil.
+> *«Has d'utilitzar l'aplicació Home Assistant Companion al mòbil per afegir dispositius
+> Matter»*
 
-> 🎯 **Però com a pla B val la pena.** Quan s'empara des de l'app d'Android, qui fa la
-> conversa amb l'aparell és **el mòbil**, no el servidor: no depèn ni de la interfície ni de
-> l'IPv6 d'enllaç local del portàtil. Si el camí del navegador segueix fallant, el del mòbil
-> **és un camí diferent de debò**, no el mateix intent repetit.
+amb dos codis QR per baixar-la. **No hi ha casella per escriure el codi**, tant se val que
+l'aparell ja sigui a la Wi-Fi.
 
-### 🟢 I el LED? Verd fix, i no és el senyal que busques
+⚠️ **Això corregeix el que aquest document deia abans** —que el navegador servia i el mòbil era
+opcional—. És al revés: **l'app Companion és l'única porta**, i el que canvia amb l'aparell ja
+connectat no és qui l'obre, sinó què passa a dins:
 
-**No ha de parpellejar.** En aquest cas el que toca és **verd fix**:
+| Estat de l'aparell | Qui fa què |
+|---|---|
+| **Ja a la Wi-Fi** (verd fix) | L'app passa el codi a Home Assistant i **és el servidor** qui parla amb l'aparell per la xarxa: `commission_on_network`. El BLE no hi entra |
+| **Acabat de treure de la caixa o de fàbrica** (parpelleja) | L'app fa la feina pel seu compte per **Bluetooth**: li passa les credencials de la Wi-Fi i després el lliura a HA |
 
-| LED | Vol dir | Aquí |
-|---|---|---|
-| **Verd fix** | Configurat i connectat a la Wi-Fi | ✅ **És l'estat bo.** És justament el que fa possible el `commission_on_network` que HA prova |
-| **Ambre i verd alternats** | **De fàbrica**, mai configurat: s'anuncia per BLE esperant que algú li passi les credencials de la xarxa | ❌ Voldria dir que **no és a la Wi-Fi** — i llavors el camí de la xarxa no existiria |
-| **Ambre** sol, fix o parpellejant | No arriba a la Wi-Fi | ❌ Primer, la xarxa |
-
-> 🎯 **I el que importa més: el LED no diu si la finestra d'emparellament és oberta.** Tapo no
-> el canvia quan l'app comparteix l'aparell amb una altra plataforma. El senyal de debò és el
-> **`CM=2`** de l'`avahi-browse` de més amunt — i el 21/09 hi era. O sigui que **l'estat de
-> l'aparell ja està descartat com a causa**, i mirar el LED no hi afegirà res.
-
-> ⚠️ **Per això no el restauris de fàbrica per fer-lo parpellejar.** Perdries la Wi-Fi i el fil
-> amb l'app de Tapo —que és **l'única via d'actualitzar el microprogramari** sense
-> reemparellar— a canvi de res, perquè la finestra ja s'obre bé. Del pla B de l'**app
-> Companion**, el que val no és el Bluetooth: és que **qui parla amb l'aparell és el mòbil i
-> no el servidor**. I això s'aconsegueix **sense esborrar res**.
+> 🎯 **Per què això importa aquí:** amb l'aparell ja connectat, engegar-ho des del mòbil **no
+> esquiva el servidor** —la conversa la segueix fent ell—, i per tant **no esquiva el problema
+> de la interfície**. Els cinc intents fallits del 21/09 es van fer des del mòbil i tots van
+> morir al servidor.
+>
+> El camí que **sí** que esquiva el servidor és el de la segona fila: **de fàbrica**, amb el
+> parpelleig i el QR de l'etiqueta. Per això és el pla B de debò quan tota la resta falla.
 
 ### El que queda, i què s'hi fa
 
@@ -291,7 +310,7 @@ Si l'aparell hi és, s'anuncia i respon a un ping però **no contesta l'emparell
 |---|---|
 | **El codi ja ha caducat** | El codi que dona l'app de Tapo **val ~15 minuts i un sol ús**. Quan venç, hi ha aparells que **segueixen anunciant `CM=2`** encara que la finestra ja estigui tancada: sembla que estigui a punt i no ho està |
 | **Una sessió a mig fer** | Matter només admet **una** sessió d'emparellament alhora. Un intent que ha fallat pot deixar l'aparell ocupat, i el següent el troba «en estat incorrecte» |
-| **Codi imprès en comptes del de l'app** | El de l'etiqueta és el de fàbrica. Un cop l'aparell és a l'app de Tapo, **el que val és el que genera l'app** en compartir-lo amb una altra plataforma |
+| ~~**Codi imprès en comptes del de l'app**~~ | ❌ **Descartat el 21/09/2026 per a aquest endoll.** Quan se li demana el codi per a una altra plataforma, l'app de Tapo **dona el mateix de l'etiqueta**: senyal que la xarxa Matter de l'aparell **segueix verge** —el Tapo el governa amb el seu protocol propi— i que, per tant, **el codi de fàbrica és el bo**. Amb altres marques, i amb aparells ja emparellats a una altra xarxa Matter, el codi temporal sí que és una altra cosa |
 
 **La recepta, i en aquest ordre:**
 
