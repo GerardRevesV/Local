@@ -63,11 +63,11 @@
 
     Totes les fronteres de la 2.0TD cauen en hora en punt, o sigui que
     s'avalua el tram de cada franja d'una hora sencera pel seu punt mig.
-    Amb una mostra per hora, l'interval és una sola franja i la fracció
-    val 1 en un sol tram: exacte. Només quan hi ha un forat (HA aturat,
-    l'endoll sense resposta) l'interval n'agafa més d'una, i llavors
-    suposa consum uniforme dins del forat, que és el millor que es pot
-    dir sense dades.
+    Amb mostres cada 5 minuts, l'interval cau dins d'una franja i la
+    fracció val 1 en un sol tram: exacte. Només quan n'agafa més d'una
+    (HA aturat, l'endoll sense resposta, el comptador quiet estona)
+    suposa consum uniforme dins de l'interval, que és el millor que es
+    pot dir sense dades.
 
     Es treballa en segons UNIX a posta: així el canvi d'hora no pot
     descomptar res (i a més cau sempre en diumenge de matinada, en vall).

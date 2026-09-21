@@ -100,7 +100,7 @@ hi consten perquè existeixen i perquè la decisió sobre tensió i corrent és 
 |---|---|
 | `sensor.tarifa_periode` | Tram d'ara: `punta` · `pla` · `vall` |
 | `sensor.tarifa_preu` | Preu del kWh d'ara, **amb impostos** (`EUR/kWh`); l'atribut `sense_impostos` diu el del contracte |
-| `sensor.deshumidificador_cost` | **Euros acumulats**, una mostra per hora. No es reinicia mai: el dia i el mes els fan les estadístiques. Als atributs hi ha la referència de l'última mostra |
+| `sensor.deshumidificador_cost` | **Euros acumulats**, una mostra cada 5 minuts (només si el comptador s'ha mogut). No es reinicia mai: el dia i el mes els fan les estadístiques. Als atributs hi ha la referència de l'última mostra |
 | `sensor.deshumidificador_energia_punta` *(i `_pla`, `_vall`)* | kWh acumulats **en cada tram**. La pregunta de l'optimització: quina part del consum cau en punta |
 
 > ⚠️ **`sensor.deshumidificador_cost` no es pot renombrar sense tocar el codi:** les variables
