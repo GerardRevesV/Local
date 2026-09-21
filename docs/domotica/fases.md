@@ -125,7 +125,7 @@ feina i tu menys.
 | B.1 | ~~Comprar sensors i endoll, i fixar-ne model i destí.~~ ✅ **Fet:** cinc T/HR comprats i gravant, endoll **P110** amb mesura de consum, i assignació decidida. ⏳ **Queda repartir-los pel local** — avui són a casa | 👤 Tu |
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.1c | 🆕 **Provar `tuya-local`** amb el deshumidificador: emparellar-lo a la Wi-Fi del router SIM, configuració assistida, i veure si el reconeix. Si sí, noms fixats abans, i al principi **només lectura i llindar**. Opcional, excepte si 0.2b surt malament → [inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local) | 🤝 Tu emparelles, jo configuro |
-| B.1d | 🆕 **Emparellar l'endoll per Matter.** ✅ Model confirmat (**P110M**) i ✅ microprogramari **1.4.3**, fet **abans** d'emparellar. 🔴 **L'emparellament falla** amb `PASE timeout` —l'aparell no contesta, i la xarxa està descartada—; recepta a [emparellar-matter.md](emparellar-matter.md#-quan-lemparellament-falla-pase-timeout). En sortir-se'n, **renombrar les entitats immediatament** | 🤝 Tu emparelles; jo llegeixo el registre i verifico |
+| B.1d | ✅ **Fet el 21/09/2026** — endoll **P110M** emparellat per Matter (node 9), amb el microprogramari ja posat abans i **les dotze entitats renombrades el mateix dia**. En surten potència i **energia**, o sigui que els kWh/dia de la Porta B tenen font → [emparellar-matter.md](emparellar-matter.md#-com-va-acabar-21092026-0345) | 🤝 Fet |
 | B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
 | B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
 | B.4 | ✅ **Fet** — `packages/rosada.yaml` (641 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
@@ -180,7 +180,7 @@ feina i tu menys.
 | C.3 | Enclavament dur ventilador/deshumidificador | 🤖 Jo |
 | C.4 | Selector de mode amb caducitat i override físic | 🤖 Jo |
 | C.5 | Anti-cicle curt **també configurat al dispositiu**, no només a HA | 🤝 Jo indico, tu configures |
-| C.6 | Comportament d'arrencada de cada endoll: deshumidificador ON, ventiladors OFF | 👤 Tu |
+| C.6 | Comportament d'arrencada de cada endoll: deshumidificador ON, ventiladors OFF. ✅ **La meitat feta el 21/09/2026**: el P110M venia en `off` —no hauria tornat sol després d'un tall— i s'ha posat a **`on`** des d'HA (`select.deshumidificador_power_on_behavior`). Queden els S110E | 🤝 Jo ho poso, tu ho verifiques |
 | C.7 | ~~Congelació total de versions fins al 10/03/2027~~ — ✅ **sense objecte** des del 21/09/2026. Les versions segueixen fixades i s'actualitzen només a posta | 🤖 Jo |
 
 ### 🚦 Porta C

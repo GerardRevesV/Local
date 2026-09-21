@@ -328,6 +328,33 @@ Si l'aparell hi és, s'anuncia i respon a un ping però **no contesta l'emparell
 > 📌 **Els intents fallits deixen rastre inofensiu:** cada un consumeix un número de node
 > (2, 3, 4…). No cal netejar res; el node bo serà el següent número lliure.
 
+### ✅ Com va acabar (21/09/2026, 03:45)
+
+**Va entrar a la primera provatura després de desplegar `--primary-interface`**, com a
+**node 9**. Cinc intents havien mort abans amb el `PASE timeout`, i el primer de després va
+completar-se en segons.
+
+> ⚠️ **Dit amb honestedat: no és una prova controlada.** Entremig també es va desendollar i
+> tornar a endollar l'endoll i es va demanar el codi de nou. El que es pot dir és que la
+> interfície era **l'única cosa que havíem canviat al servidor**, i que el símptoma —missatges
+> que surten i no tornen— és exactament el que provoca sortir per la interfície equivocada.
+> Si algun dia torna a passar amb un altre aparell, **això és el primer que s'ha de mirar**.
+
+**El que va aparèixer:** dotze entitats, i entre elles les tres que fan falta —interruptor,
+**potència en W** i **energia en kWh**—, més tensió, corrent i el comportament d'arrencada.
+
+Amb això queda contestada la pregunta que decidia la manera de mesurar: **el consum per Matter
+existeix**, en local, sense compte de Tapo i sense núvol. Els **kWh/dia de la Porta B** tenen
+font.
+
+**El que es va haver de fer tot seguit, el mateix dia i abans que l'històric valgués res:**
+
+| # | Què | Per què |
+|---|---|---|
+| 1 | **Renombrar les dotze entitats** al conveni | `rosada.yaml` busca `deshumidificador`, no `smart_wi_fi_plug`. Es va fer per l'**API de WebSocket** perquè `.storage` és de root → [runbook](runbook-servidor.md#-renombrar-entitats-sense-tocar-storage) |
+| 2 | **Reiniciar HA** | El `utility_meter` i el `history_stats` s'enganxen a la font **en arrencar**. Fins llavors deien `unknown` |
+| 3 | **`power_on_behavior`: d'`off` a `on`** | Venia de fàbrica en `off`: després d'un tall, l'endoll s'hauria quedat **apagat** i el deshumidificador no hauria tornat sol. És la tasca **C.6** |
+
 ## 🪤 Els paranys
 
 ### L'energia acumulada i el rellotge
