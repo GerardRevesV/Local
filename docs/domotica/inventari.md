@@ -344,14 +344,27 @@ feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una
 > ⚠️ Si la prova 0.2b surt malament —que torni a la configuració de fàbrica després d'un
 > tall—, això deixa de ser una millora i passa a ser **la via**.
 >
-> ### ▶️ La prova, en marxa — 21/09/2026, vespre
+> ### ✅ La prova, superada — 21/09/2026, vespre
 >
 > | Pas | Estat |
 > |---|---|
 > | 1. A la Wi-Fi del router SIM | ✅ **Ja hi era.** S'anuncia a la xarxa local cada 5 s (port UDP 6667, el dels Tuya): **no cal reemparellar**, i la *local key* d'ara és la bona |
 > | 2. Reserva DHCP | ✅ **`192.168.1.104`**, fixada al router |
-> | 3. `tuya-local` | ✅ **Versió 2026.9.1, fixada per suma i sense HACS** → [`scripts/instala-tuya-local.sh`](../../scripts/instala-tuya-local.sh). La configuració més propera que porta és la del **D820A**, que és d'un aparell amb més funcions (purificador): es veurà quina proposa pel que el D825 publiqui. ⏳ Reinici d'HA i configuració assistida |
-> | 4. Noms abans que gravi res | ⏳ Fixats a [noms-entitats.md](noms-entitats.md); es renombra **el mateix moment** d'afegir-lo |
+> | 3. `tuya-local` | ✅ **Versió 2026.9.1, fixada per suma i sense HACS** → [`scripts/instala-tuya-local.sh`](../../scripts/instala-tuya-local.sh). La configuració més propera que porta és la del **D820A**, que és d'un aparell amb més funcions (purificador): es veurà quina proposa pel que el D825 publiqui. Reinici d'HA a les 18:49 (9 s) i configuració assistida a les 18:57: **el reconeix com a D820A, amb un 89 % de coincidència**, protocol **3.4**, **en local** |
+> | 4. Noms abans que gravi res | ✅ **Les dotze entitats renombrades a les 18:59**, dos minuts després d'afegir-lo → [noms-entitats.md](noms-entitats.md) |
+>
+> **El que dona des del primer moment:** engegat, **llindar d'HR** (estava al 55 %), mode
+> (`auto`), **l'HR que mesura ell** (44 %), la temperatura (25 °C), la velocitat i el codi de
+> falla. Tot sense núvol: el núvol de Smart Life només es va fer servir per obtenir la clau.
+>
+> **El 89 % i el que falta:** publica dues dades que la configuració del D820A no coneix, la
+> **106** i la **107** (totes dues a 0). Poden ser just el **P1** (desgebrant) i el **P2**
+> (dipòsit ple), que eren el que més ens interessava. Es veurà quina es mou el primer cop que
+> l'aparell en mostri un.
+>
+> ⚠️ **Una lectura estranya:** a les 19:00 l'aparell deia **44 %** mentre els cinc sensors del
+> calibratge en deien **66–72 %**. O és en una altra habitació, o el seu higròmetre va molt
+> desviat. És la dada que decidirà si la seva HR serveix per a res.
 >
 > **Endollat al P110M a les 18:15**: des de llavors, la sèrie de consum de l'endoll **és la
 > del deshumidificador**. En marxa, **305–393 W** (la placa en diu 470), i cicles de **~2 min

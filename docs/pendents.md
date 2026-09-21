@@ -414,8 +414,11 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       25 L/dia, bomba de condensats i higròstat propi 40–80 %. El manual oficial n'ha resolt
       el rang (5–35 °C), el desgebratge automàtic i la protecció de compressor de 5 min, que
       **ja és a l'aparell**. → [inventari.md](domotica/inventari.md)
-- [ ] 🆕 ▶️ **Provar `tuya-local` amb el deshumidificador** *(obert el 21/09/2026; en marxa el
-      mateix vespre)*. ✅ **Endollat al P110M** a les 18:15 i ✅ **ja és a la Wi-Fi del router
+- [x] ~~🆕 **Provar `tuya-local` amb el deshumidificador.**~~ ✅ **Superada el 21/09/2026 a les
+      18:57:** el reconeix com a **D820A (89 %)**, en local, i les dotze entitats es van
+      renombrar a les 18:59. Reinici d'HA a les 18:49 (9 s), acordat amb l'usuari amb el
+      calibratge en marxa. → [inventari.md](domotica/inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)
+      *El que deia mentre es feia:* ✅ **Endollat al P110M** a les 18:15 i ✅ **ja és a la Wi-Fi del router
       SIM** —s'anuncia a la xarxa local—, o sigui que el pas 1 no demana reemparellar.
       ✅ Instal·lació **sense HACS**, amb la versió **2026.9.1 fixada per suma**
       (`scripts/instala-tuya-local.sh`). ⏳ Queden: reiniciar HA, la configuració assistida
@@ -428,6 +431,15 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       el **llindar d'HR des d'HA** i l'estat (**P1** desgebrant, P2, HR pròpia). ⚠️ Emparellar-lo
       **a la Wi-Fi del router SIM**: cada reemparellament canvia la clau. El **P110 es queda**.
       *(Tasca B.1c de [fases.md](domotica/fases.md).)* → [inventari.md](domotica/inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local)
+- [ ] 🆕 **Saber on surten el P1 i el P2 del deshumidificador.** `tuya-local` hi fa servir la
+      configuració del D820A, i l'aparell publica dues dades que aquella no coneix: la **106** i
+      la **107**. El primer cop que desgebri o s'ompli el dipòsit (P2 es pot provocar traient el
+      tub de desguàs), mirar quina es mou. Si són aquestes, es demana a `tuya-local` que les hi
+      afegeixi —el registre d'HA diu com— o s'escriu una configuració pròpia.
+- [ ] 🆕 **Decidir si l'HR que mesura el deshumidificador serveix.** És un atribut, no un
+      sensor, o sigui que no fa estadístiques; si serveix, cal una plantilla que la tregui. A
+      les 19:00 del 21/09 deia 44 % amb els sensors del calibratge al 66–72 %: primer cal saber
+      si era en una altra habitació.
 - [ ] 🆕 **Mirar els cicles del compressor quan el deshumidificador sigui al soterrani.** El
       21/09/2026 a casa feia **~2 min de compressor i 5–6 min aturat** (el ventilador segueix a
       ~15 W): els 5 min d'aturada són la protecció que porta l'aparell; els 2 min en marxa, el
