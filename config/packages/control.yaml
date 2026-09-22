@@ -299,6 +299,7 @@ template:
           - input_number.renovacions_absencia
           - input_number.cabal_ventiladors
           - input_number.volum_soterrani
+          - input_number.parametres_versio
       - trigger: homeassistant
         event: start
     variables:
@@ -353,6 +354,7 @@ template:
           'plou': is_number(pluja) and pluja | float > 0,
           'tram': tram if tram in ['punta', 'pla', 'vall'] else none,
           'minuts_ventilats': states('sensor.ventilacio_minuts_avui') | float(none),
+          'parametres': states('input_number.parametres_versio') | int(0) >= 1,
           'estat_previ': states('sensor.decisio_del_soterrani'),
           'ventila_previ': state_attr('sensor.decisio_del_soterrani', 'ventila_per_dtd') == true,
           'urgencia_previ': state_attr('sensor.decisio_del_soterrani', 'urgencia') in ['hr', 'marge'],
