@@ -188,6 +188,12 @@ tipus de cosa que costa d'explicar davant d'un pèrit.
 2. `docker compose restart homeassistant`.
 3. Mira si val 3,0 o si ha tornat a 2,0.
 
+> ✅ ***22/09/2026 — llegit al codi de la 2026.9.3*** (`input_number/__init__.py`, dins del
+> contenidor): **amb `initial:` arrenca sempre amb aquell valor**; sense, **restaura** l'últim;
+> i sense estat previ, pren **el mínim del rang** —la segona de les dues respostes de sota, la
+> més agressiva—. La Fase 1 de la [v2](logica-v2-pla.md) treu els `initial:` i un automatisme
+> posa els valors de partida **una sola vegada** per paràmetre (`input_number.parametres_versio`).
+
 **Si torna a 2,0** (que és el que diu la documentació), la correcció és treure `initial:` dels
 nou helpers. Però abans cal saber **què val un helper sense `initial:` la primera vegada**,
 quan encara no té estat previ: si és `unknown`, el `| float` sense valor per defecte del

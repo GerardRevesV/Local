@@ -55,6 +55,173 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
 
 ## Domòtica
 
+### 📅 Abans de portar-ho al local — el pla (22–23/09/2026)
+
+*El trasllat, previst per al 23/09 al vespre o el 24/09. El que hi ha aquí és el que **només es
+pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
+
+**Aquesta nit**
+
+- [ ] **Deshumidificador: la prova del dipòsit.** Manual · continu · velocitat alta, dipòsit
+      buit, fins que s'atura sol (codi 32). **En acabar, mesurar l'aigua amb una gerra**:
+      litres ÷ kWh = el primer punt de la taula del cost per litre. Eina:
+      `tools/prova_deshumidificador.py diposit`. ⚠️ L'habitació és petita i ja seca: treurà poc
+      i a HR baixa, o sigui que serà un **mínim**, no la xifra del soterrani.
+- [ ] **Calibratge: la nit sencera**, i demà la **rampa amb el tàper de sal i la nevera** (el
+      tàper fixa el 75 % gairebé a qualsevol temperatura; la nevera hi afegeix el fred de
+      l'hivern) → [calibratge.md](domotica/calibratge.md). En acabar: `tools/calibratge.py`,
+      aplicar els desplaçaments i **apagar el mode calibratge**.
+
+**Demà, a casa**
+
+- [ ] **La bomba, amb el tub de 5 m i una galleda**: que bombi, fins a quina alçada, i si la
+      106 o la 107 es mouen quan està activada. Al soterrani serà obligatòria.
+- [ ] **L'higròmetre del deshumidificador contra un Tapo ja calibrat**, unes hores de costat.
+- [ ] A la pantalla: si el llindar **35 és el «CO»**; el **so de l'alarma** (TIMER + SPEED).
+- [ ] **L'assecat intern en apagar** l'aparell.
+- [ ] **Smart Life**: si avisa del dipòsit ple i de les avaries.
+- [ ] **L'endoll una hora sense internet**: si l'energia s'atura.
+- [ ] Decidir la **configuració de repòs** (proposta: Manual · 55 % · velocitat alta · bloqueig
+      infantil) i deixar-l'hi abans de portar-lo.
+- [ ] **Bateries dels sensors** abans de repartir-los.
+
+**Abans de desendollar res**
+
+- [ ] **La tanda física del portàtil**, si també va al local: BIOS (*restore on AC power loss*,
+      límit de càrrega, disc intern primer), cable RJ-45 → *Tanda física*, més avall. Al local,
+      cada casella és un viatge.
+- [ ] **Còpia de `matter-data/` i de `config/.storage` a casa.** Si el portàtil pateix en el
+      trasllat, sense aquestes claus cal reemparellar-ho tot i la sèrie es parteix.
+- [ ] **Moure-ho tot amb el mateix router de la SIM**: si la xarxa és la mateixa, no cal
+      reemparellar res. Apagar el portàtil net; al local, primer el router, després el hub i
+      l'endoll, i el portàtil l'últim.
+
+**Al local**
+
+- [ ] Repartir els sensors segons l'assignació, i `scripts/inicia-serie.sh` per marcar l'inici
+      de la sèrie de debò.
+- [ ] La **setmana de base**: deshumidificador fix al 55 % i ventiladors com ara
+      ([logica-v2.md](domotica/logica-v2.md)).
+- [ ] **Fotos de les plaques dels ventiladors**, la **porta de l'escala** i, quan es pugui, la
+      **prova de fum**.
+
+### ❓ El que falta per saber — les incògnites del sistema
+
+*Recollides el 22/09/2026 després dels experiments i de la [lògica v2](domotica/logica-v2.md).
+S'aniran omplint quan el muntatge sigui estable al local i hi hagi el maquinari que falta. Cada
+una diu **com es respon** i **què decideix**: una incògnita que no decideix res no hi és.*
+
+**Ara mateix, a casa (no cal res de nou)**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| **Litres per kWh** del deshumidificador, i com cauen amb l'HR | Una nit en continu amb el dipòsit buit: l'hora del codi 32 i els kWh, **a partir del segon dipòsit** | Confirma o corregeix la taula del cost per litre, i amb ella els tres llindars |
+| Si el llindar **35 és el «CO»** | Mirar la pantalla amb el llindar a 35 | Si el continu de la urgència i de les proves és el que creiem |
+| Què fa l'**assecat intern** | Apagar l'aparell amb l'assecat activat i mirar quant va el ventilador | Si val la pena deixar-lo activat al soterrani |
+| La **desviació de l'higròmetre** de l'aparell | Un Tapo al costat unes hores, quan acabi el calibratge | Traduir l'objectiu dels racons al llindar de l'aparell (el segon nivell) |
+| Si l'**energia del P110M depèn d'internet** | Una hora sense sortida a internet | Si el cost s'atura quan cau la SIM |
+| Si **Smart Life avisa** del dipòsit ple i de les avaries | Mirar-ho a l'app (la prova del dipòsit ho hauria disparat) | Si hi ha un avís que funciona encara que HA caigui |
+| Si l'**alarma del dipòsit** xiula | El so: TIMER + SPEED alhora; i omplir-lo amb el so actiu | Res greu: el codi 32 ja arriba a HA |
+| Quina operació és l'**ECO**, i **velocitat alta o baixa** | Litres per kWh de cadascuna (depèn de la primera fila) | L'operació i la velocitat de la configuració de repòs |
+| **La memòria després d'un tall llarg** | Engegat, amb una configuració inconfusible, i 30 min sense corrent; i el mateix apagat | Si HA ha de restaurar-la sempre en tornar el corrent (ja proposat per prudència: el 22/09 va tornar amb la de fàbrica) |
+| **Com comptar l'aigua que surt pel tub** | Un **pluviòmetre de balancí**. A priori, **escenari C**: Ecowitt WH40 sense fils → [tres escenaris](domotica/inventari.md#comptar-laigua-i-mesurar-la-paret--tres-escenaris-22092026) | Els litres/dia al soterrani, on amb la bomba no hi ha codi 32. Un cabalímetre normal no serveix: massa poc cabal, a glopades i amb aire |
+
+**Quan el muntatge sigui al soterrani i estable**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| **Per on entra l'aire** | La prova de fum (tasca 0.1), amb els extractors en marxa | Si ventilar pot mullar: si entra pel terra, la ventilació es reconsidera sencera |
+| La **porta de l'escala**, oberta o tancada | Saber-ho, i si cal, mesurar amb totes dues | El cabal, i per on entra l'aire |
+| Contra quina **referència** ventilar: planta baixa o exterior | Unes setmanes gravant tots dos ΔTd | `referencia_ventilacio` |
+| **Quant aguanta la sequedat** | Les dues setmanes d'experiment amb `hr_vall` al 50 % | Si el pre-assecat surt a compte o es queda al 55 % |
+| Si la humitat és **general o localitzada** | Els tres punts del soterrani, calibrats | Si el deshumidificador és al lloc bo, i la idea de remenar l'aire |
+| Els **kWh/dia de base** | La setmana de base: 55 % fix i ventiladors com ara | Quant estalvia la v2 |
+| Com es mesuren els **litres amb la bomba** | Sense dipòsit no hi ha codi 32: comptador d'aigua, o un recipient de tant en tant | Els litres/dia de la Porta B al soterrani |
+| El **límit de dades** de la SIM | Les 72 h de `vnstat` | El pla de dades |
+
+**Quan es compri o s'instal·li**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| **Models, potència i cabal dels ventiladors** | Les fotos de la placa → [installacions.md](local/installacions.md) | Les renovacions en minuts i el ΔTd en litres per kWh: sense el cabal, els llindars de ventilació són provisionals |
+| Els **S110E**: càrrega de motor i temporitzador propi | La fitxa del relé; si els ventiladors van endollats o cablejats | La fallada segura de la ventilació, i si cal instal·lador |
+| El **marge de la paret** i quina paret és la més freda | Una sonda a la paret més freda (termòmetre IR de mà per trobar-la). A priori, **escenari C**: dues Ecowitt WN34L sense fils → [tres escenaris](domotica/inventari.md#comptar-laigua-i-mesurar-la-paret--tres-escenaris-22092026) | La urgència de debò: avui mira l'aire, no la paret |
+| El **CO₂** (i potser el radó) | Un SCD40; un detector de radó si cal | Renovar per demanda en comptes de per rellotge |
+
+**A l'hivern**
+
+| Què | Com es respon | Què decideix |
+|---|---|---|
+| El **rendiment a 12–15 °C** i el **desgebratge (P1)** | Les primeres setmanes de fred; mirar quina dada es mou (la 106, la 107?) | Si el deshumidificador aguanta l'hivern, i el cost per litre real |
+| La **temperatura mínima** del soterrani | Les sèries d'hivern | `t_int_minima`, i si la resina necessita escalfor |
+
+**Quan arribi la primera factura**: que els **preus i les hores de cada tram** quadrin amb
+`tarifa.jinja` (el pendent ja hi és, més avall).
+
+**El servidor** té les seves pròpies incògnites al bloc *Resiliència*, més avall: el BIOS, la
+bateria i les còpies.
+
+### 🆕 Lògica v2 — el que falta per decidir-la ([logica-v2.md](domotica/logica-v2.md))
+
+*Proposta del 21/09/2026: llindar del deshumidificador per tram, triat pel cost per litre (vall 55 ·
+pla 60 · punta 65, amb el 50 de vall com a experiment),
+urgència per sobre del preu, ventilació contra una referència triable (**planta baixa** o
+exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
+
+- [ ] **Models i cabal dels ventiladors** (l'usuari en té fotos) → `installacions.md`.
+- [ ] **La porta de l'escala: oberta o tancada**, habitualment. Canvia el cabal i per on entra
+      l'aire.
+- [ ] **Si els S110E tenen temporitzador propi**, perquè els ventiladors s'apaguin sols si HA
+      cau engegant-los.
+- [x] ~~**Decidir la v2** i, llavors, codificar-la a `rosada.yaml` amb la rèplica offline.~~ ✅
+      **Decidida el 22/09/2026**, i el pla per codificar-la és a
+      [logica-v2-pla.md](domotica/logica-v2-pla.md): va a `packages/control.yaml` i a la macro
+      `custom_templates/decisio.jinja`, no a `rosada.yaml`. Cada fase, un PR:
+  - [ ] **Fase 1 — la decisió en ombra**: grava què faria, sense tocar res. ✅ Codificada i
+        provada contra el HA de debò (22/09/2026). ⏳ **Desplegar-la recarregant**, mai mentre
+        corri la prova del dipòsit ni el calibratge, i datar-ho al registre d'instal·lació.
+  - [ ] **Porta 1**: 24 h de `replica.py --deriva` sense cap discrepància.
+  - [ ] **Fase 2 — dades i gràfics**: hores de compressor i filtre, € per tram, avisos del
+        dipòsit i de l'AUTO, vista *Aprendre*, i `tools/analisi.py` a casa. ✅ Codificada
+        (22/09/2026). ⏳ Desplegar-la recarregant, i **posar a zero el comptador del filtre**
+        (script) el dia que es netegi: les hores comencen a comptar quan es desplega.
+  - [ ] 🐛 **`tools/calibratge.py --descarrega` només rep 24 h**: sense `end_time`, l'API
+        d'històric de HA torna 24 h des de l'inici, o sigui **les més antigues** de les 72 que
+        demana per defecte. Trobat el 22/09/2026 escrivint `analisi.py`. Qualsevol ajust fet
+        amb `--descarrega` s'ha de refer un cop corregit.
+  - [ ] **Fase 3 — actuació, apagada per defecte**: interfície dels ventiladors (relés
+        virtuals), executors, i la configuració restaurada quan l'aparell torna del corrent.
+        ✅ Codificada (22/09/2026). ⏳ Desplegar-la **amb els dos interruptors apagats**; després,
+        24 h amb `actuacio_ventiladors` encès sobre els relés de mentida, i unes hores amb
+        `actuacio_deshumidificador` encès i algú al davant comptant xiulets.
+  - [ ] **La setmana de base**, en mode *Llindar fix* amb `actuacio_deshumidificador` encès.
+  - [ ] **Fase 4 — el segon nivell**, quan se sàpiga la desviació de l'higròmetre de l'aparell.
+  - [ ] **Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.
+- [ ] ❓ **El volum del soterrani**: la v2 fa servir **115 m³** (~46 m² per l'alçada), però
+      l'alçada no s'ha mesurat mai. Amb el cabal, és el que converteix renovacions en minuts.
+- [ ] 📌 **Filament en caixes estanques amb dessecant**: a un 55 % ja agafa massa humitat.
+- [ ] **Provar l'assecat intern apagant l'aparell**, no amb el llindar: amb el llindar no allarga
+      els 5 min de ventilador (21/09/2026), i probablement només actua en apagar-lo.
+
+### 🔴 Resiliència — el que falta perquè una caiguda no costi dades ni silenci
+
+*Prioritzat el 21/09/2026.* El deshumidificador ja aguanta sol qualsevol caiguda (torna sol,
+recorda la configuració i es controla des de Smart Life); **les dades i els avisos, no**. Anàlisi
+sencera a [home-assistant.md](domotica/home-assistant.md#què-passa-si-cau-la-llum-el-portàtil-o-internet).
+Per ordre de profit per esforç —cada un té el seu pendent més avall:
+
+1. 🔴 **Avís de caiguda** (healthchecks.io). Avui, si el portàtil cau, **no te n'assabentes**. →
+   «Muntar un avís de caiguda», a *Muntatge*.
+2. 🔴 **BIOS — *restore on AC power loss***. Sense això, un tall més llarg que la bateria deixa HA
+   apagat fins que algú hi vagi. → *Tanda física*.
+3. 🔴 **Còpies de seguretat**: `matter-data/` (les claus: sense elles, reemparellar i sèrie
+   partida), `config/.storage` i l'històric. Avui un portàtil mort ho perd tot. → «`matter-data/`
+   ha d'entrar a la còpia de seguretat», a *Muntatge*, i `nit.py`.
+4. ⚠️ **SAI petit per al router i el hub**, perquè un tall curt no sigui un forat. → *El portàtil
+   que farà de servidor*.
+5. 🆕 **Mirar si l'app Smart Life avisa del dipòsit ple i de les avaries.** Si ho fa, és un avís
+   que funciona **encara que HA hagi caigut**.
+
 ### 🆕 Requisits definits el 21/09/2026 — [requisits.md](domotica/requisits.md)
 
 Tres coses que el sistema ha de saber fer i que encara **no són decisions preses**. El
@@ -66,11 +233,15 @@ raonament sencer, amb el que desbloqueja cadascuna, és a
       segueix. La documentació d'HA diu que amb `initial:` **no** hi segueix, i els nou helpers
       de `rosada.yaml` en porten. Si es confirma, cada reinici esborra l'ajust de tot un
       hivern **sense dir res**.
+      *22/09/2026: **confirmat llegint el codi de la 2026.9.3** —amb `initial:` arrenca sempre
+      amb ell; sense, restaura; sense estat previ, el mínim del rang—. La Fase 1 de la
+      [v2](domotica/logica-v2-pla.md) treu els `initial:` i posa els valors de partida un sol
+      cop. La prova del reinici queda com a confirmació, el primer dia que calgui reiniciar.*
 - [ ] 🔴 **R2 — Garantir que els `input_number` es graven i s'exporten.** Mai a l'`exclude` del
       `recorder`, i sempre a la llista d'entitats de `nit.py`. Sense això, *«quin llindar
       regia el 3 de gener»* no té resposta.
 - [ ] **R2 — Detectar paràmetres incoherents** (Δ_OFF ≥ Δ_ON) al sensor de decisió, amb pas a
-      `bloquejat` i avís. Un `min:`/`max:` no ho pot impedir.
+      `bloquejat` i avís. Un `min:`/`max:` no ho pot impedir. *(Entra amb la Fase 1 de la v2.)*
 - [ ] 🔴 **R3 — Gravar la previsió des del primer dia de sèrie.** Des de 2024 les previsions
       ja no són atributs: cal un sensor per disparador que cridi `weather.get_forecasts` i
       deixi el Td previst a +3 h, +12 h i +24 h **com a estat**. El que no es gravi al
@@ -174,8 +345,9 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       decidides però pendents d'escriure `nit.py`.
 - [ ] Confirmar si la **càmera Tapo C200** que es va investigar era per al local.
 - [x] ~~**Decidir on viu la lògica de control** del punt de rosada.~~ ✅ **HA natiu**, i ja
-      **escrita**: `config/packages/rosada.yaml` (665 línies), amb un únic punt d'avaluació,
-      `sensor.decisio_del_soterrani`. Node-RED, AppDaemon, pyscript i el servei propi en
+      **escrita**: `config/packages/rosada.yaml` (469 línies), amb un únic punt d'avaluació,
+      `sensor.decisio_del_soterrani`. *(22/09/2026: la decisió passa a
+      `config/packages/control.yaml` (1026 línies), amb la lògica v2.)* Node-RED, AppDaemon, pyscript i el servei propi en
       Python queden **descartats**. → [decisio-stack.md](domotica/decisio-stack.md)
 - [x] ~~**Decidir la base de dades i l'eina de visualització.**~~ ✅ **SQLite** i els
       **dashboards natius d'HA** per Tailscale. **PostgreSQL, MariaDB, InfluxDB i Grafana

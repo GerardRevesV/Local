@@ -1,114 +1,19 @@
 # ═════════════════════════════════════════════════════════════════════════════
-#  LÒGICA DEL PUNT DE ROSADA — el nucli del projecte
+#  LA FÍSICA DEL SOTERRANI — punts de rosada, ΔTd, HR màxima i marge
 #  Fase B.4 de docs/domotica/fases.md · Disseny: docs/domotica/control-punt-rosada.md
 #
-#  PRINCIPI D'ARQUITECTURA (decisio-stack.md):
-#    Hi ha UN SOL punt d'avaluació: sensor.decisio_del_soterrani.
-#    Els automatismes NO tornen a avaluar res: llegeixen aquesta decisió i actuen.
-#    Un «sensor de motiu» separat del que decideix pot mentir; aquest no pot.
+#  Aquí es MESURA i es calcula; no es decideix res. Des del 22/09/2026, la
+#  decisió (sensor.decisio_del_soterrani), els paràmetres i els modes viuen a
+#  packages/control.yaml, amb la lògica v2 (docs/domotica/logica-v2-pla.md).
 #
-#  FASE B: aquest fitxer NOMÉS registra. No hi ha cap automatisme d'actuació.
-#          Els ventiladors segueixen en el seu règim actual (clàusula QUINTA).
+#  Els ventiladors segueixen en el seu règim actual (clàusula QUINTA).
 # ═════════════════════════════════════════════════════════════════════════════
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  PARÀMETRES AJUSTABLES
-#  Es toquen des de la interfície; els valors inicials són els justificats a
-#  control-punt-rosada.md a partir de l'error real dels sensors (±1 °C en ΔTd).
-#
-#  🔴 PENDENT DE PROVA (R2 de docs/domotica/requisits.md, 21/09/2026):
-#     la documentació d'HA diu que amb `initial:` l'helper ARRENCA SEMPRE amb
-#     aquest valor, i que sense `initial:` restaura el que tenia abans de
-#     l'aturada. Si és així, cada reinici esborra l'ajust fet amb les dades de
-#     la Fase B i ningú se n'assabenta. Prova de tres minuts al banc de casa:
-#     posar delta_td_on a 3,0 → reiniciar el contenidor → mirar si hi segueix.
-#     ⚠️ Abans de treure els `initial:` cal saber què val un helper sense estat
-#        previ la primera vegada: si és `unknown`, la decisió cau a
-#        «sense_dades» (fallada segura); si és el mínim, Δ_ON arrencaria a
-#        1,0 °C, que és més agressiu del que volem.
+#  ELS PARÀMETRES, EL MODE I LA SEVA CADUCITAT s'han mogut a
+#  packages/control.yaml (22/09/2026), amb el mateix nom: la sèrie no es
+#  parteix. Allà hi ha també per què ja no porten «initial:» (R2).
 # ─────────────────────────────────────────────────────────────────────────────
-input_number:
-  delta_td_on:
-    name: Llindar d'arrencada (ΔTd)
-    min: 1.0
-    max: 5.0
-    step: 0.1
-    initial: 2.0
-    unit_of_measurement: "°C"
-    icon: mdi:fan-plus
-
-  delta_td_off:
-    name: Llindar d'aturada (ΔTd)
-    min: 0.0
-    max: 3.0
-    step: 0.1
-    initial: 0.8
-    unit_of_measurement: "°C"
-    icon: mdi:fan-minus
-
-  hr_objectiu:
-    name: Humitat relativa objectiu
-    min: 45
-    max: 65
-    step: 1
-    initial: 55
-    unit_of_measurement: "%"
-    icon: mdi:water-percent
-
-  marge_superficie_min:
-    name: Marge mínim de condensació
-    min: 1.5
-    max: 5.0
-    step: 0.1
-    initial: 3.0
-    unit_of_measurement: "°C"
-    icon: mdi:home-thermometer
-
-  t_int_minima:
-    name: Temperatura interior mínima per ventilar
-    min: 8
-    max: 18
-    step: 0.5
-    initial: 13
-    unit_of_measurement: "°C"
-    icon: mdi:snowflake-alert
-
-  hr_ext_bloqueig:
-    name: HR exterior que bloqueja
-    min: 88
-    max: 100
-    step: 1
-    initial: 95
-    unit_of_measurement: "%"
-    icon: mdi:weather-rainy
-
-  min_on_ventilador:
-    name: Temps mínim d'engegada del ventilador
-    min: 5
-    max: 60
-    step: 1
-    initial: 12
-    unit_of_measurement: min
-    icon: mdi:timer-play
-
-  min_off_ventilador:
-    name: Temps mínim d'aturada del ventilador
-    min: 5
-    max: 60
-    step: 1
-    initial: 10
-    unit_of_measurement: min
-    icon: mdi:timer-pause
-
-  min_off_deshumidificador:
-    name: Temps mínim d'aturada del deshumidificador
-    min: 5
-    max: 30
-    step: 1
-    initial: 5
-    unit_of_measurement: min
-    icon: mdi:timer-lock
-
 input_boolean:
   # ───────────────────────────────────────────────────────────────────────────
   #  MODE CALIBRATGE
@@ -116,7 +21,7 @@ input_boolean:
   #  S'engega mentre els sensors estan TOTS JUNTS per calibrar-los, i es torna
   #  a apagar en repartir-los. Mentre està encès, sensor.decisio_del_soterrani
   #  val «calibratge» i, per tant, cap automatisme no actua: llegeixen aquella
-  #  decisió i prou (vegeu el principi d'arquitectura de dalt).
+  #  decisió i prou (vegeu el principi d'arquitectura de control.yaml).
   #
   #  ⚠️ És un helper i per tant queda REGISTRAT a l'històric. Aquest és tot el
   #     truc: d'aquí a un any, l'arxiu explica sol per què hi ha un tram on
@@ -132,30 +37,13 @@ input_boolean:
     icon: mdi:flask-outline
     # ⚠️ SENSE «initial:» a posta, i aquí el motiu importa més que de costum.
     #    Amb «initial: off» l'helper arrencaria APAGAT a cada reinici d'HA
-    #    (vegeu la nota de R2 més amunt). Enmig d'una prova de 36 h, un
+    #    (vegeu la nota de R2 a control.yaml). Enmig d'una prova de 36 h, un
     #    desplegament o un tall de corrent l'apagarien sol: la finestra
     #    semblaria acabada, la decisió tornaria a actuar i l'arxiu etiquetaria
     #    malament mitja prova, sense que ningú se n'assabentés.
     #    Sense «initial:» restaura l'estat previ. I si mai no en té cap, val
     #    «off» o «unknown», i totes dues coses donen funcionament normal:
     #    la fallada, si n'hi ha, cau del costat segur.
-
-input_select:
-  mode_soterrani:
-    name: Mode del soterrani
-    options:
-      - Auto
-      - Forçar ventilació
-      - Forçar deshumidificador
-      - Tot aturat
-    initial: Auto
-    icon: mdi:tune
-
-timer:
-  override_manual:
-    name: Caducitat del mode manual
-    duration: "02:00:00"
-    restore: true
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  SENSORS DE PLANTILLA
@@ -327,7 +215,8 @@ template:
             {{ (v | max - v | min) | round(2) if v | count > 1 else none }}
 
       # ─────────────────────────────────────────────────────────────────────
-      #  EL CRITERI: ΔTd = interior − exterior.  Positiu = fora asseca.
+      #  ΔTd = interior − exterior.  Positiu = fora asseca. És una de les dues
+      #  referències de la v2; l'altra, la planta baixa, és més avall.
       # ─────────────────────────────────────────────────────────────────────
       - name: "ΔTd interior − exterior"
         unique_id: delta_rosada
@@ -380,138 +269,111 @@ template:
           {{ (states('sensor.exterior_punt_de_rosada') | float
               - states('sensor.aemet_dew_point') | float) | round(2) }}
 
-      # ═════════════════════════════════════════════════════════════════════
-      #  L'ÚNIC PUNT D'AVALUACIÓ
-      #
-      #  Estat: ventilar · deshumidificar · repos · bloquejat · sense_dades · calibratge
-      #  El motiu i tots els valors que l'han produït van als atributs, de
-      #  manera que la decisió i la seva explicació SEMPRE són coherents.
-      # ═════════════════════════════════════════════════════════════════════
-      - name: "Decisió del soterrani"
-        unique_id: decisio_soterrani
-        icon: >
-          {% set s = this.state %}
-          {{ 'mdi:flask-outline' if s == 'calibratge'
-             else 'mdi:fan' if s == 'ventilar'
-             else 'mdi:air-humidifier' if s == 'deshumidificar'
-             else 'mdi:cancel' if s == 'bloquejat'
-             else 'mdi:help-circle-outline' if s == 'sense_dades'
-             else 'mdi:sleep' }}
+
+      # ─────────────────────────────────────────────────────────────────────
+      #  L'ALTRA REFERÈNCIA: ΔTd = interior − planta baixa (logica-v2.md).
+      #  Els ventiladors extreuen i l'aire de reposició baixa per l'escala: el
+      #  que entra al soterrani hauria de ser el de la planta baixa. Es graven
+      #  tots dos ΔTd, triï el que triï input_select.referencia_ventilacio,
+      #  per saber amb dades quin prediu millor l'efecte de ventilar.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: "ΔTd interior − planta baixa"
+        unique_id: delta_rosada_planta_baixa
+        default_entity_id: sensor.dtd_interior_planta_baixa
+        unit_of_measurement: "°C"
+        state_class: measurement
+        availability: >
+          {{ is_number(states('sensor.soterrani_punt_de_rosada_de_referencia'))
+             and is_number(states('sensor.planta_baixa_punt_de_rosada')) }}
         state: >
-          {%- set td_int  = states('sensor.soterrani_punt_de_rosada_de_referencia') -%}
-          {%- set td_ext  = states('sensor.exterior_punt_de_rosada') -%}
-          {%- set t_int   = states('sensor.soterrani_centre_temperatura') -%}
-          {%- set hr_ext  = states('sensor.exterior_humitat') -%}
+          {{ (states('sensor.soterrani_punt_de_rosada_de_referencia') | float
+              - states('sensor.planta_baixa_punt_de_rosada') | float) | round(2) }}
 
-          {#- 0. CALIBRATGE: els sensors no són al seu lloc. No es decideix res. -#}
-          {%- if is_state('input_boolean.mode_calibratge', 'on') -%}
-            calibratge
-
-          {#- 1. FALLADA SEGURA: sense dada fiable no es decideix res -#}
-          {%- elif not (is_number(td_int) and is_number(td_ext) and is_number(t_int)) -%}
-            sense_dades
-          {%- else -%}
-            {%- set td_int = td_int | float -%}
-            {%- set td_ext = td_ext | float -%}
-            {%- set t_int  = t_int  | float -%}
-            {%- set delta  = td_int - td_ext -%}
-
-            {#- 2. BLOQUEJOS. Qualsevol d'ells veta la ventilació. -#}
-            {%- set fred = t_int < states('input_number.t_int_minima') | float -%}
-            {%- set humit_fora = is_number(hr_ext)
-                  and hr_ext | float > states('input_number.hr_ext_bloqueig') | float -%}
-            {%- set plou = states('sensor.aemet_precipitation') is defined
-                  and is_number(states('sensor.aemet_precipitation'))
-                  and states('sensor.aemet_precipitation') | float > 0 -%}
-
-            {#- 3. OBJECTIU: si ja hi som, no cal fer res. -#}
-            {%- set a = 17.625 %}{% set b = 243.04 -%}
-            {%- set rh_obj = states('input_number.hr_objectiu') | float -%}
-            {%- set g_obj = log(rh_obj / 100) + (a * t_int) / (b + t_int) -%}
-            {%- set td_objectiu = (b * g_obj) / (a - g_obj) -%}
-            {%- set marge = states('sensor.marge_de_condensacio') -%}
-            {%- set marge_ok = (not is_number(marge))
-                  or (marge | float >= states('input_number.marge_superficie_min') | float) -%}
-
-            {#- 4. HISTÈRESI: el llindar depèn de si ja ventilàvem. -#}
-            {%- set ventilant = this.state == 'ventilar' -%}
-            {%- set llindar = states('input_number.delta_td_off') | float if ventilant
-                              else states('input_number.delta_td_on') | float -%}
-
-            {%- if fred or humit_fora or plou -%}
-              bloquejat
-            {%- elif td_int <= td_objectiu and marge_ok -%}
-              repos
-            {%- elif delta >= llindar -%}
-              ventilar
-            {%- else -%}
-              deshumidificar
-            {%- endif -%}
-          {%- endif -%}
+      # ─────────────────────────────────────────────────────────────────────
+      #  LA HR MÉS ALTA DELS TRES PUNTS — la que mira la urgència de la v2.
+      #  El pitjor racó per punt de rosada no és sempre el pitjor per HR, i el
+      #  fong el marca la HR (a tocar de la paret, quan hi hagi la sonda).
+      #
+      #  És la HR CALIBRADA: es desfà Magnus amb el Td calibrat de cada punt i
+      #  la seva temperatura. ⚠️ Exacte perquè el calibratge de T dels tres
+      #  punts (c_t) és zero —la T no es corregeix, calibratge.md—. Si mai no
+      #  ho fos, caldria sumar-l'hi aquí: tools/replica.py ho vigila i falla.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: "Soterrani — humitat màxima"
+        unique_id: soterrani_humitat_maxima
+        default_entity_id: sensor.soterrani_humitat_maxima
+        unit_of_measurement: "%"
+        device_class: humidity
+        state_class: measurement
+        availability: >
+          {{ (is_number(states('sensor.soterrani_fons_punt_de_rosada'))
+              and is_number(states('sensor.soterrani_fons_temperatura')))
+             or (is_number(states('sensor.soterrani_centre_punt_de_rosada'))
+              and is_number(states('sensor.soterrani_centre_temperatura')))
+             or (is_number(states('sensor.soterrani_gran_punt_de_rosada'))
+              and is_number(states('sensor.soterrani_gran_temperatura'))) }}
+        state: >
+          {% set a = 17.625 %}{% set b = 243.04 %}
+          {% set punts = {
+               'fons':   [states('sensor.soterrani_fons_punt_de_rosada'),
+                          states('sensor.soterrani_fons_temperatura')],
+               'centre': [states('sensor.soterrani_centre_punt_de_rosada'),
+                          states('sensor.soterrani_centre_temperatura')],
+               'gran':   [states('sensor.soterrani_gran_punt_de_rosada'),
+                          states('sensor.soterrani_gran_temperatura')] } %}
+          {% set ns = namespace(hr=-1.0) %}
+          {% for nom, v in punts.items() if v[0] | is_number and v[1] | is_number %}
+            {% set td = v[0] | float %}{% set t = v[1] | float %}
+            {% set ns.hr = [ns.hr, 100 * e ** (a * td / (b + td) - a * t / (b + t))] | max %}
+          {% endfor %}
+          {{ ([ns.hr, 100] | min) | round(1) }}
         attributes:
-          motiu: >
-            {#- ⚠️ MATEIX ORDRE QUE A «state:», branca per branca: calibratge →
-                fallada segura → bloquejos → objectiu assolit → ΔTd amb histèresi.
-                Si el motiu comprova les condicions en un altre ordre, o amb un
-                altre llindar, la decisió i la seva explicació es desquadren. Va
-                passar: fins al 21/09/2026 aquí no hi havia la branca de l'objectiu
-                assolit ni la histèresi, i l'estat deia «repos» amb un motiu que
-                parlava de la banda morta. Els textos són els de tools/replica.py,
-                amb el mateix format de números. -#}
-            {%- set td_int = states('sensor.soterrani_punt_de_rosada_de_referencia') -%}
-            {%- set td_ext = states('sensor.exterior_punt_de_rosada') -%}
-            {%- set t_int  = states('sensor.soterrani_centre_temperatura') -%}
-            {%- set hr_ext = states('sensor.exterior_humitat') -%}
-            {%- if is_state('input_boolean.mode_calibratge', 'on') -%}
-              Mode calibratge: els sensors estan junts, no al seu lloc
-            {%- elif not is_number(td_int) -%}
-              Sense punt de rosada interior fiable
-            {%- elif not is_number(td_ext) -%}
-              Sense punt de rosada exterior fiable
-            {%- elif not is_number(t_int) -%}
-              Sense temperatura interior fiable
-            {%- else -%}
-              {%- set td_int = td_int | float -%}
-              {%- set td_ext = td_ext | float -%}
-              {%- set t_int  = t_int  | float -%}
-              {%- set delta  = td_int - td_ext -%}
-              {%- set a = 17.625 %}{% set b = 243.04 -%}
-              {%- set rh_obj = states('input_number.hr_objectiu') | float -%}
-              {%- set g_obj = log(rh_obj / 100) + (a * t_int) / (b + t_int) -%}
-              {%- set td_objectiu = (b * g_obj) / (a - g_obj) -%}
-              {%- set marge = states('sensor.marge_de_condensacio') -%}
-              {%- set marge_ok = (not is_number(marge))
-                    or (marge | float >= states('input_number.marge_superficie_min') | float) -%}
-              {%- set ventilant = this.state == 'ventilar' -%}
-              {%- set llindar = states('input_number.delta_td_off') | float if ventilant
-                                else states('input_number.delta_td_on') | float -%}
-              {%- if t_int < states('input_number.t_int_minima') | float -%}
-                Massa fred a dins ({{ '%.1f' | format(t_int) }} °C): ventilar refredaria les parets
-              {%- elif is_number(hr_ext) and hr_ext | float > states('input_number.hr_ext_bloqueig') | float -%}
-                HR exterior al {{ '%.0f' | format(hr_ext | float) }} %: el sensor pot estar mullat
-              {%- elif states('sensor.aemet_precipitation') is defined
-                       and is_number(states('sensor.aemet_precipitation'))
-                       and states('sensor.aemet_precipitation') | float > 0 -%}
-                Plou segons l'estació oficial
-              {%- elif td_int <= td_objectiu and marge_ok -%}
-                Objectiu assolit
-              {%- elif delta >= llindar -%}
-                Fora asseca: ΔTd = {{ '%.2f' | format(delta) }} °C
-              {%- elif delta <= states('input_number.delta_td_off') | float -%}
-                Fora no asseca prou: ΔTd = {{ '%.2f' | format(delta) }} °C
-              {%- else -%}
-                ΔTd = {{ '%.2f' | format(delta) }} °C, dins de la banda morta
-              {%- endif -%}
-            {%- endif -%}
-          delta_td: "{{ states('sensor.dtd_interior_exterior') }}"
-          td_interior: "{{ states('sensor.soterrani_punt_de_rosada_de_referencia') }}"
-          td_exterior: "{{ states('sensor.exterior_punt_de_rosada') }}"
-          marge_condensacio: "{{ states('sensor.marge_de_condensacio') }}"
-          punt_mes_humit: >
-            {{ state_attr('sensor.soterrani_punt_de_rosada_de_referencia', 'punt_mes_humit') }}
-          mode: "{{ states('input_select.mode_soterrani') }}"
-          calibratge: "{{ states('input_boolean.mode_calibratge') }}"
-          fase: "B — registra sense actuar"
+          punt: >
+            {% set a = 17.625 %}{% set b = 243.04 %}
+            {% set punts = {
+                 'fons':   [states('sensor.soterrani_fons_punt_de_rosada'),
+                            states('sensor.soterrani_fons_temperatura')],
+                 'centre': [states('sensor.soterrani_centre_punt_de_rosada'),
+                            states('sensor.soterrani_centre_temperatura')],
+                 'gran':   [states('sensor.soterrani_gran_punt_de_rosada'),
+                            states('sensor.soterrani_gran_temperatura')] } %}
+            {% set ns = namespace(hr=-1.0, punt='cap') %}
+            {% for nom, v in punts.items() if v[0] | is_number and v[1] | is_number %}
+              {% set td = v[0] | float %}{% set t = v[1] | float %}
+              {% set hr = 100 * e ** (a * td / (b + td) - a * t / (b + t)) %}
+              {% if hr > ns.hr %}{% set ns.hr = hr %}{% set ns.punt = nom %}{% endif %}
+            {% endfor %}
+            {{ ns.punt }}
+
+      # ─────────────────────────────────────────────────────────────────────
+      #  LA DISPERSIÓ DELS TRES PUNTS: Td més alt − Td més baix. Diu si la
+      #  humitat és general o d'un racó, que és on el deshumidificador pot
+      #  estar mal posat, i si val la pena remenar l'aire. Ja era un atribut
+      #  de la referència; com a sensor, fa estadístiques i es pot dibuixar.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: "Soterrani — dispersió del punt de rosada"
+        unique_id: soterrani_dispersio_rosada
+        default_entity_id: sensor.soterrani_dispersio_rosada
+        unit_of_measurement: "°C"
+        state_class: measurement
+        icon: mdi:arrow-expand-vertical
+        availability: >
+          {{ [ states('sensor.soterrani_fons_punt_de_rosada'),
+               states('sensor.soterrani_centre_punt_de_rosada'),
+               states('sensor.soterrani_gran_punt_de_rosada') ]
+             | select('is_number') | list | count > 1 }}
+        state: >
+          {% set v = [ states('sensor.soterrani_fons_punt_de_rosada'),
+                       states('sensor.soterrani_centre_punt_de_rosada'),
+                       states('sensor.soterrani_gran_punt_de_rosada') ]
+                     | select('is_number') | map('float') | list %}
+          {{ (v | max - v | min) | round(2) }}
+
+      # ─────────────────────────────────────────────────────────────────────
+      #  LA DECISIÓ (sensor.decisio_del_soterrani) ja no és aquí: des del
+      #  22/09/2026 és a packages/control.yaml, amb la lògica v2 en una macro
+      #  (custom_templates/decisio.jinja) que s'avalua un sol cop.
+      # ─────────────────────────────────────────────────────────────────────
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  MAGNITUDS QUE HAN DE SOBREVIURE LA PURGA
@@ -605,61 +467,3 @@ automation:
                  'sensor.exterior_temperatura' ] %}
             Sense lectura vàlida: {{ vigilats | reject('has_value') | list | join(', ') }}
           notification_id: sensor_ranci
-
-  # ───────────────────────────────────────────────────────────────────────────
-  #  El mode manual caduca sol i torna a Auto.
-  #  Resol el mode de fallada més freqüent del món real: forces una cosa un
-  #  dimarts, te'n vas, i tres setmanes després descobreixes que l'automatisme
-  #  fa un mes que no fa res.
-  # ───────────────────────────────────────────────────────────────────────────
-  - id: override_arrenca_temporitzador
-    alias: "Mode manual — arrenca la caducitat"
-    mode: single
-    trigger:
-      - platform: state
-        entity_id: input_select.mode_soterrani
-    condition:
-      - condition: template
-        value_template: >
-          {{ trigger.to_state.state not in ['Auto', 'Tot aturat'] }}
-    action:
-      - service: timer.start
-        target:
-          entity_id: timer.override_manual
-
-  - id: override_caduca
-    alias: "Mode manual — torna a Auto en caducar"
-    mode: single
-    trigger:
-      - platform: event
-        event_type: timer.finished
-        event_data:
-          entity_id: timer.override_manual
-    action:
-      - service: input_select.select_option
-        target:
-          entity_id: input_select.mode_soterrani
-        data:
-          option: Auto
-
-  # «Tot aturat» no caduca (és per a manteniment o vacances), però recorda's
-  # cada dia que hi és.
-  - id: recordatori_tot_aturat
-    alias: "Recordatori — el soterrani està en «Tot aturat»"
-    mode: single
-    trigger:
-      - platform: time
-        at: "10:00:00"
-    condition:
-      - condition: state
-        entity_id: input_select.mode_soterrani
-        state: "Tot aturat"
-    action:
-      - service: persistent_notification.create
-        data:
-          title: "El soterrani està aturat"
-          message: >
-            El mode «Tot aturat» porta actiu des de
-            {{ states.input_select.mode_soterrani.last_changed
-               | as_local | as_timestamp | timestamp_custom('%d/%m a les %H:%M') }}.
-          notification_id: tot_aturat

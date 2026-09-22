@@ -80,6 +80,17 @@ el corrent, **l'aparell mateix** —una lectura sencera nova a les 20:12:11, no 
 **Conseqüència:** la 🔴 de fases 0.2b queda tancada, i l'arquitectura (a) —l'higròstat de
 l'aparell regula, HA només fa l'enclavament i els horaris— queda **confirmada**.
 
+> ⚠️ ***22/09/2026, 00:37 — no sempre recorda.*** En moure l'aparell de lloc, **apagat (en
+> espera) i sense corrent una estona més llarga**, va tornar amb **Manual · continu (35) ·
+> velocitat mitjana**, que sembla la configuració de fàbrica: tenia AUTO · 55 % · velocitat alta.
+> O sigui que la memòria aguanta el cas provat (engegat, 1 minut) i no aquest. Encara no se sap
+> si el que la fa perdre és la **durada del tall** o que estigués **apagat**.
+>
+> **No és perillós**: el valor de fàbrica és *assecar sense parar*, que es passa de llarg però no
+> deixa el soterrani sense protecció. Però vol dir que **HA ha de tornar a posar la configuració
+> cada cop que l'aparell torna del corrent**, no només quan arrenca HA →
+> [logica-v2.md](logica-v2.md) i [pendents.md](../pendents.md).
+
 Dues coses que va ensenyar de passada:
 
 - ⚠️ **`tuya-local` no va marcar l'aparell com a no disponible** durant el tall: va perdre la
@@ -114,11 +125,24 @@ Mode normal i llindar en continu, 8 min per operació (20:12–20:49):
 
 ### 4. Ventilador — les tres velocitats amb el compressor
 
-⏳ **En curs** (21:34, segona tanda). La primera tanda es va espatllar: la prova del dipòsit
-(experiment 8) va aturar l'aparell just durant les velocitats mitjana i alta, i les va mesurar a
-0,8 W. El que sí que es va veure: passar de velocitat mitjana a baixa amb el compressor en
-marxa **baixa el consum ~3 W**, o sigui que amb el compressor, el ventilador és gairebé res.
-Resultats en un PR següent.
+Mode normal, llindar en continu, 5 min per velocitat (segona tanda, 21:34–21:54; la primera es
+va espatllar perquè la prova del dipòsit va aturar l'aparell enmig):
+
+| Velocitat | Watts |
+|---|---|
+| Baixa (33 %) | **356 W** |
+| Mitjana (67 %) | **358 W** |
+| Alta (100 %) | **363 W** |
+
+**Amb el compressor en marxa, la velocitat gairebé no hi compta: ~7 W de la baixa a l'alta**, i
+ni tan sols són tots del ventilador, perquè el compressor puja sol mentre s'escalfa. Sol, en
+canvi, el ventilador va de 15 a 48 W (experiment 5): amb el compressor, l'aparell no el deu fer
+anar igual.
+
+**Conseqüència per a l'eficiència: velocitat alta per defecte quan asseca**, però **a confirmar
+en litres**. Per ~7 W més mou molt més aire; alhora, més cabal refreda menys la bateria, i cada
+kg d'aire hi deixa menys aigua. Normalment guanya el cabal, sobretot amb l'aire humit, però no
+sempre. Amb fred, al soterrani, la velocitat alta a més allunya el glaç.
 
 ### 5. El ventilador sol — què costa només moure aire
 
@@ -153,16 +177,41 @@ Fase C, no una decisió.
 
 ### 6. Modes — Manual, Nit, Roba i AUTO amb el llindar en continu
 
-⏳ **En curs** (segona tanda, cap a les 21:54). La pregunta: si en AUTO, amb el llindar al
-mínim, el compressor va a la seva (el manual diu que el llindar s'ignora) i què gasta cada
-mode. Resultats en un PR següent.
+8 min per mode (10 en AUTO), segona tanda (21:54–22:28), HR de l'habitació 46–47 %:
+
+| Mode | Watts | Compressor | Què hi canvia l'aparell sol |
+|---|---|---|---|
+| Manual (`normal`) | **366 W** | 100 % | — |
+| Nit (`sleep`) | **374 W** | 100 % | Posa la velocitat **baixa** |
+| Roba (`laundry`) | **374 W** | 100 % | — |
+| AUTO | **366 W** | 100 % | — |
+
+- **Els modes no canvien què gasta el compressor**: les diferències són l'escalfament. Només
+  canvien el ventilador i **quan decideix engegar-lo**.
+- **En AUTO, al 46–47 %, va assecar sense parar**; aquell mateix vespre en AUTO, al 44 %, feia
+  tandes de 2 min i s'aturava 5. **Sembla que en AUTO manté cap al 45 %** pel seu compte, i no
+  el llindar, que en AUTO no es pot canviar (experiment 1). És una estimació de dues
+  observacions, no una mesura.
+- **Per a HA: Manual.** És l'únic mode en què el llindar mana, que és la palanca de tota la
+  lògica.
 
 ### 7. Assecat intern — quant va el ventilador després d'aturar-se
 
-⏳ **En curs** (segona tanda, cap a les 22:30). Sense assecat intern, el ventilador segueix
-**~5,5 min a 16 W** després d'aturar el compressor (experiment 1). Falta veure quant s'allarga
-amb l'assecat intern activat, que és el que el protegeix del fong per dins. Resultats en un PR
-següent.
+6 min de compressor i llindar al 80 % per aturar-lo, sense i amb l'assecat intern (22:30–22:57):
+
+| | El ventilador segueix després d'aturar el compressor |
+|---|---|
+| Sense assecat intern | **5,0 min** |
+| Amb assecat intern | **5,0 min** |
+
+**Cap diferència.** Els 5 minuts de ventilador són el comportament normal de l'aparell quan el
+llindar l'atura, i l'assecat intern no els allarga. El més probable és que l'assecat intern actuï
+quan s'**apaga** l'aparell, no quan l'atura el llindar; aquesta prova no ho cobreix →
+[pendents.md](../pendents.md). Per a HA, avui: **l'assecat intern no costa res de més** en el
+funcionament normal.
+
+La tanda va acabar restaurant bé la configuració d'abans (AUTO · 55 % · velocitat alta), ja amb
+la restauració verificada.
 
 ### 8. El dipòsit — per quina dada surt el P2
 
@@ -197,15 +246,21 @@ Per ordre d'importància. El que ja té entitat hi surt; el que no, és pendent.
 
 | Què | Per què | D'on |
 |---|---|---|
-| **El mode** | En AUTO i en Roba el llindar **no fa res**. Si algú el posa en AUTO, HA ha de saber que ja no el governa | `humidifier.deshumidificador` (mode) |
+| **El mode** | En AUTO i en Roba el llindar **no fa res** (en AUTO sembla mantenir cap al 45 % pel seu compte). Si algú el posa en AUTO, HA ha de saber que ja no el governa | `humidifier.deshumidificador` (mode) |
 | **L'estat real, pels watts** | «Endollat» no vol dir «assecant». Compressor / ventilador / espera, amb la signatura de dalt | `sensor.deshumidificador_potencia` |
 | **Dipòsit ple (P2)** | S'atura i no seca. **Codi d'avaria 32** (experiment 8). I es confirma amb els watts: ~0,8 W quan li tocaria assecar | `binary_sensor.deshumidificador_avaria` (`fault_code` 32) + watts |
 | **Avaries** | Sobretot **P34, fuita de refrigerant** (és propà) | `binary_sensor.deshumidificador_avaria` |
 | **Desgebratge (P1)** | L'hivern al soterrani: estona descongelant en comptes d'assecar | ⏳ per identificar |
 | **Hores de compressor** | El filtre cada 360 h, i les hores al dia són una casella de la Porta B. Es compten amb els watts, sense dependre de l'aparell | Watts |
 | **L'operació** | **Purificar no asseca** i posa l'aparell en mode Roba: si hi és, HA no el governa | `select.deshumidificador_mode_aire` |
+| **La velocitat** | Quan asseca, **alta per defecte**: amb el compressor només hi suma ~7 W (experiment 4). Si treu més aigua, a confirmar en litres. En mode Nit l'aparell la baixa sol | `fan.deshumidificador` |
 | **El temporitzador** | Si algú el posa a mà, s'apagarà sol | `sensor.deshumidificador_temps_restant` |
 | **El bloqueig infantil** | En un local, que ningú no li canviï el mode des dels botons | `lock.deshumidificador_bloqueig_infantil` |
+
+> ✅ ***22/09/2026 — a HA** (lògica v2, Fase 2, `config/packages/deshumidificador.yaml`):* l'estat
+> real pels watts (`sensor.deshumidificador_estat`), les hores de compressor i de
+> funcionament, les hores del filtre, la seva HR com a sensor (només amb el ventilador en
+> marxa), i els avisos de dipòsit (codi 32), d'avaria i de mode AUTO o Roba.
 
 ## Si HA cau: el pla B ja hi és, i no demana programar res a l'aparell
 
@@ -215,6 +270,10 @@ es valgui per si mateix:
 
 1. **Configuració de repòs: Manual · 55 % · velocitat alta · bomba activada · bloqueig
    infantil.** És on HA el deixa sempre, i on es queda si HA cau.
+   *(22/09/2026: amb la lògica v2 el llindar el posa la decisió —el del tram—, i l'executor de
+   la Fase 3 el torna a posar **quan arrenca HA, quan l'aparell torna del corrent** —pels
+   watts de l'endoll— **i cada 15 minuts** si algú l'ha tocat, sempre en Manual i en l'ordre
+   que ensenyen els experiments. Només amb `input_boolean.actuacio_deshumidificador` encès.)*
 2. **Els canvis de HA, sempre temporals i amb tornada.** Si HA el posa en continu per aprofitar
    la vall i cau enmig, l'aparell es quedaria assecant sense parar: no fa mal, però paga punta.
    Per això HA ha de **restaurar la configuració de repòs cada cop que arrenca**.
@@ -222,6 +281,9 @@ es valgui per si mateix:
    sol (experiment 2).
 4. **L'app Smart Life**, pel núvol, segueix sent una via manual independent d'HA. Per això no
    s'ha tret l'aparell de l'app.
+
+> 📌 Què passa amb tot el sistema —no només amb el deshumidificador— si cau la llum, el portàtil
+> o internet: [home-assistant.md](home-assistant.md#què-passa-si-cau-la-llum-el-portàtil-o-internet).
 
 > ⚠️ **En AUTO, com venia, no és una configuració de repòs vàlida**: HA no li pot canviar el
 > llindar, i el que decideix l'aparell no es pot llegir enlloc.

@@ -1,0 +1,266 @@
+{#- ═══════════════════════════════════════════════════════════════════════════
+    LA DECISIÓ DEL SOTERRANI — lògica v2
+    Disseny:  docs/domotica/logica-v2.md
+    Codi:     docs/domotica/logica-v2-pla.md  (els estats un a un, i per què)
+    Rèplica:  tools/replica.py, decideix(). Ha de dir EXACTAMENT el mateix,
+              motiu inclòs, i ho comprova:
+                python3 tools/replica.py              els tests
+                python3 tools/replica.py --prova-ha   AQUESTA macro, avaluada per HA,
+                                                      contra la rèplica, cas a cas
+
+    ⚠️ LA CRIDA UN SOL LLOC: sensor.decisio_del_soterrani (packages/control.yaml).
+       Qui necessiti saber què s'ha de fer, llegeix els atributs d'aquell sensor:
+       no torna a decidir.
+
+    decideix(e, p, minuts_fins_mitjanit) → JSON
+      e   les entrades, tal com les recull control.yaml (i les grava a l'atribut
+          «entrades»): números, o none si el sensor no en dona cap de fiable; i
+          «parametres», si ja tenen els valors de partida
+      p   els paràmetres (input_number), en número; none si algun no té valor
+      minuts_fins_mitjanit   per a la renovació d'aire, que s'ha de fer dins del dia
+
+    Torna: estat · motiu · llindar · mode_aparell · velocitat · ventiladors ·
+           ventila_per_dtd · urgencia · dtd · llindar_tram · higiene_pendent
+      llindar = none      → el deshumidificador NO ES TOCA
+      ventiladors = none  → els ventiladors NO ES TOQUEN
+
+    Es recarrega sense reiniciar: homeassistant.reload_custom_templates i
+    després template.reload, perquè el sensor la torni a llegir.
+    ═══════════════════════════════════════════════════════════════════════════ -#}
+{%- macro decideix(e, p, minuts_fins_mitjanit) -%}
+  {#- Constants: canviar-les és un canvi de codi (git), no un ajust de la web.
+      Són marges contra l'oscil·lació, no objectius (logica-v2-pla.md). -#}
+  {%- set HISTERESI_URGENCIA_HR = 5 -%}
+  {%- set HISTERESI_MARGE = 0.5 -%}
+  {%- set HISTERESI_HIGIENE = 0.5 -%}
+  {%- set VELOCITAT_ALTA = 100 -%}
+  {%- set PARAMETRES = ['delta_td_on', 'delta_td_off', 'delta_td_higiene',
+                        't_int_minima', 'hr_ext_bloqueig', 'marge_superficie_min',
+                        'hr_vall', 'hr_pla', 'hr_punta', 'hr_fix',
+                        'hr_urgencia', 'hr_urgencia_objectiu', 'hr_mentre_ventila',
+                        'renovacions_dia', 'renovacions_absencia',
+                        'cabal_ventiladors', 'volum_soterrani'] -%}
+
+  {%- set o = namespace(estat='repos', motiu='', llindar=none, ventiladors=none,
+                        per_dtd=false, urgencia=none, dtd=none, llindar_tram=none,
+                        pendent=none, falta=none) -%}
+  {%- for k in PARAMETRES -%}
+    {%- if o.falta is none and p.get(k) is none -%}{%- set o.falta = k -%}{%- endif -%}
+  {%- endfor -%}
+
+  {%- set mode = e.mode -%}
+  {#- Amb gent o de nit, l'aparell en mode Nit: silenciós, i la velocitat la
+      baixa ell sol (deshumidificador.md, experiment 6), o sigui que no s'hi toca. -#}
+  {%- set nit = mode in ['Ocupat', 'Silenci'] -%}
+
+  {#- ── 1–3. NO ES DECIDEIX RES ─────────────────────────────────────────── -#}
+  {%- if e.calibratge -%}
+    {%- set o.estat = 'calibratge' -%}
+    {%- set o.motiu = 'Mode calibratge: els sensors estan junts, no al seu lloc' -%}
+  {%- elif mode == 'Tot aturat' -%}
+    {%- set o.estat = 'aturat' -%}
+    {%- set o.ventiladors = false -%}
+    {%- set o.motiu = 'Tot aturat (a mà): cap ordre al deshumidificador, i els ventiladors aturats' -%}
+  {#- Sense estat previ (la primera vegada, o si es perd .storage), els
+      paràmetres valen el MÍNIM del rang fins que l'inicialitzador hi posa els
+      valors de partida. Una decisió presa en aquell instant seria falsa, i
+      amb histèresi s'hi podria quedar: la prova de punta a punta del
+      22/09/2026 va entrar en urgència amb hr_urgencia a 60. -#}
+  {%- elif not e.parametres -%}
+    {%- set o.estat = 'sense_dades' -%}
+    {%- set o.ventiladors = false -%}
+    {%- set o.motiu = 'Els paràmetres encara no tenen els valors de partida' -%}
+  {%- elif o.falta is not none -%}
+    {%- set o.estat = 'sense_dades' -%}
+    {%- set o.ventiladors = false -%}
+    {%- set o.motiu = 'Paràmetre sense valor: ' ~ o.falta -%}
+  {%- elif e.td_int is none -%}
+    {%- set o.estat = 'sense_dades' -%}
+    {%- set o.ventiladors = false -%}
+    {%- set o.motiu = 'Sense punt de rosada interior fiable' -%}
+  {%- elif e.hr_max is none -%}
+    {%- set o.estat = 'sense_dades' -%}
+    {%- set o.ventiladors = false -%}
+    {%- set o.motiu = 'Sense humitat interior fiable' -%}
+  {%- elif e.t_int is none -%}
+    {%- set o.estat = 'sense_dades' -%}
+    {%- set o.ventiladors = false -%}
+    {%- set o.motiu = 'Sense temperatura interior fiable' -%}
+  {%- else -%}
+
+    {#- ── ELS NÚMEROS ─────────────────────────────────────────────────────── -#}
+    {#- El llindar del tram, pel cost per litre. Tram desconegut: el més baix,
+        que és el costat segur. -#}
+    {%- set trams = {'vall': p.hr_vall, 'pla': p.hr_pla, 'punta': p.hr_punta} -%}
+    {%- set llindar_tram = (trams[e.tram] if e.tram in trams
+                            else [p.hr_vall, p.hr_pla, p.hr_punta] | min) | int -%}
+    {%- set tram_text = ('del tram de ' ~ e.tram) if e.tram in trams else '(tram desconegut)' -%}
+
+    {#- La referència: l'aire que entra quan es ventila. Sense ella, no es
+        ventila per ΔTd, però el deshumidificador segueix pel tram. -#}
+    {%- set ref_baixa = e.referencia != 'Exterior' -%}
+    {%- set td_ref = e.td_baixa if ref_baixa else e.td_ext -%}
+    {%- set ref_nom = 'la planta baixa' if ref_baixa else 'fora' -%}
+    {%- set dtd = none if td_ref is none else (e.td_int - td_ref) | round(2) -%}
+
+    {#- Bloquejos. L'HR de fora i la pluja vigilen el SENSOR DE FORA: només
+        compten quan és ell qui decideix. -#}
+    {%- set fred = e.t_int < p.t_int_minima -%}
+    {%- set humit_fora = not ref_baixa and e.hr_ext is not none and e.hr_ext > p.hr_ext_bloqueig -%}
+    {%- set plou = not ref_baixa and e.plou -%}
+    {%- set bloqueig = fred or humit_fora or plou -%}
+
+    {#- Ventilar per assecar, amb histèresi. Si Δ d'aturada ≥ Δ d'arrencada
+        no hi ha banda morta i el relé repicaria: no es ventila per ΔTd. -#}
+    {%- set delta_ok = p.delta_td_off < p.delta_td_on -%}
+    {%- set llindar_dtd = p.delta_td_off if e.ventila_previ else p.delta_td_on -%}
+    {%- set vol_ventilar = delta_ok and dtd is not none and dtd >= llindar_dtd -%}
+    {%- set asseca = vol_ventilar and not bloqueig -%}
+
+    {#- Renovar l'aire: minuts que falten avui, i si ara és un bon moment (no
+        mulla) o ja no queda més dia. -#}
+    {%- set renovacions = p.renovacions_absencia if mode == 'Absència' else p.renovacions_dia -%}
+    {%- set objectiu_min = renovacions * p.volum_soterrani / p.cabal_ventiladors * 60 -%}
+    {%- set pendent = none if e.minuts_ventilats is none
+                      else [objectiu_min - e.minuts_ventilats, 0] | max -%}
+    {%- set moment_bo = dtd is not none and dtd >= p.delta_td_higiene
+                        - (HISTERESI_HIGIENE if e.estat_previ == 'higiene' else 0) -%}
+    {%- set fi_de_dia = pendent is not none and pendent >= minuts_fins_mitjanit -%}
+    {%- set vol_higiene = mode == 'Prioritzar ventilació'
+                          or (pendent is not none and pendent > 0 and (moment_bo or fi_de_dia)) -%}
+
+    {#- Urgència: la HR del pitjor racó, o el marge de la paret quan hi hagi
+        la sonda. Surt amb histèresi, perquè no oscil·li al llindar. -#}
+    {%- set hr_llindar = p.hr_urgencia - (HISTERESI_URGENCIA_HR if e.urgencia_previ else 0) -%}
+    {%- set marge_llindar = p.marge_superficie_min + (HISTERESI_MARGE if e.urgencia_previ else 0) -%}
+    {%- set per_hr = e.hr_max >= hr_llindar -%}
+    {%- set per_marge = e.marge is not none and e.marge < marge_llindar -%}
+
+    {%- set hr_text = '%.1f' | format(e.hr_max) -%}
+    {%- set o.dtd = dtd -%}
+    {%- set o.llindar_tram = llindar_tram -%}
+    {%- set o.pendent = none if pendent is none else (pendent | round(0)) | int -%}
+
+    {#- ── 4–13. EL PRIMER QUE ES COMPLEIX, MANA ──────────────────────────── -#}
+    {%- if per_hr or per_marge or mode == 'Assecat intensiu' -%}
+      {%- set o.estat = 'urgencia' -%}
+      {%- set o.urgencia = 'hr' if per_hr else ('marge' if per_marge else 'mode') -%}
+      {%- set o.llindar = p.hr_urgencia_objectiu | int -%}
+      {%- if mode != 'Llindar fix' -%}
+        {#- La persona o els vapors no esperen: és el «tots dos junts» que la
+            v2 reserva a la urgència. -#}
+        {%- set o.ventiladors = asseca or mode in ['Ocupat', 'Impressió'] -%}
+        {%- set o.per_dtd = asseca -%}
+      {%- endif -%}
+      {%- if per_hr and e.hr_max >= p.hr_urgencia -%}
+        {%- set m = 'Urgència: HR màxima al ' ~ hr_text ~ ' % (llindar: '
+                    ~ ('%.0f' | format(p.hr_urgencia)) ~ ' %)' -%}
+      {%- elif per_hr -%}
+        {%- set m = 'Urgència: HR màxima al ' ~ hr_text ~ ' %, fins que baixi del '
+                    ~ ('%.0f' | format(hr_llindar)) ~ ' %' -%}
+      {%- elif per_marge and e.marge < p.marge_superficie_min -%}
+        {%- set m = 'Urgència: marge de paret de ' ~ ('%.1f' | format(e.marge))
+                    ~ ' °C (mínim: ' ~ ('%.1f' | format(p.marge_superficie_min)) ~ ' °C)' -%}
+      {%- elif per_marge -%}
+        {%- set m = 'Urgència: marge de paret de ' ~ ('%.1f' | format(e.marge))
+                    ~ ' °C, fins que passi de ' ~ ('%.1f' | format(marge_llindar)) ~ ' °C' -%}
+      {%- else -%}
+        {%- set m = 'Assecat intensiu (a mà)' -%}
+      {%- endif -%}
+      {%- if o.ventiladors and asseca -%}
+        {%- set m = m ~ " · ventiladors: l'aire de " ~ ref_nom ~ ' asseca (ΔTd = '
+                    ~ ('%.2f' | format(dtd)) ~ ' °C)' -%}
+      {%- elif o.ventiladors -%}
+        {%- set m = m ~ ' · ventiladors: ' ~ ('hi ha algú' if mode == 'Ocupat' else 'impressió') -%}
+      {%- endif -%}
+      {%- set o.motiu = m -%}
+
+    {%- elif mode == 'Ocupat' -%}
+      {%- set o.estat = 'ocupat' -%}
+      {%- set o.llindar = llindar_tram -%}
+      {%- set o.ventiladors = true -%}
+      {%- set o.motiu = 'Hi ha algú (a mà): ventilació contínua, i el deshumidificador en mode Nit al '
+                        ~ llindar_tram ~ ' % ' ~ tram_text -%}
+
+    {%- elif mode == 'Impressió' -%}
+      {%- set o.estat = 'impressio' -%}
+      {%- set o.llindar = llindar_tram -%}
+      {%- set o.ventiladors = true -%}
+      {%- set o.motiu = 'Impressió (a mà): ventilació contínua pels vapors' -%}
+
+    {%- elif mode == 'Llindar fix' -%}
+      {%- set o.estat = 'fix' -%}
+      {%- set o.llindar = p.hr_fix | int -%}
+      {%- set o.motiu = 'Llindar fix al ' ~ (p.hr_fix | int) ~ ' % (a mà): els ventiladors no es toquen' -%}
+
+    {%- elif not delta_ok -%}
+      {%- set o.estat = 'bloquejat' -%}
+      {%- set o.llindar = llindar_tram -%}
+      {%- set o.ventiladors = false -%}
+      {%- set o.motiu = "Paràmetres incoherents: el Δ d'aturada ("
+                        ~ ('%.1f' | format(p.delta_td_off)) ~ " °C) no és per sota del d'arrencada ("
+                        ~ ('%.1f' | format(p.delta_td_on)) ~ ' °C)' -%}
+
+    {%- elif mode != 'Silenci' and asseca -%}
+      {%- set o.estat = 'ventilar' -%}
+      {%- set o.llindar = p.hr_mentre_ventila | int -%}
+      {%- set o.ventiladors = true -%}
+      {%- set o.per_dtd = true -%}
+      {%- set o.motiu = "L'aire de " ~ ref_nom ~ ' asseca: ΔTd = ' ~ ('%.2f' | format(dtd)) ~ ' °C' -%}
+
+    {%- elif mode != 'Silenci' and vol_higiene and not bloqueig -%}
+      {%- set o.estat = 'higiene' -%}
+      {%- set o.llindar = p.hr_mentre_ventila | int -%}
+      {%- set o.ventiladors = true -%}
+      {%- if mode == 'Prioritzar ventilació' -%}
+        {%- set o.motiu = 'Prioritzar ventilació (a mà)' -%}
+      {%- elif moment_bo -%}
+        {%- set o.motiu = "Renovar l'aire: falten " ~ ('%.0f' | format(pendent))
+                          ~ ' min, i ara no mulla (ΔTd = ' ~ ('%.2f' | format(dtd)) ~ ' °C)' -%}
+      {%- else -%}
+        {%- set o.motiu = "Renovar l'aire: falten " ~ ('%.0f' | format(pendent))
+                          ~ " min, i s'acaba el dia" -%}
+      {%- endif -%}
+
+    {%- elif mode != 'Silenci' and (vol_ventilar or vol_higiene) -%}
+      {#- Aquí només s'hi arriba amb bloqueig: es voldria ventilar i no es pot. -#}
+      {%- set o.estat = 'bloquejat' -%}
+      {%- set o.llindar = llindar_tram -%}
+      {%- set o.ventiladors = false -%}
+      {%- set vol = 'ventilar' if vol_ventilar else "renovar l'aire" -%}
+      {%- if fred -%}
+        {%- set o.motiu = 'Es voldria ' ~ vol ~ ', però fa massa fred a dins ('
+                          ~ ('%.1f' | format(e.t_int)) ~ ' °C)' -%}
+      {%- elif humit_fora -%}
+        {%- set o.motiu = 'Es voldria ' ~ vol ~ ", però l'HR de fora és al "
+                          ~ ('%.0f' | format(e.hr_ext)) ~ ' %: el sensor pot estar mullat' -%}
+      {%- else -%}
+        {%- set o.motiu = 'Es voldria ' ~ vol ~ ", però plou segons l'estació oficial" -%}
+      {%- endif -%}
+
+    {%- elif e.hr_max > llindar_tram -%}
+      {%- set o.estat = 'deshumidificar' -%}
+      {%- set o.llindar = llindar_tram -%}
+      {%- set o.ventiladors = false -%}
+      {%- set o.motiu = ('Silenci: ' if mode == 'Silenci' else '') ~ 'HR màxima al ' ~ hr_text
+                        ~ ' %, per sobre del ' ~ llindar_tram ~ ' % ' ~ tram_text -%}
+
+    {%- else -%}
+      {%- set o.estat = 'repos' -%}
+      {%- set o.llindar = llindar_tram -%}
+      {%- set o.ventiladors = false -%}
+      {%- set o.motiu = ('Silenci: ' if mode == 'Silenci' else '') ~ 'HR màxima al ' ~ hr_text
+                        ~ ' %: dins del ' ~ llindar_tram ~ ' % ' ~ tram_text -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {#- Com ha d'estar l'aparell, si es toca: Manual i velocitat alta (només
+      ~7 W més amb el compressor, experiment 4), o mode Nit sense tocar-la. -#}
+  {%- set tocar = o.llindar is not none -%}
+  {{- {'estat': o.estat, 'motiu': o.motiu, 'llindar': o.llindar,
+       'mode_aparell': (('sleep' if nit else 'normal') if tocar else none),
+       'velocitat': ((none if nit else VELOCITAT_ALTA) if tocar else none),
+       'ventiladors': o.ventiladors, 'ventila_per_dtd': o.per_dtd,
+       'urgencia': o.urgencia, 'dtd': o.dtd, 'llindar_tram': o.llindar_tram,
+       'higiene_pendent': o.pendent} | to_json -}}
+{%- endmacro -%}

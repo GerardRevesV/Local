@@ -84,20 +84,27 @@ docs/
     publicacio-dades.md Com pugen les dades i on s'arxiven
     home-assistant.md  Muntatge del servidor i registre d'instal·lació
     runbook-servidor.md  Refer el servidor de zero: ordres, versions i paranys
-    inventari.md       Aparells existents i candidats
+    inventari.md       Aparells existents i candidats (i els tres escenaris aigua/paret)
     noms-entitats.md   Conveni de noms d'entitat — es fixa ABANS d'emparellar
     calibratge.md      Procediment del calibratge creuat dels cinc sensors
     emparellar-matter.md  Com s'afegeix un aparell per Matter sense partir la sèrie
     deshumidificador.md  Com funciona de debò, què n'ha de saber HA, i els experiments
+    logica-v2.md       La lògica v2: llindar per tram, ventilació contra la planta baixa, estats
+    logica-v2-pla.md   ⭐ Com es codifica la v2: modes, estats, paràmetres i fases
     requisits.md       El que el sistema ha de saber fer i encara no és decisió
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE
 
 config/                Configuració de Home Assistant (es desplega al local)
   configuration.yaml   `recorder`: purge_keep_days, commit_interval, exclusions
-  packages/rosada.yaml La lògica del punt de rosada — UN sol punt d'avaluació
+  packages/rosada.yaml La física: punts de rosada, ΔTd, HR màxima, marge, calibratge
+  packages/control.yaml  La decisió v2 —UN sol punt d'avaluació—, paràmetres i modes
   packages/consum.yaml W, kWh i euros de l'endoll, amb els trams de la factura
+  packages/deshumidificador.yaml  Estat real pels watts, hores, filtre i avisos
   custom_templates/tarifa.jinja  El calendari de trams i els preus — l'ÚNIC lloc
+  custom_templates/decisio.jinja La lògica v2, en una macro que només crida la decisió
+  custom_templates/executors.jinja  Com s'hi arriba: ordres al deshumidificador, ventiladors
+  custom_templates/ventiladors.jinja  L'ÚNIC lloc que diu quins relés són els ventiladors
 docker-compose.yml     Els DOS contenidors: HA (versió fixada) i matter-server
                        (digest fixat). Matter, perquè «tplink» rebutja el hub
 scripts/               Guions per al host del local (bash)
@@ -110,12 +117,13 @@ scripts/               Guions per al host del local (bash)
   inicia-serie.sh      Tanca l'experimentació i comença la sèrie probatòria
   instala-tuya-local.sh  tuya-local en una versió fixada per suma, sense HACS
 tools/                 Eines que corren a casa, no al local (Python stdlib)
-  replica.py           Rèplica offline de la lògica + test de deriva
+  replica.py           Rèplica de la decisió v2: tests, --prova-ha (contra HA) i --deriva
   valida_yaml.py       Valida el YAML abans de desplegar
   valida_xifres.py     Comprova les xifres de línies citades als docs, abans del PR
   calibratge.py        Calcula els desplaçaments de calibratge des de l'històric
   tarifa.py            El calendari de trams per segona vegada: tests i festius
   prova_deshumidificador.py  Ordre per tuya-local → watts al P110M, de punta a punta
+  analisi.py           L'històric: dipòsits, ventilació, rebot, dispersió, cost, marge
 ```
 
 ## Dades personals — regla dura

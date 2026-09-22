@@ -1,5 +1,22 @@
 # Decisió d'arquitectura — registre autoritzat
 
+> ### 🟢 Revisió del 22/09/2026 — **la lògica v2 es codifica**
+>
+> La proposta de [logica-v2.md](logica-v2.md) passa a ser la lògica de control, i es codifica
+> segons [logica-v2-pla.md](logica-v2-pla.md): per fases, **primer en ombra**. El que canvia
+> d'aquest document:
+>
+> | | Abans | Ara |
+> |---|---|---|
+> | **Què decideix** | `sensor.decisio_del_soterrani` amb la v1 | **El mateix sensor, amb la v2**: el `unique_id` es manté. La lògica passa a una macro (`custom_templates/decisio.jinja`) que el sensor, ara **per disparador**, avalua **un sol cop**: l'estat i el motiu ja no es poden desquadrar |
+> | **On viu** | `packages/rosada.yaml` | `packages/control.yaml` (paràmetres, modes, decisió, executors). `rosada.yaml` es queda la física |
+> | **Qui governa el deshumidificador** | L'endoll P110M, i el `humidifier` només per llegir i ajustar («dos amos no») | **El `humidifier`, pel llindar**, a posta. L'endoll mesura i **no s'apaga mai** (principi 6 de la v2) |
+> | **Enclavament** | Dur: o ventilador o deshumidificador (tasca C.3 de [fases.md](fases.md)) | **Superat.** Mentre ventila, el deshumidificador es queda al 70 %; en urgència treballen tots dos |
+> | **Actuar** | L'automatisme «encara no desplegat» era la Fase 0 | Dos interruptors explícits, `input_boolean.actuacio_deshumidificador` i `…_ventiladors`, **apagats** per defecte |
+> | **Paràmetres** | `initial:` a tots | **Sense `initial:`**, i uns valors de partida que es posen un sol cop. Resol R2, confirmat llegint el codi de la 2026.9.3 |
+>
+> La resta del document es manté.
+
 > ### 🟢 Revisió del 21/09/2026 — **canvia l'objectiu del projecte**
 >
 > Aquest document es va escriure amb un objectiu: **documentar les humitats per defensar la
@@ -103,7 +120,7 @@
 | **Instal·lació de HA** | **HA Container**, versió fixada, congelada fins al 10/03/2027 | `docker-compose.yml` | Supervised s'actualitza sol i decideix per tu quan reiniciar HA; HA OS et pren el host i amb ell scripts, timers i git |
 | **Stack de contenidors** | ~~Un. Només `homeassistant`~~ → **DOS**: `homeassistant` + `matter-server` *(imatge fixada per **digest**, no per etiqueta: no en publica cap de versió i «stable» es mou)* | YAML de compose (174 línies) | Segueix sense Postgres, que és el que estalviava `depends_on`, healthchecks i credencials. El segon contenidor no és una preferència: és l'únic camí local al hub que existeix avui. **Tots dos amb sostre de memòria** (1.536 + 512 MB de 3.716): amb la RAM soldada, el que evita que una fuita mati l'amfitrió és el sostre, no l'ampliació |
 | **Base de dades de l'històric** | **SQLite**, `purge_keep_days: 730`, `commit_interval: 30`, `exclude` per **llistes explícites** (mai globs) | recorder d'HA | Amb arxiu CSV diari immutable a git, el motor deixa de ser el dipòsit de la prova i Postgres només compra un mode de fallada silenciós més |
-| **Lògica de control** | **HA natiu.** Un **únic** sensor de plantilla `sensor.decisio_del_soterrani` és l'únic que avalua; l'automatisme només hi actua. `\| float` **sense valor per defecte** + `availability:` explícit | YAML + Jinja2, 1 fitxer `packages/rosada.yaml` | Un sensor de motiu que reavalua ment; un que decideix no pot mentir, i s'estalvia un subprocés cada 60 s i un fitxer d'estat paral·lel |
+| **Lògica de control** | **HA natiu.** Un **únic** sensor de plantilla `sensor.decisio_del_soterrani` és l'únic que avalua; l'automatisme només hi actua. `\| float` **sense valor per defecte** + `availability:` explícit. *(22/09/2026: la v2 en una macro que el sensor avalua un sol cop, a `packages/control.yaml` — vegeu la revisió de dalt)* | YAML + Jinja2, 1 fitxer `packages/rosada.yaml` | Un sensor de motiu que reavalua ment; un que decideix no pot mentir, i s'estalvia un subprocés cada 60 s i un fitxer d'estat paral·lel |
 | **Exportador de dades** | **Un sol script nocturn** a les 03:40 (franja vall): `VACUUM INTO` → guardes → CSV.gz + SHA-256 → segell RFC 3161 → commit+push → disc extern → ping amb estat | Python 3 **stdlib** (`sqlite3`, `csv`, `gzip`, `hashlib`, `urllib`) + `systemd timer` amb `Persistent=true` | La instantània serveix alhora de còpia i de font d'exportació, i l'exportador és el **vigilant** de la base de dades |
 | **Allotjament de les dades** | **GitHub `Local-data` privat**, un commit diari, **clau de desplegament SSH** (mai token) | git | Gratuït, fora del local, i un token que caduqués el gener de 2027 seria una fallada silenciosa just abans del venciment |
 | **Panell web** | **No n'hi ha.** Dashboards natius d'HA + app Companion per Tailscale | cap | Cobreixen 4,5 dels 5 gràfics amb zero codi, zero allotjament i zero credencials; el mig gràfic que falta no val una pàgina, una llibreria i un esquema de fitxers |
@@ -266,10 +283,10 @@ sortida, i si li cal el disc o la bateria, `comprova.sh --breu` ja els dona.
 **Fitxers que editaràs de debò: divuit.** L'estimació original deia cinc i **~635 línies**; el
 recompte real, mesurat el **21/09/2026**, és més del triple:
 
-- *Ja escrits (**~3.750 línies**):* `packages/rosada.yaml` (**665**), `packages/consum.yaml` (175), `custom_templates/tarifa.jinja` (91), `tools/tarifa.py` (211), `tools/calibratge.py` (488), `tools/replica.py` (317), `scripts/comprova.sh` (484), `scripts/bategada.sh` (201), `scripts/prepara-host.sh` (270), `scripts/instala-tuya-local.sh` (87), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
+- *Ja escrits (**~6.660 línies**):* `packages/rosada.yaml` (**469**), `packages/consum.yaml` (214), `custom_templates/tarifa.jinja` (91), `packages/control.yaml` (1026), `custom_templates/decisio.jinja` (266), `custom_templates/executors.jinja` (126), `custom_templates/ventiladors.jinja` (29), `packages/deshumidificador.yaml` (289), `tools/analisi.py` (585), `tools/tarifa.py` (211), `tools/calibratge.py` (488), `tools/replica.py` (1068), `scripts/comprova.sh` (484), `scripts/bategada.sh` (201), `scripts/prepara-host.sh` (270), `scripts/instala-tuya-local.sh` (87), `tools/valida_xifres.py` (249), `docker-compose.yml` (**174**), `scripts/inicia-serie.sh` (167), `tools/valida_yaml.py` (100), `config/configuration.yaml` (71).
 - *Per escriure (**~420**):* `nit.py` (~300), `desplega.sh` (~80), `esphome/soterrani.yaml` (~40).
 
-**~4.170 línies en total.** *(Els tres fitxers del consum i la tarifa, i el de `tuya-local`, hi van entrar el 21/09/2026, després del recompte; `bategada.sh`, i les 182 línies que el seu mode `--breu` i les comprovacions noves van sumar a `comprova.sh`, el mateix dia al vespre.)* La desviació més grossa és de `rosada.yaml`: les ~200 línies
+**~7.080 línies en total.** *(Els tres fitxers del consum i la tarifa, i el de `tuya-local`, hi van entrar el 21/09/2026, després del recompte; `bategada.sh`, i les 182 línies que el seu mode `--breu` i les comprovacions noves van sumar a `comprova.sh`, el mateix dia al vespre; els de la lògica v2, el 22/09/2026, quan la decisió i els paràmetres van passar de `rosada.yaml` a `control.yaml` i `rosada.yaml` es va quedar la física.)* La desviació més grossa és de `rosada.yaml`: les ~200 línies
 estimades no comptaven ni els comentaris, ni les guardes d'`availability:`, ni els blocs
 d'`utility_meter` i `history_stats`. La resta són **eines de verificació i de frontera** que
 l'estimació no preveia perquè no preveia que calguessin: comprovar el host, validar el YAML

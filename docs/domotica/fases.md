@@ -127,12 +127,12 @@ feina i tu menys.
 | B.1b | **Desguàs continu** del deshumidificador amb la bomba incorporada — obligatori, el dipòsit s'omple en 4 h | 👤 Tu |
 | B.1c | ✅ **Prova superada el 21/09/2026:** `tuya-local` 2026.9.1 (fixada per suma, sense HACS) el reconeix com a **D820A amb un 89 % de coincidència**, en **local** i amb protocol 3.4. Llegeix el llindar, l'HR, la temperatura i la falla, i les dotze entitats es van renombrar al cap de dos minuts. Queda saber on surten el P1 i el P2 → [inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local) — *Com era:* 🆕 **Provar `tuya-local`** amb el deshumidificador: emparellar-lo a la Wi-Fi del router SIM, configuració assistida, i veure si el reconeix. Si sí, noms fixats abans, i al principi **només lectura i llindar**. Opcional, excepte si 0.2b surt malament → [inventari.md](inventari.md#decisió-no-integrem-el-deshumidificador-per-tuya--es-reobre-provar-tuya-local) | 🤝 Tu emparelles, jo configuro |
 | B.1d | ✅ **Fet el 21/09/2026** — endoll **P110M** emparellat per Matter (node 9), amb el microprogramari ja posat abans i **les dotze entitats renombrades el mateix dia**. En surten potència i **energia**, o sigui que els kWh/dia de la Porta B tenen font → [emparellar-matter.md](emparellar-matter.md#-com-va-acabar-21092026-0345) | 🤝 Fet |
-| B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda | 👤 Tu |
-| B.3 | Compilar i pujar el firmware d'ESPHome per OTA | 🤝 Jo escric el YAML, tu compiles a casa |
-| B.4 | ✅ **Fet** — `packages/rosada.yaml` (665 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C | 🤖 Jo |
+| B.2 | Muntar el node ESP32 + 2× DS18B20 a la paret freda. *(22/09/2026: a priori, **escenari C, Ecowitt sense fils** —dues sondes WN34L i el pluviòmetre WH40 per comptar l'aigua—, pendent de veure distàncies i endolls → [tres escenaris](inventari.md#comptar-laigua-i-mesurar-la-paret--tres-escenaris-22092026))* | 👤 Tu |
+| B.3 | Compilar i pujar el firmware d'ESPHome per OTA *(no caldria amb l'escenari C: Ecowitt s'integra sense programar)* | 🤝 Jo escric el YAML, tu compiles a casa |
+| B.4 | ✅ **Fet** — `packages/rosada.yaml` (469 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C. *(22/09/2026: la decisió, els paràmetres i els modes passen a `packages/control.yaml` amb la [lògica v2](logica-v2-pla.md), en ombra)* | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
-| B.7 | ✅ **Fet** — `tools/replica.py` (317 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor | 🤖 Jo |
+| B.7 | ✅ **Fet** — `tools/replica.py` (1068 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor. *(22/09/2026: rèplica de la v2, amb `--prova-ha`, que compara la macro avaluada per HA, i `--deriva`, que torna a decidir cada fila gravada)* | 🤖 Jo |
 | B.8 | **Filtratge d'espuris en paral·lel, sense decidir res** ([R1](requisits.md#r1--netejar-les-lectures-espúries-sense-perdre-la-prova)): primer mesurar cadència, soroll base i pendent màxima creïble; després escriure'l. La sèrie crua **no es toca** | 🤖 Jo |
 | B.9 | **Avançar el guió de gràfics del dossier** (era D.1) i fer-hi la **correlació creuada Td soterrani ↔ Td exterior**: és la resposta continuada a *per on entra l'aire* | 🤖 Jo |
 | B.10 | Obrir `diari-de-la-serie.md` i anotar-hi els esdeveniments externs —pluges, visites, un sensor agafat amb la mà— perquè cada pic tingui explicació | 🤝 Tu aportes els fets, jo els munto |
@@ -178,8 +178,8 @@ feina i tu menys.
 |---|---|---|
 | C.1 | Fixar Δ_ON/Δ_OFF **amb les dades pròpies** de la Fase B | 🤝 Jo calculo, tu valides |
 | C.2 | Instal·lar relés als ventiladors | 👤 **Instal·lador autoritzat** si són cablejats |
-| C.3 | Enclavament dur ventilador/deshumidificador | 🤖 Jo |
-| C.4 | Selector de mode amb caducitat i override físic | 🤖 Jo |
+| C.3 | ~~Enclavament dur ventilador/deshumidificador~~ — **superat el 22/09/2026** per la [lògica v2](logica-v2-pla.md): el deshumidificador no s'apaga mai; mentre ventila, al 70 %, i en urgència treballen tots dos | 🤖 Jo |
+| C.4 | Selector de mode amb caducitat i override físic. *(22/09/2026: els modes de la v2 —Òptim, Ocupat, Prioritzar ventilació, Assecat intensiu, Silenci, Impressió, Absència, Llindar fix, Tot aturat— entren a la Fase 1 del [pla](logica-v2-pla.md); l'override físic, amb els S110E)* | 🤖 Jo |
 | C.5 | Anti-cicle curt **també configurat al dispositiu**, no només a HA | 🤝 Jo indico, tu configures |
 | C.6 | Comportament d'arrencada de cada endoll: deshumidificador ON, ventiladors OFF. ✅ **La meitat feta el 21/09/2026**: el P110M venia en `off` —no hauria tornat sol després d'un tall— i s'ha posat a **`on`** des d'HA (`select.deshumidificador_power_on_behavior`). Queden els S110E | 🤝 Jo ho poso, tu ho verifiques |
 | C.7 | ~~Congelació total de versions fins al 10/03/2027~~ — ✅ **sense objecte** des del 21/09/2026. Les versions segueixen fixades i s'actualitzen només a posta | 🤖 Jo |
