@@ -72,6 +72,23 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       litres ÷ kWh = el primer punt de la taula del cost per litre. Eina:
       `tools/prova_deshumidificador.py diposit`. ⚠️ L'habitació és petita i ja seca: treurà poc
       i a HR baixa, o sigui que serà un **mínim**, no la xifra del soterrani.
+      ✅ ***Primer dipòsit, 22/09:*** Manual · continu (35), compressor **de les ~00:43 a les
+      12:57:51**, quan salta el **codi 32** i l'aparell baixa a ~0,8 W (aturat 5 min a les 08:13,
+      des de l'aparell). **~12,2 h de compressor i ~4,5 kWh** (2,67 en vall, 0,72 en pla, 1,12
+      en punta: **~0,61 €**). HR de l'aparell **46–60 %** (53 % ponderada pel temps) i ~28 °C.
+      **La finestra és oberta**, o sigui que asseca aire del carrer i l'HR no cau: no espatlla
+      la prova —els litres per kWh depenen de l'aire que entra a l'aparell, no de si l'habitació
+      és tancada— i el ⚠️ d'«HR baixa» ja no hi val. Si es tanca, **apuntar-ne l'hora**.
+      En saltar el 32, `select.deshumidificador_mode_aire` passa sol de `dehumidify` a
+      `dehumidify_and_purify` (12:58:05): mirar si hi torna en buidar-lo.
+      **S'atura net i no vessa.** Amb ~3,0–3,2 L tretes: **~0,25 L/h i ~0,67–0,71 L/kWh**;
+      €/L per tram, vall ~0,13–0,14 · pla ~0,20–0,21 · punta ~0,33–0,35 → [deshumidificador.md](domotica/deshumidificador.md#9-el-primer-dipòsit-ple--22092026).
+      - [x] ~~**La gerra, una sola vegada.**~~ ✅ **Un «ple» són ~3 L**, no els 3,8 nominals: el
+            flotador talla cap al 80 %. La safata ja venia gairebé plena de les proves del 21/09:
+            l'aigua treta, ~3,0–3,2 L.
+      - [ ] **El segon dipòsit**, sense tocar res: de l'hora que es torna a posar buit al proper
+            32. Treu el marge de la safata, i ja no cal mesurar-lo:
+            `tools/analisi.py diposits --litres 3 3 …` (un valor per dipòsit).
 - [ ] **Calibratge: la nit sencera**, i demà la **rampa amb el tàper de sal i la nevera** (el
       tàper fixa el 75 % gairebé a qualsevol temperatura; la nevera hi afegeix el fred de
       l'hivern) → [calibratge.md](domotica/calibratge.md). En acabar: `tools/calibratge.py`,
@@ -623,8 +640,10 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       compressor passi estona aturat amb el ventilador en marxa i l'HR per sobre del llindar.
 - [ ] 🆕 **Una nit sencera per saber els litres per kWh** —la dada de la Porta B que falta per a
       aquest aparell—. Manual i continu, dipòsit buit, i: si s'omple, l'hora del codi 32 i els
-      kWh fins llavors donen **3,8 L / kWh** sense mesurar res; si no, l'aigua del matí amb una
-      gerra. Una hora de compressor el 21/09 no va arribar ni a mullar el dipòsit.
+      kWh fins llavors donen **~3 L / kWh** sense mesurar res (un «ple» són ~3 L, no 3,8); si
+      no, l'aigua del matí amb una gerra. Una hora de compressor el 21/09 no va arribar ni a
+      mullar el dipòsit. 🔄 *22/09: primer punt, ~0,67–0,71 L/kWh a 28 °C i 53 %; falta el
+      segon dipòsit* → [deshumidificador.md](domotica/deshumidificador.md#9-el-primer-dipòsit-ple--22092026).
 - [ ] 🆕 **Mirar a la pantalla si el llindar 35 és el «CO»** del manual (assecar sense parar).
       Es comporta com a tal, però l'aparell hauria de mostrar «CO».
 - [ ] 🆕 **Deixar-lo en la configuració de repòs** proposada: **Manual · 55 % · velocitat alta ·

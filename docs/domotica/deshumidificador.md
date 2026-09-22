@@ -2,6 +2,7 @@
 
 > Escrit el **21/09/2026**, el dia que va entrar a HA per `tuya-local`, a partir del manual i
 > de **set experiments** fets aquell vespre a casa, en una habitació apart del calibratge.
+> L'experiment 9, el primer dipòsit ple i els primers litres per kWh, és del **22/09/2026**.
 > L'aparell: **Qlima D 825 PA Smart** ([inventari.md](inventari.md#deshumidificador)).
 > Les proves es poden repetir: [`tools/prova_deshumidificador.py`](../../tools/prova_deshumidificador.py).
 
@@ -48,7 +49,8 @@ Manual oficial, pàgines 29–34 de la versió anglesa
 | **Velocitat** | 1 · 2 · 3 · AUTO | `tuya-local` en dona tres (33/67/100 %) i no l'AUTO |
 | **Reinici i memòria** | Contradictori (vegeu [inventari.md](inventari.md#-una-contradicció-al-manual-que-cal-provar)) | ✅ **Recorda-ho tot i es reprèn sol** — experiment 2 |
 | **Protecció del compressor** | 5 min entre aturada i arrencada | ✅ I **també en arrencar**: després d'un tall de corrent va esperar ~5 min abans d'engegar el compressor. Tallar l'endoll no li fa perdre la protecció — experiment 3 |
-| **Dipòsit ple (P2)** | S'atura, 10 xiulets, indicador | ✅ **Codi d'avaria 32**, tant **ple** com **tret**, i s'esborra en 1 s en posar-lo buit. **Cap xiulet** en tota la prova — experiment 8 |
+| **Dipòsit ple (P2)** | S'atura, 10 xiulets, indicador | ✅ **Codi d'avaria 32**, tant **ple** com **tret**, i s'esborra en 1 s en posar-lo buit. **Cap xiulet** en tota la prova — experiment 8. **Ple de debò, s'atura net i no vessa** — experiment 9 |
+| **Llum de color** | L'HR: vermell ≥ 80 % · groc 56–78 % · blau ≤ 54 % | ✅ **Groc i blau són l'HR; el vermell, també el dipòsit.** 22/09/2026 al matí: **groga** amb l'aparell llegint un 56–57 % i sense codi 32. A les 12:57, en saltar el **P2**, **vermella** amb l'HR al 56 %: no pot ser l'HR. **Vermell sense estar per sobre del 80 % = mirar el dipòsit** |
 | **Desgebratge (P1)** | Automàtic amb fred | Per veure a l'hivern |
 | **Bomba** | Botó PUMP; fins a 4 m | Sense bomba de moment (a casa es buida el dipòsit a mà) |
 | **Codis** | C1 · C2 · C8 (sensors) · P4 (sensor d'HR) · **P34 fuita de refrigerant** | Cap avaria vista |
@@ -239,6 +241,77 @@ Amb l'usuari al davant, que treia, omplia i tornava a posar el dipòsit (20:36�
   a ull), i abans d'arribar al dipòsit omple la safata interior —i, en un model amb bomba,
   segurament el seu dipòsit. **Els litres per kWh de debò demanen una nit sencera** →
   [pendents.md](../pendents.md).
+
+### 9. El primer dipòsit ple — 22/09/2026
+
+La nit que l'experiment 8 demanava: continu fins que s'atura sol. **És una primera mesura, i
+només val per a l'aire en què es va fer**: aire de casa a 28 °C, no el del soterrani.
+
+**Com es va mesurar:**
+
+| | |
+|---|---|
+| **On** | Una habitació de casa, apart de la del calibratge, **amb la finestra oberta** tota la prova: assecava aire que es renovava, i l'HR no va baixar mai |
+| **Configuració** | Manual · llindar 35 (continu) · velocitat alta · operació `dehumidify`, des de les 00:57. Els ~15 min d'abans, en la de fàbrica que havia recuperat en moure'l (velocitat mitjana, `dehumidify_and_purify`), que gasta el mateix (experiments 3 i 4) |
+| **L'aire** | **HR 52,8 %** (46–60 %) i **27,8 °C** (27–29 °C), mitjanes ponderades pel temps. Punt de rosada **~17 °C**, calculat de les mitjanes. Del sensor de l'aparell, **sense calibrar**; val perquè el ventilador va girar tota l'estona (experiment 2) |
+| **Energia** | El comptador del P110M (`sensor.deshumidificador_energia`), i els trams dels `utility_meter` |
+| **Aigua** | **Una gerra, a ull: «uns 3 L»** |
+| **Temps** | Del compressor en marxa al codi 32, tots dos als registres d'HA |
+| **Exterior** | Sense dada: el sensor de fora era al calibratge, a dins |
+
+**Com s'atura quan és ple de debò** —fins ara només s'havia vist amb el dipòsit tret o posat ple
+a mà—:
+
+- ✅ **Codi 32** a les **12:57:51**, el mateix que amb el dipòsit tret: per a HA, «32» vol dir
+  *cal buidar-lo*, i no distingeix si és ple o fora.
+- ✅ **S'atura net i no vessa**: de ~390 W a **~0,8 W** en menys de 5 s, i ni una gota fora.
+  **Sense els 5 min de ventilador** que fa quan l'atura el llindar (experiment 7): ho para tot.
+- 🔴 **La llum de color es posa vermella** amb l'HR al 56 %: vegeu la taula del manual, a dalt.
+- `select.deshumidificador_mode_aire` passa sol de `dehumidify` a `dehumidify_and_purify`
+  (12:58:05). Per potència les dues són iguals (experiment 3); falta veure si hi torna en buidar-lo.
+
+**Què va costar omplir-lo:**
+
+| | |
+|---|---|
+| Compressor | **de les ~00:43 a les 12:57:51: ~12,2 h**, amb una aturada de 5 min a les 08:13 des de l'aparell. L'arrencada és estimada: l'endoll no va donar dades de 00:38 a 00:47, i el comptador d'energia la situa ~5 min abans |
+| Energia | **4,51 kWh**: 2,67 en vall, 0,72 en pla i 1,12 en punta. **~370 W** de mitjana |
+| Cost | **~0,61 €** |
+
+**Quant fa un «ple»: ~3 L, no 3,8.** Mesurat amb una gerra en buidar-lo. El flotador talla
+cap al **80 % del volum nominal**: d'ara endavant, **cada codi 32 són ~3 L**, sense mesurar.
+
+**I la safata?** L'aigua que omple la safata interior abans d'arribar al dipòsit s'ha tret i no
+es veu (experiment 8: una hora de compressor no va ni mullar el dipòsit). Però aquesta vegada
+la safata ja venia **gairebé plena** de les proves del 21/09, que van sumar prou estona de
+compressor després d'aquella hora. L'aigua treta, doncs, és **~3,0–3,2 L**:
+
+| | Amb 3,0–3,2 L |
+|---|---|
+| **Litres per hora** | **~0,25–0,26 L/h** (~6 L/dia; la fitxa en diu 25 a 30 °C i 80 %) |
+| **Litres per kWh** | **~0,67–0,71 L/kWh** (1,4–1,5 kWh per litre) |
+| **€ per litre, per tram** | vall **~0,13–0,14** · pla **~0,20–0,21** · punta **~0,33–0,35** |
+
+El € per litre es dona per tram perquè el d'un dipòsit sencer (~0,20 €/L aquest cop) depèn de
+quantes hores han caigut a cada tram, no de l'aparell.
+
+**Què en falta, per tenir-ne millors mesures:**
+
+- **El segon dipòsit**, de buit a codi 32 i amb la safata segur que plena: treu el marge de la
+  safata. ~3 L entre els kWh que marqui HA, sense gerra.
+- **Punts a altres HR i temperatures.** Els L/kWh cauen amb l'HR i amb el fred: un sol punt a
+  28 °C i un 53 % no dona la corba que demana la taula de [logica-v2.md](logica-v2.md#per-què-aquests-llindars--el-cost-per-litre).
+  Cada dipòsit ple és un punt de franc: `tools/analisi.py diposits --litres 3 3 …` (un valor
+  per dipòsit, en ordre).
+- **Al soterrani, amb la bomba, no hi ha dipòsit ni codi 32**: caldrà una altra manera de
+  comptar l'aigua → [pendents.md](../pendents.md).
+
+**De passada:** ~0,67–0,71 L/kWh queda **per sota** dels ~0,8 L/kWh que
+[logica-v2.md](logica-v2.md#per-on-entra-laire--i-per-què-canvia-el-criteri) estima per
+ventilar amb un ΔTd de 0,8 °C. Si el cabal dels ventiladors fos el suposat, ventilar ja
+trauria més aigua per kWh que el deshumidificador al llindar baix. Però el cabal encara és
+hipotètic, i aquest és un sol punt, a 28 °C: al soterrani (més fred), el deshumidificador en
+traurà menys per kWh, i la comparació encara hi decanta més cap a ventilar.
 
 ## Què ha de saber HA de l'aparell
 

@@ -94,6 +94,10 @@ I a l'hivern la corba és més dreta, o sigui que tot això hi pesa encara més.
 
 > ⚠️ Són estimacions del model físic de la bateria, no mesures d'aquest aparell. La primera
 > mesura de litres per kWh (la nit amb el dipòsit) les ha de confirmar.
+>
+> *22/09/2026:* primer punt, **~0,67–0,71 L/kWh a 28 °C i un 53 % d'HR** (~3 L en 4,5 kWh)
+> → [deshumidificador.md](deshumidificador.md#9-el-primer-dipòsit-ple--22092026).
+> Un sol punt no confirma aquesta taula, que és relativa: en calen a HR i temperatures diferents.
 
 ## Per on entra l'aire — i per què canvia el criteri
 
@@ -223,7 +227,7 @@ Sense afegir cap experiment: la mateixa lògica deixa les mesures.
 
 | Pregunta | D'on surt | Ajusta |
 |---|---|---|
-| **Quanta aigua treu per kWh, i com cau amb l'HR?** | L'hora del codi 32 (dipòsit ple, 3,8 L) i els kWh fins llavors, **a partir del segon dipòsit** (el primer també omple la safata); al soterrani, amb la bomba, cal una altra via | Els tres llindars: és la dada que confirma la taula del cost per litre |
+| **Quanta aigua treu per kWh, i com cau amb l'HR?** | L'hora del codi 32 (dipòsit ple, **~3 L** mesurats; en diu 3,8) i els kWh fins llavors, **a partir del segon dipòsit** (el primer també omple la safata); al soterrani, amb la bomba, cal una altra via | Els tres llindars: és la dada que confirma la taula del cost per litre |
 | **Aguanta la sequedat el pre-assecat?** | Les dues setmanes d'experiment al 50 %: hores fins a tornar al llindar de pla | Si `hr_vall` es queda al 55 % |
 | **Asseca de debò la ventilació?** | Com baixa el Td del soterrani per hora de ventiladors, amb el ΔTd que hi havia | `delta_td_on` / `delta_td_off` |
 | **Contra què s'ha de comparar?** | Quin dels dos ΔTd gravats s'assembla més al que baixa el Td del soterrani quan es ventila | `referencia_ventilacio` |
