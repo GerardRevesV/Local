@@ -182,23 +182,24 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
       **Decidida el 22/09/2026**, i el pla per codificar-la és a
       [logica-v2-pla.md](domotica/logica-v2-pla.md): va a `packages/control.yaml` i a la macro
       `custom_templates/decisio.jinja`, no a `rosada.yaml`. Cada fase, un PR:
-  - [ ] **Fase 1 — la decisió en ombra**: grava què faria, sense tocar res. ✅ Codificada i
-        provada contra el HA de debò (22/09/2026). ⏳ **Desplegar-la recarregant**, mai mentre
-        corri la prova del dipòsit ni el calibratge, i datar-ho al registre d'instal·lació.
-  - [ ] **Porta 1**: 24 h de `replica.py --deriva` sense cap discrepància.
+  - [x] ~~**Fase 1 — la decisió en ombra**~~ ✅ **Desplegada el 22/09/2026 a les 12:14**, recarregant
+        i sense tocar cap aparell → [registre](domotica/home-assistant.md#registre-dinstallació).
+  - [ ] **Porta 1**: 24 h de `replica.py --deriva` sense cap discrepància. *(La primera passada,
+        just després de desplegar: 2 files, 0 diferències. Amb el calibratge encès la decisió diu
+        sempre `calibratge`: la porta de debò es juga quan els sensors siguin al seu lloc.)*
   - [ ] **Fase 2 — dades i gràfics**: hores de compressor i filtre, € per tram, avisos del
         dipòsit i de l'AUTO, vista *Aprendre*, i `tools/analisi.py` a casa. ✅ Codificada
-        (22/09/2026). ⏳ Desplegar-la recarregant, i **posar a zero el comptador del filtre**
-        (script) el dia que es netegi: les hores comencen a comptar quan es desplega.
+        (22/09/2026). ✅ **Desplegada** el mateix dia. ⏳ **Posar a zero el comptador del filtre**
+        (script) el dia que es netegi: les hores van començar a comptar a les 12:14.
   - [ ] 🐛 **`tools/calibratge.py --descarrega` només rep 24 h**: sense `end_time`, l'API
         d'històric de HA torna 24 h des de l'inici, o sigui **les més antigues** de les 72 que
         demana per defecte. Trobat el 22/09/2026 escrivint `analisi.py`. Qualsevol ajust fet
         amb `--descarrega` s'ha de refer un cop corregit.
   - [ ] **Fase 3 — actuació, apagada per defecte**: interfície dels ventiladors (relés
         virtuals), executors, i la configuració restaurada quan l'aparell torna del corrent.
-        ✅ Codificada (22/09/2026). ⏳ Desplegar-la **amb els dos interruptors apagats**; després,
-        24 h amb `actuacio_ventiladors` encès sobre els relés de mentida, i unes hores amb
-        `actuacio_deshumidificador` encès i algú al davant comptant xiulets.
+        ✅ Codificada i ✅ **desplegada amb els dos interruptors apagats** (22/09/2026). ⏳ Després
+        del trasllat: 24 h amb `actuacio_ventiladors` encès sobre els relés de mentida, i unes hores
+        amb `actuacio_deshumidificador` encès i algú al davant comptant xiulets.
   - [ ] **La setmana de base**, en mode *Llindar fix* amb `actuacio_deshumidificador` encès.
   - [ ] **Fase 4 — el segon nivell**, quan se sàpiga la desviació de l'higròmetre de l'aparell.
   - [ ] **Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.

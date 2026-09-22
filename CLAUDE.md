@@ -56,6 +56,10 @@ gh pr create --base main
 
 **Excepció única:** una correcció urgent amb el servidor caigut. Es fa, i es documenta després.
 
+**PR apilats** (un a sobre de l'altre, per revisar-los per separat): en fusionar-los, cadascun va a
+la seva base i **no a `main`**. Abans de fusionar el de sobre, canviar-ne la base a `main`. Va
+passar el 22/09/2026 → [runbook](docs/domotica/runbook-servidor.md#-els-pr-apilats-es-fusionen-a-la-seva-base-no-a-main).
+
 **Abans d'obrir el PR**, repassar el `git diff` sencer buscant adreça, noms propis, referència
 cadastral, números de sèrie i imports. Vegeu *Dades personals*.
 

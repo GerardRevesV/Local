@@ -1,6 +1,6 @@
 # Lògica v2 — el pla per codificar-la
 
-> **Estat: pla (22/09/2026).** Converteix en codi la proposta de [logica-v2.md](logica-v2.md),
+> **Estat: fases 0 a 3 fetes i desplegades (22/09/2026), en ombra.** Converteix en codi la proposta de [logica-v2.md](logica-v2.md),
 > per fases petites: cada una és un PR, **es desplega recarregant, sense reiniciar HA**, i es
 > pot provar sola. Mana [decisio-stack.md](decisio-stack.md), que hi apunta des de la revisió
 > del 22/09/2026. Si aquest pla i `logica-v2.md` no diuen el mateix, **mana aquest** en el
@@ -158,7 +158,7 @@ a [noms-entitats.md](noms-entitats.md) **abans de crear res**, i els pendents.
 > que arrenca **sense estat previ**, la decisió s'avaluava un instant abans que l'inicialitzador
 > posés els valors de partida, amb `hr_urgencia` al mínim del rang (60), entrava en urgència i la
 > histèresi l'hi mantenia. Ara, fins que els valors de partida hi són, diu `sense_dades`.
-> ⏳ **Pendent de desplegar.**
+> 🚀 **Desplegada el 22/09/2026 a les 12:14** → [registre](home-assistant.md#registre-dinstallació).
 
 **Entra:** `custom_templates/decisio.jinja` · `packages/control.yaml` amb els paràmetres, els
 modes i la seva caducitat, `referencia_ventilacio`, els dos interruptors d'actuació (apagats),
@@ -194,7 +194,7 @@ ordre** que no sigui de l'usuari.
 > se li dona el final (`calibratge.py` n'està afectat: pendent a part), i el comptador de
 > l'endoll **pot tornar uns Wh enrere** després d'estar no disponible (22/09, 01:06: −22 Wh),
 > que s'ha de tractar com a rebot i no com a reinici, igual que ja fa `consum.yaml`.
-> ⏳ **Pendent de desplegar.**
+> 🚀 **Desplegada el 22/09/2026 a les 12:14** → [registre](home-assistant.md#registre-dinstallació).
 
 **Entra**, al local: `sensor.soterrani_dispersio_rosada` · `sensor.deshumidificador_humitat`
 (la seva HR, només amb el ventilador en marxa) · `sensor.deshumidificador_estat` (compressor,
@@ -219,7 +219,8 @@ dipòsit salta en la propera prova; `analisi.py` treu el primer informe amb dade
 > sempre). Els relés són a `config/custom_templates/ventiladors.jinja`, l'únic lloc que diu
 > quins són. Contra l'aparell de debò, sense actuar: per portar-lo de *Manual · 35 · alta* a
 > *Manual · 55 · alta*, enviaria **una sola ordre**, el llindar. `check_config` net.
-> ⏳ **Pendent de desplegar, i tot apagat.**
+> 🚀 **Desplegada el 22/09/2026 a les 12:14, amb els dos interruptors apagats**
+> → [registre](home-assistant.md#registre-dinstallació).
 >
 > 🔧 *De pas, un canvi a la Fase 1:* els valors de partida van **per versions**
 > (`input_number.parametres_versio`), no amb una marca de sí o no. Amb la marca, el
