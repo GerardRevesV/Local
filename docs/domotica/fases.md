@@ -85,10 +85,10 @@ feina i tu menys.
 | A.8 | **Conveni de noms d'entitat** escrit al repositori | 🤖 Jo |
 | A.9 | `nit.py` + unitats systemd + guardes | 🤖 Jo (**i el provo aquí** amb una base de dades sintètica) |
 | A.10 | `desplega.sh` amb totes les portes | 🤖 Jo |
-| A.11 | Compte de healthchecks.io i els dos checks | 👤 Tu |
+| A.11 | Compte de healthchecks.io i els ~~dos~~ checks. 🔁 ***21/09/2026:*** `scripts/bategada.sh` (201 línies) **escrit**, amb el cos sortint de `comprova.sh --breu` i **dos** checks per als 30 minuts —`bategada` (el silenci) i `estat` (els `✗`)—; falten el compte, el desplegament i la prova del correu. El check `nit` espera `nit.py` (A.9) → [runbook](runbook-servidor.md#lavís-de-caiguda--healthchecksio) | 👤 Tu el compte i els checks, 🤖 jo el guió |
 | A.12 | **Restauració de prova manual verificada** | 🤝 Jo escric el procediment, tu l'executes |
 | A.13 | **~36 h amb tots els sensors junts** → *offsets*. ⚠️ No són 24 h quiets: són **rampes lentes** d'humitat en els dos sentits, perquè els Tapo donen l'HR en enters i un replà mort no deixa baixar de ±0,5 %. Procediment, pressupost d'error i criteri d'acceptació a [calibratge.md](calibratge.md); el càlcul el fa `tools/calibratge.py` | 🤝 Tu el fas, jo l'ajusto |
-| A.14 | ✅ **Fet** — `scripts/comprova.sh` (302 línies): verifica d'una passada el host, la suspensió, la tapa, Docker, **els dos contenidors un per un**, HA, els sostres de memòria i Tailscale. És el que es corre **després de cada canvi al host** i abans de donar una porta per tancada | 🤖 Jo |
+| A.14 | ✅ **Fet** — `scripts/comprova.sh` (484 línies): verifica d'una passada el host, **el corrent i la bateria**, la suspensió, la tapa, Docker, **els dos contenidors un per un**, HA, **que el recorder escriu**, els sostres de memòria, Tailscale i la bategada. És el que es corre **després de cada canvi al host** i abans de donar una porta per tancada. Amb `--breu` és el cos del ping de la bategada (A.11) | 🤖 Jo |
 | A.15 | ✅ **Fet** — `tools/valida_yaml.py` (100 línies): valida el YAML **des de casa**, abans de desplegar, sense esperar el `check_config` del contenidor | 🤖 Jo |
 | A.16 | 🔴 **Que els paràmetres sobrevisquin un reinici** ([R2](requisits.md#r2--tocar-els-paràmetres-de-lalgoritme-des-de-la-web)): provar-ho al banc de casa, decidir què es fa amb `initial:` i garantir que els `input_number` **no s'exclouen mai del `recorder`** ni de l'exportació | 🤝 Tu fas la prova de 3 min, jo corregeixo el YAML |
 | A.17 | 🔴 **Gravar la previsió des del primer dia** ([R3](requisits.md#-la-previsió-lúnica-part-que-no-té-arreglada-a-posteriori)): sensors per disparador que materialitzin el Td previst a +3 h, +12 h i +24 h. Una previsió que no es grava **no es pot reconstruir després** | 🤖 Jo |
@@ -101,8 +101,9 @@ feina i tu menys.
 - [ ] `nit.py` ha fet **tres nits seguides** de còpia correcta al disc USB. *(Deia «de commit
       correcte a `Local-data`»: superat el 21/09/2026. El que es prova —que la còpia nocturna
       no falla— es manté.)*
-- [ ] Els **dos checks** de healthchecks.io han passat a verd i he provat que **es posen
-      vermells** desconnectant el portàtil a posta.
+- [ ] Els ~~dos~~ **tres** checks de healthchecks.io (`bategada`, `estat` i `nit`) han passat a
+      verd i he provat que **es posen vermells**: `bategada` desconnectant el portàtil a posta,
+      `estat` amb `bategada.sh --falla`.
 - [ ] He **restaurat** una còpia i he obert la base de dades restaurada.
 - [ ] `desplega.sh` ha **avortat correctament** amb un YAML trencat a posta.
 - [ ] Els noms d'entitat estan fixats i escrits.

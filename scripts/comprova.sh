@@ -4,13 +4,27 @@
 #
 # Des de casa:   ssh local-ha "cd ~/Local && bash scripts/comprova.sh"
 # Al servidor:   bash scripts/comprova.sh
+#                bash scripts/comprova.sh --breu   (el cos del ping de bategada.sh)
 #
 # Surt amb codi != 0 si troba res que estigui malament de debò, de manera que
 # també es pot encadenar com a porta abans de donar un canvi per bo.
 #
 # No toca res. Només mira.
+#
+# «--breu» és el mateix guió amb menys veu, per al cos del ping de
+# healthchecks.io: sense colors ni capçaleres, dels ✓ només els que porten una
+# dada, i sense les comprovacions que no toca fer cada 30 minuts. Hi ha UNA
+# sola llista del que ha d'estar bé: si una comprovació nova entra aquí,
+# l'avís de caiguda la hereta sense tocar-lo.
 
 set -uo pipefail
+
+BREU=0
+case "${1:-}" in
+  "")      ;;
+  --breu)  BREU=1 ;;
+  *)       echo "Ús: bash scripts/comprova.sh [--breu]" >&2; exit 2 ;;
+esac
 
 # Situar-se a l'arrel del repositori. Si no es pot, s'ha de plantar aquí:
 # un guió de salut que no troba els fitxers informaria de fallades falses,
@@ -26,31 +40,94 @@ if [ ! -f "${ARREL:-}/docker-compose.yml" ]; then
 fi
 cd "$ARREL"
 
-t(){ printf '\n\033[1;34m── %s\033[0m\n' "$*"; }
-ok(){   printf '  \033[32m✓\033[0m %s\n' "$*"; }
-avis(){ printf '  \033[33m⚠\033[0m %s\n' "$*"; }
-mal(){  printf '  \033[31m✗\033[0m %s\n' "$*"; PROBLEMES=$((PROBLEMES+1)); }
+# «fet» és un ✓ que porta una dada que val la pena llegir al correu de l'avís
+# (el disc, la bateria, l'edat de l'última escriptura). En mode normal és un ✓
+# com els altres; en mode breu és l'únic ✓ que surt.
+if [ "$BREU" = 1 ]; then
+  t(){ :; }
+  ok(){ :; }
+  fet(){  printf '· %s\n' "$*"; }
+  avis(){ printf '⚠ %s\n' "$*"; }
+  mal(){  printf '✗ %s\n' "$*"; PROBLEMES=$((PROBLEMES+1)); }
+else
+  t(){ printf '\n\033[1;34m── %s\033[0m\n' "$*"; }
+  ok(){   printf '  \033[32m✓\033[0m %s\n' "$*"; }
+  fet(){  ok "$@"; }
+  avis(){ printf '  \033[33m⚠\033[0m %s\n' "$*"; }
+  mal(){  printf '  \033[31m✗\033[0m %s\n' "$*"; PROBLEMES=$((PROBLEMES+1)); }
+fi
 PROBLEMES=0
+
+# 75 → «1 min», 7400 → «2 h 3 min». Per a edats que s'han de llegir d'un cop d'ull.
+durada(){
+  local s=$1
+  if   [ "$s" -lt 60 ];    then echo "$s s"
+  elif [ "$s" -lt 3600 ];  then echo "$((s/60)) min"
+  elif [ "$s" -lt 86400 ]; then echo "$((s/3600)) h $((s%3600/60)) min"
+  else                          echo "$((s/86400)) d $((s%86400/3600)) h"
+  fi
+}
 
 # ───────────────────────────────────────────────────────────── màquina ──────
 t "Màquina"
-ok "$(uptime -p) · càrrega$(uptime | sed 's/.*load average://')"
-df -h / | awk 'NR==2{printf "  \033[32m✓\033[0m disc: %s lliures de %s (%s ple)\n",$4,$2,$5}'
-if [ -d /sys/class/power_supply/BAT0 ] || [ -d /sys/class/power_supply/BAT1 ]; then
-  B=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -1)
-  now=$(cat "$B/energy_full" 2>/dev/null || echo 0)
-  des=$(cat "$B/energy_full_design" 2>/dev/null || echo 0)
-  cap=$(cat "$B/capacity" 2>/dev/null || echo "?")
-  if [ "$des" -gt 0 ] 2>/dev/null; then
-    salut=$(( now * 100 / des ))
-    [ "$salut" -lt 60 ] && avis "bateria: $salut % de salut — el marge davant un tall s'escurça" \
-                        || ok "bateria: $salut % de salut, càrrega actual $cap %"
-  fi
+fet "$(uptime -p), des del $(uptime -s | cut -c1-16) · càrrega$(uptime | sed 's/.*load average://')"
+read -r d_lliure d_mida d_ple < <(df -h / | awk 'NR==2{print $4, $2, $5}')
+if [ "${d_ple%\%}" -lt 90 ] 2>/dev/null; then
+  fet "disc: $d_lliure lliures de $d_mida ($d_ple ple)"
+else
+  mal "disc: només $d_lliure lliures de $d_mida ($d_ple ple) — amb el disc ple el recorder deixa d'escriure"
+fi
+
+# ⚠️ El que diu si ha caigut la llum és l'ADAPTADOR, no la bateria: una bateria
+#    plena i un «Full» no volen dir que hi hagi corrent. Es busca per tipus
+#    (Mains) i no pel nom, que canvia d'un portàtil a un altre (AC, ACAD, ADP1).
+xarxa=""
+for p in /sys/class/power_supply/*; do
+  [ "$(cat "$p/type" 2>/dev/null)" = Mains ] || continue
+  [ "$(cat "$p/online" 2>/dev/null)" = 1 ] && xarxa=1 || xarxa=${xarxa:-0}
+done
+
+B=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -1)
+bateria="sense bateria"
+salut=""
+if [ -n "$B" ]; then
+  # ⚠️ Unes bateries donen energy_* (µWh) i d'altres charge_* (µAh). La
+  #    d'aquest portàtil dona charge_*, i fins al 21/09/2026 el guió només
+  #    llegia energy_*: la línia de la bateria NO havia sortit mai, i callava
+  #    sense dir-ho. Cal provar tots dos prefixos.
+  for pre in energy charge; do
+    if [ -r "$B/${pre}_full" ] && [ -r "$B/${pre}_full_design" ]; then
+      ple_ara=$(cat "$B/${pre}_full"); ple_dis=$(cat "$B/${pre}_full_design")
+      [ "${ple_dis:-0}" -gt 0 ] 2>/dev/null && salut=$(( ple_ara * 100 / ple_dis ))
+      break
+    fi
+  done
+  case "$(cat "$B/status" 2>/dev/null)" in
+    Full)           e="plena" ;;
+    Charging)       e="carregant" ;;
+    Discharging)    e="DESCARREGANT" ;;
+    "Not charging") e="sense carregar" ;;
+    *)              e="estat desconegut" ;;
+  esac
+  bateria="bateria $(cat "$B/capacity" 2>/dev/null || echo "?") % ($e)${salut:+, salut $salut %}"
+fi
+
+case "$xarxa" in
+  1) fet "corrent: sí · $bateria" ;;
+  0) mal "SENSE CORRENT — va amb la bateria: $bateria. Ha caigut la llum o el carregador" ;;
+  *) avis "no trobo l'adaptador de corrent a /sys: no puc dir si hi ha llum · $bateria" ;;
+esac
+if [ -n "$B" ] && [ -z "$salut" ]; then
+  avis "no sé llegir la salut de la bateria ($B)"
+elif [ -n "$salut" ] && [ "$salut" -lt 60 ]; then
+  avis "bateria: $salut % de salut — el marge davant un tall s'escurça (llindar del SAI)"
 fi
 
 # ───────────────────────────────────────────────────────────── serveis ──────
 t "Serveis que han de sobreviure un reinici"
-for s in ssh docker tailscaled; do
+# «cron» hi és per la bategada: si s'atura, l'avís de caiguda calla. El ping
+# no pot dir-ho (és el cron qui el llança); el silenci i aquesta línia, sí.
+for s in ssh docker tailscaled cron; do
   [ "$(systemctl is-active "$s" 2>&1)" = active ] && ok "$s actiu" || mal "$s ATURAT"
 done
 for s in sleep.target suspend.target; do
@@ -83,7 +160,7 @@ ESPERATS="homeassistant matter-server"
 for s in $ESPERATS; do
   estat=$(docker compose ps -a --format '{{.Status}}' "$s" 2>/dev/null | head -1)
   case "$estat" in
-    Up*)         ok "$s: $estat" ;;
+    Up*)         fet "$s: $estat" ;;
     Restarting*) mal "$s EN BUCLE DE REINICI: $estat" ;;
     # 137 = mort pel kernel per memòria. Vegeu «Quan el sostre es toca» a
     # docs/domotica/home-assistant.md.
@@ -112,6 +189,12 @@ fi
 t "Home Assistant"
 codi=$(curl -s -o /dev/null -w '%{http_code}' -m 10 http://127.0.0.1:8123 2>/dev/null)
 [ "$codi" = 200 ] && ok "respon a 8123" || mal "8123 no respon (codi $codi)"
+
+# En mode breu, check_config NO: aixeca un segon Home Assistant dins del
+# contenidor, amb el sostre de 1.536 MB compartit amb el que ja corre. Un cop
+# després de cada canvi, bé; cada 30 minuts, és buscar-li un OOM al contenidor
+# que grava. La configuració no canvia sola entre dos desplegaments.
+if [ "$BREU" = 0 ]; then
 
 # ⚠️ «</dev/null» NO és decoratiu: «docker compose exec -T» s'enganxa a
 # l'entrada estàndard del guió. Si aquest arriba per una canonada —«ssh host
@@ -143,6 +226,7 @@ elif printf '%s' "$sortida" | grep -qiE 'ERROR|Failed|Fatal|Incorrect config|Inv
 else
   ok "check_config net"
 fi
+fi
 
 # ──────────────────────────────────────────── el recorder, que és el moll ───
 t "L'històric — la línia que no té arreglada"
@@ -150,8 +234,26 @@ dies=$(docker compose exec -T homeassistant \
          grep -oP 'purge_keep_days:\s*\K[0-9]+' /config/configuration.yaml </dev/null 2>/dev/null | head -1)
 [ "$dies" = 730 ] && ok "purge_keep_days: 730, vist des de dins del contenidor" \
                   || mal "purge_keep_days és «$dies», hauria de ser 730"
+
+# Que el recorder ESCRIU es mira al disc, no a l'API: /api/states és la
+# màquina d'estats en memòria, i amb el recorder mort continua dient que tot va
+# bé (decisio-stack.md, «On he donat la raó», punt 1). Amb WAL, cada commit
+# (commit_interval: 30 s) toca el -wal, i el .db només es mou als checkpoints:
+# es pren el més recent dels dos. Encara que cap sensor canviés, HA escriu les
+# estadístiques de 5 minuts, o sigui que 15 minuts sense escriure és el
+# recorder aturat, o HA sense res a gravar —cosa que també és una fallada.
 db=config/home-assistant_v2.db
-[ -f "$db" ] && ok "base de dades: $(du -h "$db" | cut -f1)" || avis "encara no hi ha base de dades"
+if [ -f "$db" ]; then
+  darrera=$(stat -c %Y "$db" "$db-wal" 2>/dev/null | sort -n | tail -1)
+  edat=$(( $(date +%s) - ${darrera:-0} ))
+  if [ "$edat" -le 900 ]; then
+    fet "recorder: última escriptura fa $(durada "$edat") · base de dades $(du -h "$db" | cut -f1)"
+  else
+    mal "el recorder NO ESCRIU: l'última escriptura a la base de dades és de fa $(durada "$edat")"
+  fi
+else
+  mal "no hi ha base de dades ($db)"
+fi
 
 # ─────────────────────────────────────────────── el sostre de memòria ───────
 t "El sostre de memòria — 4 GB soldats, sense camí d'ampliació"
@@ -159,6 +261,7 @@ t "El sostre de memòria — 4 GB soldats, sense camí d'ampliació"
 # Sostres esperats, en MB. Han de quadrar amb docker-compose.yml: si algú
 # desplega un compose sense sostre, aquí ha de sonar l'alarma i no passar
 # desapercebut. Un contenidor sense sostre pot endur-se la màquina sencera.
+reinicis=""
 for par in "homeassistant:1536" "matter-server:512"; do
   c="${par%%:*}"; esperat="${par##*:}"
   if ! docker inspect "$c" >/dev/null 2>&1; then
@@ -184,19 +287,41 @@ for par in "homeassistant:1536" "matter-server:512"; do
     mal "$c: l'última aturada va ser per MEMÒRIA — hi ha un forat a l'històric"
   fi
   rc=$(docker inspect -f '{{.RestartCount}}' "$c" 2>/dev/null)
-  [ "${rc:-0}" -gt 0 ] 2>/dev/null \
+  reinicis="${reinicis:+$reinicis, }$c ${rc:-?}"
+  # En mode breu, els reinicis van a la línia de la memòria de sota: com a ⚠
+  # sortirien a cada ping fins que algú recreés el contenidor.
+  [ "$BREU" = 0 ] && [ "${rc:-0}" -gt 0 ] 2>/dev/null \
     && avis "$c: $rc reinicis des que es va crear el contenidor" \
     || true
 done
 
 # El registre que sobreviu al reinici. El journal té sostre de 200 MB
 # (prepara-host.sh), o sigui que 7 dies hi caben de llarg.
-if journalctl -k -n 1 >/dev/null 2>&1; then
-  oom=$(journalctl -k --since "-7 days" 2>/dev/null \
-          | grep -ciE 'oom-kill:|Out of memory: Killed process' || true)
-  [ "${oom:-0}" -eq 0 ] \
-    && ok "cap mort per memòria al kernel en 7 dies" \
-    || mal "$oom mort(s) per memòria al kernel en 7 dies — mira'n l'hora i cerca el forat"
+#
+# ⚠️ En mode breu, el ✗ només pel que ha passat des del ping anterior (35 min:
+#    els 30 del període i marge). healthchecks.io només avisa quan el check
+#    CANVIA d'estat: un OOM que fes fallar el check «estat» 7 dies seguits el
+#    deixaria en vermell tota la setmana, i qualsevol altre ✗ d'aquells dies
+#    passaria SENSE correu. Així, cada OOM dona un avís i prou. El recompte de
+#    7 dies hi va igualment, a la línia de la memòria.
+#
+# ⚠️ «_TRANSPORT=kernel» i NO «-k»: «-k» vol dir «--dmesg», que porta implícit
+#    «-b», o sigui NOMÉS L'ARRENCADA ACTUAL. Un OOM que acabés en reinici
+#    —justament el pitjor— desapareixia del recompte en tornar a engegar.
+#    Comprovat el 21/09/2026: amb «-k», res abans de l'última arrencada.
+oom="?"
+if journalctl _TRANSPORT=kernel -n 1 >/dev/null 2>&1; then
+  patro='oom-kill:|Out of memory: Killed process'
+  oom=$(journalctl _TRANSPORT=kernel --since "-7 days" 2>/dev/null | grep -ciE "$patro" || true)
+  if [ "$BREU" = 1 ]; then
+    oom_nou=$(journalctl _TRANSPORT=kernel --since "-35 min" 2>/dev/null | grep -ciE "$patro" || true)
+    [ "${oom_nou:-0}" -eq 0 ] \
+      || mal "$oom_nou mort(s) per memòria al kernel en l'última mitja hora — hi ha un forat a l'històric"
+  else
+    [ "${oom:-0}" -eq 0 ] \
+      && ok "cap mort per memòria al kernel en 7 dies" \
+      || mal "$oom mort(s) per memòria al kernel en 7 dies — mira'n l'hora i cerca el forat"
+  fi
 else
   avis "no puc llegir el journal del kernel — cal ser del grup «adm» o «systemd-journal»"
 fi
@@ -204,9 +329,15 @@ fi
 sw=$(cat /proc/sys/vm/swappiness 2>/dev/null || echo "?")
 [ "$sw" = 10 ] && ok "vm.swappiness=10" \
                || avis "vm.swappiness=$sw — s'espera 10 (vegeu prepara-host.sh)"
-free -m | awk '/^Mem:/{
-  if ($7 < 400) printf "  \033[33m⚠\033[0m RAM: només %s MB disponibles de %s MB\n",$7,$2;
-  else          printf "  \033[32m✓\033[0m RAM: %s MB disponibles de %s MB\n",$7,$2 }'
+# «LC_ALL=C»: en alguns idiomes «free» tradueix l'etiqueta «Mem:».
+read -r ram_disp ram_total < <(LC_ALL=C free -m | awk '/^Mem:/{print $7, $2}')
+[ "$BREU" = 1 ] \
+  && fet "memòria: $ram_disp MB disponibles de $ram_total · OOM en 7 dies: $oom · reinicis: $reinicis"
+if [ "${ram_disp:-0}" -lt 400 ] 2>/dev/null; then
+  avis "RAM: només $ram_disp MB disponibles de $ram_total MB"
+else
+  ok "RAM: $ram_disp MB disponibles de $ram_total MB"
+fi
 
 # PSI: el senyal honest de si la màquina PATEIX per memòria, per sobre del que
 # digui «free». «avg60» per sobre de zero ja vol dir esperes reals.
@@ -238,7 +369,7 @@ else
   if [ ! -s "$REAL" ]; then
     mal "l'API no respon o el testimoni no val"
   else
-    ok "$(wc -l < "$REAL") entitats a HA"
+    fet "API d'HA: respon, $(wc -l < "$REAL") entitats"
     grep -ohE "(states|state_attr|is_state)\(\s*'[a-z_]+\.[a-z0-9_]+'" config/packages/*.yaml \
       | grep -oE "[a-z_]+\.[a-z0-9_]+" | sort -u > "$REF"
     trencades=0; pendents=0
@@ -250,7 +381,9 @@ else
       esac
     done < "$REF"
     [ "$trencades" -eq 0 ] && ok "cap referència trencada als paquets"
-    [ "$pendents" -gt 0 ] && avis "$pendents referències esperen maquinari (Tapo, ESP32, AEMET) — és normal fins a la integració"
+    # (En mode breu no: seria un ⚠ fix a cada ping fins que arribi l'ESP32.)
+    [ "$BREU" = 0 ] && [ "$pendents" -gt 0 ] \
+      && avis "$pendents referències esperen maquinari (Tapo, ESP32, AEMET) — és normal fins a la integració"
 
     # El sensor que decideix: ha d'existir. Que digui «sense_dades» és correcte
     # mentre no hi hagi sensors; el que no pot és faltar.
@@ -262,26 +395,38 @@ try:
 except Exception: print("FALTA")' 2>/dev/null)
     case "$d" in
       FALTA|"") mal "sensor.decisio_del_soterrani NO EXISTEIX" ;;
-      *) ok "decisió: $d" ;;
+      *) fet "decisió: $d" ;;
     esac
   fi
 fi
 
 # ──────────────────────────────────────────────────────────── tailscale ─────
 t "Accés remot"
+# En mode breu, sense l'adreça: el cos del ping surt cap a un servei de fora,
+# i no hi ha cap motiu perquè hi vagi.
 if command -v tailscale >/dev/null 2>&1; then
-  tailscale status >/dev/null 2>&1 && ok "connectat com a $(tailscale ip -4 2>/dev/null | head -1)" \
-                                   || mal "Tailscale NO connectat"
+  if tailscale status >/dev/null 2>&1; then
+    [ "$BREU" = 1 ] && fet "tailscale: connectat" \
+                    || ok "connectat com a $(tailscale ip -4 2>/dev/null | head -1)"
+  else
+    mal "Tailscale NO connectat — des de fora no s'hi pot entrar"
+  fi
   # Directe vs DERP: per DERP funciona, però amb latència i consumint dades.
-  parell=$(tailscale status 2>/dev/null | awk '$5=="active;"||/active;/{print; exit}')
-  case "$parell" in
-    *direct*) ok "connexió DIRECTA amb l'altre node" ;;
-    *relay*|*DERP*) avis "va per DERP (relé): funciona, però amb latència i gastant dades de la SIM" ;;
-    *) avis "cap node actiu ara mateix — no es pot dir si va directe" ;;
-  esac
+  # (En mode breu no: «cap node actiu» és el normal quan ningú no hi és connectat.)
+  if [ "$BREU" = 0 ]; then
+    parell=$(tailscale status 2>/dev/null | awk '$5=="active;"||/active;/{print; exit}')
+    case "$parell" in
+      *direct*) ok "connexió DIRECTA amb l'altre node" ;;
+      *relay*|*DERP*) avis "va per DERP (relé): funciona, però amb latència i gastant dades de la SIM" ;;
+      *) avis "cap node actiu ara mateix — no es pot dir si va directe" ;;
+    esac
+  fi
 else
   mal "Tailscale no instal·lat"
 fi
+
+# El mode breu acaba aquí: el que queda és per a qui mira, no per a l'avís.
+[ "$BREU" = 1 ] && exit $(( PROBLEMES > 0 ))
 
 # ─────────────────────────────────────────────────── dades de la SIM ────────
 t "Consum de dades"
@@ -290,6 +435,43 @@ if command -v vnstat >/dev/null 2>&1; then
     || avis "vnstat encara no té prou historial"
 else
   avis "vnstat no instal·lat — sense ell no hi ha manera de saber què gasta la SIM"
+fi
+
+# ───────────────────────────────────────────────────── l'avís de caiguda ────
+# El ping no pot dir que no s'envia. Això sí: si la bategada no està
+# programada, si l'URL no hi és o si fa estona que no surt, es veu aquí.
+t "L'avís de caiguda (healthchecks.io)"
+if crontab -l 2>/dev/null | grep -v '^#' | grep -q 'scripts/bategada.sh'; then
+  ok "la bategada és a la crontab"
+else
+  mal "la bategada NO està programada — si la màquina cau, no t'assabentes (bash scripts/bategada.sh --instala)"
+fi
+# Dos secrets, un per check (vegeu la capçalera de bategada.sh): sense el de
+# «bategada» no surt res; sense el d'«estat», surt, però un ✗ no avisa.
+for par in "bategada:la bategada no sap on enviar-se" "estat:un ✗ no enviarà cap correu"; do
+  u=~/.${par%%:*}_url
+  if [ ! -r "$u" ]; then
+    mal "falta $u — ${par#*:}"
+  elif [ "$(stat -c %a "$u")" != 600 ]; then
+    avis "$u té permisos $(stat -c %a "$u"): ha de ser 600, és un secret"
+  else
+    ok "$u hi és, amb permisos 600"
+  fi
+done
+DARRERA=${XDG_STATE_HOME:-$HOME/.local/state}/bategada/darrera
+if [ -r "$DARRERA" ]; then
+  read -r quan codi_bat < "$DARRERA"
+  edat=$(( $(date +%s) - ${quan:-0} ))
+  # 45 min: el període de 30 i marge. El cron la llança als minuts 7 i 37.
+  if [ "$edat" -gt 2700 ]; then
+    mal "l'última bategada enviada és de fa $(durada "$edat") — mira «journalctl -t bategada»"
+  elif [ "${codi_bat:-0}" != 0 ]; then
+    avis "l'última bategada (fa $(durada "$edat")) portava un ✗ (codi $codi_bat): el check «estat» és en vermell"
+  else
+    ok "l'última bategada va sortir fa $(durada "$edat"), sense cap ✗"
+  fi
+else
+  avis "encara no s'ha enviat cap bategada des d'aquesta màquina"
 fi
 
 # ──────────────────────────────────────────────────────────── veredicte ─────

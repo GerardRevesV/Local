@@ -309,15 +309,20 @@ El rastre que dura és el del **kernel**, i el journal el guarda —amb sostre d
 setmanes:
 
 ```bash
-journalctl -k --since "-7 days" | grep -iE 'oom-kill:|Out of memory: Killed process'
+journalctl _TRANSPORT=kernel --since "-7 days" | grep -iE 'oom-kill:|Out of memory: Killed process'
 ```
+
+> ⚠️ **`_TRANSPORT=kernel` i no `-k`.** Aquí hi deia `journalctl -k`, i `-k` porta implícit
+> `-b`: **només l'arrencada actual**. Un OOM que acabés en reinici —justament el pitjor—
+> desapareixia del recompte en tornar a engegar. Comprovat el 21/09/2026: amb `-k` no surt res
+> d'abans de l'última arrencada. `comprova.sh` tenia el mateix error i ja està corregit.
 
 #### On ha de quedar escrit
 
 | On | Qui ho escriu | Cada quan | Estat |
 |---|---|---|---|
 | **`scripts/comprova.sh`** | el mateix guió | quan el llances | ✅ **Fet.** Verifica que tots dos sostres hi siguin i **quadrin amb el `docker-compose.yml`**, i llegeix el journal del kernel dels últims 7 dies |
-| **Cos del ping de `bategada`** | `bategada.sh` | cada 30 min | ⏳ El guió **encara no existeix** (fase A.11). Quan s'escrigui, el cos ha de portar-hi el recompte d'OOM i els reinicis dels dos contenidors |
+| **Cos del ping de `bategada`** | `bategada.sh` (el cos és `comprova.sh --breu`) | cada 30 min | ✅ **Escrit el 21/09/2026**, pendent de desplegar. Cada ping porta el **recompte d'OOM de 7 dies i els reinicis dels dos contenidors**, i fa fallar el check **`estat`** —correu al moment— si hi ha hagut un OOM **des del ping anterior**. Només des de l'anterior perquè healthchecks.io només avisa quan el check canvia d'estat: un OOM de fa sis dies el tindria en vermell tota la setmana, tapant qualsevol altre `✗` |
 | **El guió nocturn** | `nit.py` | cada nit | ⏳ `nit.py` **encara no existeix**. És l'únic dels tres que dona un registre **permanent i datat**. ⚠️ Ja **no** va a `Local-data`, que [va quedar superat el 21/09/2026](decisio-stack.md): va amb la còpia nocturna al disc USB del local |
 
 ⚠️ **Aquí hi havia un error de plantejament que val la pena deixar escrit.** El lloc natural
@@ -388,6 +393,12 @@ Que el servidor tingui bateria pròpia és un avantatge real i ja recollit: dava
 llum **Home Assistant no cau i pot registrar el tall**, cosa que té valor per a l'expedient de
 les humitats. La bateria dona **42,5 Wh reals** —el 80 % dels 53 Wh de disseny, que són
 quatre anys de desgast— i amb ~10 W de consum surten **unes 4 hores** de marge.
+
+> **Des del 21/09/2026 es vigila sola:** la càrrega, l'estat (plena, carregant,
+> **descarregant**) i la salut van al cos de **cada bategada**, i la bategada **falla** si
+> l'adaptador diu que no hi ha corrent. La salut surt de `charge_full` / `charge_full_design`
+> (**2.758 de 3.440 mAh, 80 %**, el mateix que `upower`): aquesta bateria no exposa
+> `energy_full`, i `comprova.sh`, que només mirava aquell, **no l'havia llegida mai**.
 
 ⚠️ **Però el servidor és l'únic aparell de la cadena que té bateria.** En un tall de corrent:
 
@@ -626,3 +637,4 @@ Aquí s'anirà anotant què s'ha fet realment, amb data.
 | 21/09/2026 | 🔇 **Aturat l'error de Bluetooth que omplia el log** (~250 al dia, `habluetooth.scanner … Failed to force stop scanner`). Causa: el mòdul del nucli segueix carregat, el contenidor veu `hci0` per `/sys`, HA el descobreix i en crea una entrada, i l'escàner reintenta sense dbus. **La llista negra de `prepara-host.sh` no s'havia aplicat mai**: s'hi va afegir després de l'última passada sencera del guió. Arreglat **desactivant** l'entrada de l'adaptador per l'API (17:31), **sense reiniciar** (`require_restart: false`): **0 errors** en els 10 minuts següents, contra 6 en els 30 d'abans. Desactivar i no esborrar: esborrada, HA la torna a crear. Matter no en depèn (només `after_dependencies`). Queda la llista negra, que demana reinici: després del calibratge → [runbook](runbook-servidor.md#-el-bluetooth-omple-el-log) |
 | 21/09/2026 | 💧 **El deshumidificador, a HA per `tuya-local` — en local.** Instal·lat amb `scripts/instala-tuya-local.sh` (2026.9.1, la suma **quadra també baixada des del servidor**), `check_config` net, i **reinici d'HA a les 18:49:41: API de tornada en 9 s**, amb el mode calibratge, el cost i la decisió restaurats; la mostra de cost de les 18:49:59 ja hi va anar. L'usuari fa la configuració assistida (codi d'usuari + QR de Smart Life) a les 18:57: **D820A amb un 89 % de coincidència**, protocol 3.4, a `192.168.1.104`. **Les 12 entitats renombrades a les 18:59** per l'API de WebSocket, i el dispositiu, *Deshumidificador Qlima*. `comprova.sh` tot verd, 92 entitats. En arrencar surt **un** error de permisos de Bluetooth: és d'esperar fins que s'apliqui la llista negra del mòdul, i el recurrent segueix a zero |
 | 21/09/2026 | 🧪 **Experiments amb el deshumidificador** (19:06–23:00), amb `tools/prova_deshumidificador.py` i l'usuari al davant per al dipòsit. **Obeeix** (resposta en < 10 s, 100 % del temps), **recorda la configuració sense corrent** (0.2b superada tallant l'endoll 1 min) i **espera ~5 min abans d'engegar el compressor en arrencar**. **En AUTO rebutja el llindar.** P2 = **codi d'avaria 32**. Ventilador sol: 15 · 31 · 48 W. Registre de `tuya_local` en `debug` durant la prova, per veure les dades brutes. Tot a [deshumidificador.md](deshumidificador.md) |
+| 21/09/2026 | 🫀 **L'avís de caiguda, escrit** (fase A.11): `scripts/bategada.sh`, amb el cos del ping sortint de **`comprova.sh --breu`**, un mode nou del mateix guió, i enviat a **dos checks** en una sola connexió: `bategada` (el silenci, sempre verd) i `estat` (els `✗`). La revisió del PR va trobar per què: amb un sol check, un `✗` que durés hauria tapat la mort de la màquina. Provat al servidor **sense enviar res** (`--mostra`, des d'una còpia fora de `~/Local`): **0,9 s** per passada i **11 línies, 565 bytes** de cos. De passada, **`comprova.sh` guanya el que no mirava**: si hi ha **corrent** o la màquina va amb bateria, si el **recorder escriu** de debò (edat del `-wal`, no l'API), si el disc passa del 90 %, si `cron` és actiu i si la bategada està programada i surt. I es troben **dos errors que ja hi eren**: **la línia de la bateria no havia sortit mai** (el guió llegia `energy_full` i aquesta bateria només dona `charge_full`), i **el recompte d'OOM només mirava l'arrencada actual** (`journalctl -k`). Queda: el compte de healthchecks.io, desplegar i provar-ne el correu |

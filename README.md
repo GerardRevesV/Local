@@ -16,7 +16,7 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
 | [`docs/pendents.md`](docs/pendents.md) | Llista única de coses obertes |
 | [`docs/fonts.md`](docs/fonts.md) | D'on surt cada dada i què s'ha deixat fora deliberadament |
 | [`config/`](config/) | La configuració de Home Assistant que es desplega al local, amb la lògica del punt de rosada a [`packages/rosada.yaml`](config/packages/rosada.yaml) |
-| [`scripts/`](scripts/) | Guions per al host del local: preparar-lo, comprovar-lo i [tancar l'experimentació](scripts/inicia-serie.sh) quan comença la sèrie que val com a prova |
+| [`scripts/`](scripts/) | Guions per al host del local: preparar-lo, comprovar-lo, [avisar si cau](scripts/bategada.sh) i [tancar l'experimentació](scripts/inicia-serie.sh) quan comença la sèrie que val com a prova |
 | [`tools/`](tools/) | Eines que corren a casa: rèplica offline de la lògica i validació del YAML |
 
 ## Estat actual (21 de setembre de 2026)

@@ -467,10 +467,12 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [ ] 📝 **Que un OOM deixi rastre permanent.** ⚠️ **No al `desplegaments.log`:** aquell fitxer
       l'escriu `desplega.sh` i només quan despleguem; un OOM a les 04:00 no hi cauria mai. Va
       al **guió nocturn `nit.py`** (que corre cada dia) i, com a avís, al **cos del ping de
-      `bategada`**. Cap dels dos guions no existeix encara — quan s'escriguin, han de portar-hi
-      el recompte d'OOM del kernel i els reinicis dels dos contenidors. *(Des del canvi
-      d'objectiu del 21/09/2026, `nit.py` ja no escriu a `Local-data`: va amb la còpia al
-      disc USB del local.)*
+      `bategada`**. Quan s'escriguin, han de portar-hi el recompte d'OOM del kernel i els
+      reinicis dels dos contenidors. *(Des del canvi d'objectiu del 21/09/2026, `nit.py` ja no
+      escriu a `Local-data`: va amb la còpia al disc USB del local.)*
+      ✅ ***La meitat de la bategada, escrita el 21/09/2026:*** cada ping porta l'OOM de 7 dies
+      i els reinicis, i **falla** si n'hi ha un de nou des de l'anterior. **Queda `nit.py`**,
+      que és l'únic que en deixa un registre permanent i datat.
 - [ ] 🔁 **Revisar els sostres després d'emparellar el hub.** Els 512 MB del `matter-server`
       es van triar sobre un pic mesurat amb la **xarxa Matter buida**. El marge és de 5,7× i
       hauria de sobrar, però és una xifra per confirmar, no per donar per bona.
@@ -560,10 +562,23 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       a `config/packages/rosada.yaml`: `input_number`, `input_select`, `timer` i els
       automatismes sota `automation:` amb la clau **`manual`**, que és el que impedeix que
       l'editor visual reescrigui el fitxer i bloquegi els desplegaments futurs.
-- [ ] Muntar un **avís de caiguda** (Healthchecks.io / UptimeRobot). Sense això l'accés
-      remot no serveix de res. *(Hi deia també «i una còpia de l'històric fora del local»:
-      decidit el 21/09/2026 que **no** —l'històric es queda al disc USB del local—. El que sí
-      surt del local és el tarball xifrat dels secrets; vegeu el pendent del seu destí.)*
+- [ ] 🔁 Muntar un **avís de caiguda** (~~Healthchecks.io / UptimeRobot~~ → **healthchecks.io**,
+      [decisio-stack.md](domotica/decisio-stack.md#-la-bategada-tal-com-sha-muntat)). Sense
+      això l'accés remot no serveix de res. *(Hi deia també «i una còpia de l'històric fora del
+      local»: decidit el 21/09/2026 que **no** —l'històric es queda al disc USB del local—. El
+      que sí surt del local és el tarball xifrat dels secrets; vegeu el pendent del seu destí.)*
+      ✅ ***21/09/2026 — `scripts/bategada.sh` escrit*** i provat al servidor sense enviar: el
+      cos és `comprova.sh --breu` i diu si hi ha corrent, si els contenidors corren, si HA
+      respon, si el recorder escriu, la bateria, el disc i Tailscale. **Falta, per ordre:**
+      1. 👤 Compte a healthchecks.io i **dos** checks: `bategada` (30 min, marge 3 h) i `estat`
+         (30 min, marge 1 dia). Les URL, a `~/.bategada_url` i `~/.estat_url`
+         → [runbook](domotica/runbook-servidor.md#lavís-de-caiguda--healthchecksio).
+      2. Desplegar (`git pull --ff-only`) i `bash scripts/bategada.sh --instala`.
+      3. Veure arribar la primera als dos checks, i un **correu de fallada** d'`estat` amb
+         `--falla`.
+      4. La prova de silenci de la **Porta A**: desconnectar el portàtil i rebre el correu de
+         `bategada`.
+      5. El check **`nit`**, quan existeixi `nit.py` (mateix conveni: `~/.nit_url`).
 - [ ] Valorar un **endoll intel·ligent de rearmada** per al portàtil i el router,
       independent de Home Assistant.
 - [ ] ⏸️ **Ajornat el 21/09/2026**, amb la via documental —«amb la porta oberta»,

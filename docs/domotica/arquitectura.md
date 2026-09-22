@@ -14,7 +14,7 @@
 | Panell web | 🔄 **Reobert el 21/09/2026.** Primer taulers natius d'HA; si no hi arriben, panell propi servit per HA des de `config/www/` | [decisio-stack.md](decisio-stack.md) |
 | Accés remot | ✅ Decidit: **Tailscale**, única via | [acces-remot.md](acces-remot.md) |
 | Desplegament | ✅ Decidit: **`desplega.sh`** a mà per SSH | [desplegament.md](desplegament.md) |
-| Còpies i supervisió | ✅ Decidit: disc USB + tarball xifrat setmanal **fora del local** + 2 checks. ⚠️ El tarball anava a `Local-data`: **destí per decidir** des del 21/09/2026. L'històric, només al disc USB | [decisio-stack.md](decisio-stack.md) |
+| Còpies i supervisió | ✅ Decidit: disc USB + tarball xifrat setmanal **fora del local** + ~~2~~ **3** checks *(21/09/2026: la bategada es parteix en `bategada` i `estat`, vegeu [decisio-stack.md](decisio-stack.md#-la-bategada-tal-com-sha-muntat))*. ⚠️ El tarball anava a `Local-data`: **destí per decidir** des del 21/09/2026. L'històric, només al disc USB | [decisio-stack.md](decisio-stack.md) |
 | Ràdio | ✅ **868 MHz sub-GHz**, hub **Tapo H110** + sensors T310/T315. ⚠️ La via cap al hub és **Matter**, no `tplink`: el hub xifra amb TPAP i `python-kasa` el rebutja. *ZHA i l'SLZB-06 van quedar superats pel maquinari ja comprat.* | [inventari.md](inventari.md) · [decisio-stack.md](decisio-stack.md) |
 | Maquinari | ✅ **Comprat i actiu**, no proposat: hub, endoll amb mesura, 5 sensors T/HR, sensor d'inundació i 2 relés. ⏳ Els relés, sense instal·lar fins a la Fase C | [inventari.md](inventari.md) |
 | Noms d'entitat | ✅ Conveni **escrit**, i ja diu «font: **Matter**» —l'avís que deia `tplink` s'ha corregit al conveni. ⏳ Falta **aplicar-lo** en emparellar el hub: renombrar després parteix la sèrie | [noms-entitats.md](noms-entitats.md) |

@@ -151,6 +151,71 @@ Després, al navegador: **http://LA-IP:8123** → crear el compte.
 > xifratge TPAP —vegeu [decisio-stack.md](decisio-stack.md)—, la via és **Matter** amb el
 > contenidor `matter-server`.
 
+### L'avís de caiguda — healthchecks.io
+
+Sense això, si la màquina cau **no te n'assabentes**. El disseny i el perquè són a
+[decisio-stack.md](decisio-stack.md#-la-bategada-tal-com-sha-muntat).
+
+**1. Al web de healthchecks.io** (compte gratuït): **dos** checks, tipus *Simple*, amb avís per
+correu. Cada un té la seva **URL de ping** (`https://hc-ping.com/…`).
+
+| Check | *Period* | *Grace* | Per a què |
+|---|---|---|---|
+| **`bategada`** | 30 minuts | **3 hores** | El silenci: rep sempre un «tot bé», i avisa si deixa d'arribar |
+| **`estat`** | 30 minuts | **1 dia** | Els `✗`: avisa al moment, i quan s'arregla. El dia de marge és perquè una mort de la màquina no doni dos correus |
+
+Per què dos i no un: [decisio-stack.md](decisio-stack.md#-la-bategada-tal-com-sha-muntat),
+punt 0.
+
+**2. Les URL, al servidor i enlloc més.** ⚠️ Són **secretes** —amb elles qualsevol pot fer
+callar l'avís— i aquest repositori és públic. Es creen amb permisos 600 des del primer byte,
+sense que passin per cap argument ni per l'historial del shell:
+
+```bash
+ssh -t local-ha '(umask 077; cat > ~/.bategada_url)'
+```
+
+```bash
+ssh -t local-ha '(umask 077; cat > ~/.estat_url)'
+```
+
+A cada una, s'enganxa l'URL del check que toca, `Enter` i `Ctrl-D`.
+
+**3. Mirar què enviaria, sense enviar res:**
+
+```bash
+ssh local-ha "cd ~/Local && bash scripts/bategada.sh --mostra"
+```
+
+Ha de començar per `OK ·` i no portar cap `✗`. Si en porta, s'arregla **abans** de programar-la:
+programada amb un `✗`, el primer correu ja seria una fallada.
+
+**4. Programar-la** (cron d'usuari, sense `sudo`; es pot repetir sense por):
+
+```bash
+ssh local-ha "cd ~/Local && bash scripts/bategada.sh --instala"
+```
+
+Deixa dues línies a la crontab: una als minuts **7 i 37** de cada hora i una **en cada
+arrencada** (el guió espera als 150 s d'engegada, que HA hagi tingut temps d'aixecar-se). Si
+no pot llegir la crontab, **no toca res**. La sortida va al journal:
+
+```bash
+ssh local-ha "journalctl -t bategada -n 20"
+```
+
+**5. Provar que avisa, en els dos sentits:**
+
+- **Fallada:** `bash scripts/bategada.sh --falla` ha de posar **`estat`** en vermell, amb un
+  correu **al moment** i `✗ PROVA` al cos. `bategada` es queda verda. La bategada següent torna
+  `estat` a verd, amb un segon correu.
+- **Silenci:** desconnectar el portàtil de la xarxa (o apagar-lo) i esperar: el correu de
+  **`bategada`** arriba **entre 3 i 3,5 h** després de l'última (el període més el marge). És
+  la prova de la **Porta A** ([fases.md](fases.md)).
+
+**`comprova.sh` vigila la bategada:** diu si és a la crontab, si les dues URL hi són amb
+permisos 600 i si la darrera ha sortit fa menys de 45 min.
+
 ---
 
 ## 7. Què hi ha instal·lat — estat del 20/09/2026
@@ -166,7 +231,8 @@ Després, al navegador: **http://LA-IP:8123** → crear el compte.
 | git | 2.43.0 | Mint |
 | Python | 3.12.3 | Mint — `nit.py` només farà servir la biblioteca estàndard |
 
-**Serveis actius a l'arrencada:** `ssh`, `docker`, `tailscaled`.
+**Serveis actius a l'arrencada:** `ssh`, `docker`, `tailscaled`, `cron` (el de Mint, de sèrie; hi penja la bategada).
+**A la crontab de l'usuari:** la bategada cap a healthchecks.io, posada per `bash scripts/bategada.sh --instala`. Les URL, a `~/.bategada_url` i `~/.estat_url` (600), fora del repositori.
 **Emmascarats a posta:** `sleep.target`, `suspend.target`, `hibernate.target`.
 **Apagat a posta:** `bluetooth`.
 **Ajustat a posta:** `vm.swappiness=10` (`/etc/sysctl.d/99-memoria.conf`, el posa `prepara-host.sh`).
@@ -388,6 +454,30 @@ Amb `config/entity_registry/list` se saben els noms reals abans de tocar res, i 
 > `rosada.yaml` s'enganxen a la seva font **en arrencar**: fins que no es reinicia, els
 > comptadors segueixen dient `unknown` encara que l'entitat nova ja existeixi.
 
+### 🪤 La bateria no diu `energy_full`
+
+A `/sys/class/power_supply/BAT*/`, unes bateries donen l'energia (`energy_full`, en µWh) i
+d'altres la càrrega (`charge_full`, en µAh). **La d'aquest portàtil només dona `charge_*`.**
+`comprova.sh` mirava només `energy_full`, i com que no hi era, es saltava la bateria **sense
+dir res**: la línia de la salut no va sortir mai, i ningú no la va trobar a faltar fins que el
+ping la va necessitar (21/09/2026). Ara prova tots dos prefixos, i si no en troba cap, avisa.
+
+La lliçó és la de sempre en aquest guió: **una comprovació que no pot llegir la dada ha de
+dir-ho**, no callar.
+
+### 🪤 healthchecks.io només avisa quan el check canvia d'estat
+
+Un check que ja és en vermell **no torna a avisar** per una fallada nova. La primera versió de
+la bategada tenia **un sol check**: un `✗` que durés —el disc al 90 %, Tailscale
+desconnectat— el deixava en vermell, i si llavors la màquina moria **no arribava cap correu**.
+Ho va trobar la revisió del PR. Per això són dos: **`bategada` rep sempre un «tot bé»** i
+només pot anar a vermell per silenci, i els `✗` van a **`estat`**.
+
+I dins d'`estat` la regla continua valent: el que el fa fallar ha de ser **l'estat d'ara**
+(sense corrent, un contenidor aturat) o **el que ha passat des del ping anterior** (un OOM dels
+últims 35 minuts), mai un recompte de dies. Un OOM de fa sis dies el tindria en vermell tota
+la setmana, i qualsevol altre `✗` d'aquells dies passaria sense correu.
+
 ---
 
 ## 9. Si s'ha de refer perquè s'ha mort el disc
@@ -401,6 +491,10 @@ L'ordre importa, perquè el que no es pot recuperar és l'històric:
 3. Restaura la base de dades de la instantània nocturna més recent.
 4. `docker compose up -d` i `check_config`.
 5. Comprova que `purge_keep_days` segueix sent **730** *a la instància en calent*, no al fitxer.
+6. **Torna a posar la bategada** ([punt 6](#lavís-de-caiguda--healthchecksio), passos 2 a 4).
+   Les URL no són a cap còpia: es tornen a copiar del web de healthchecks.io, on els checks
+   segueixen existint. Mentre no hi siguin, `bategada` **ja deu estar en vermell** des que va
+   morir el disc.
 
 > La pèrdua màxima és de **24 hores**, perquè la instantània és nocturna.
 >
