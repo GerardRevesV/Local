@@ -213,10 +213,12 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
         dipòsit i de l'AUTO, vista *Aprendre*, i `tools/analisi.py` a casa. ✅ Codificada
         (22/09/2026). ✅ **Desplegada** el mateix dia. ⏳ **Posar a zero el comptador del filtre**
         (script) el dia que es netegi: les hores van començar a comptar a les 12:14.
-  - [ ] 🐛 **`tools/calibratge.py --descarrega` només rep 24 h**: sense `end_time`, l'API
+  - [x] ~~🐛 **`tools/calibratge.py --descarrega` només rep 24 h**: sense `end_time`, l'API
         d'històric de HA torna 24 h des de l'inici, o sigui **les més antigues** de les 72 que
-        demana per defecte. Trobat el 22/09/2026 escrivint `analisi.py`. Qualsevol ajust fet
-        amb `--descarrega` s'ha de refer un cop corregit.
+        demana per defecte. Trobat el 22/09/2026 escrivint `analisi.py`.~~ ✅ **Corregit el
+        22/09/2026.** La URL de l'històric ara es construeix en un sol lloc,
+        `replica.cami_historic`, que fan servir `calibratge.py`, `replica.py` i `analisi.py`.
+        El que queda obert és **refer els ajustos antics** → a dalt, a *Aquesta nit*.
   - [ ] **Fase 3 — actuació, apagada per defecte**: interfície dels ventiladors (relés
         virtuals), executors, i la configuració restaurada quan l'aparell torna del corrent.
         ✅ Codificada i ✅ **desplegada amb els dos interruptors apagats** (22/09/2026). ⏳ Després

@@ -992,17 +992,37 @@ def reprodueix(files: list[dict], parametres_hist: dict[str, list[tuple[datetime
     return comprovades, diferents, exemples
 
 
+FORMAT_HA = "%Y-%m-%dT%H:%M:%S+00:00"
+
+
+def cami_historic(hores: float, entitats, *opcions: str, ara: datetime | None = None) -> str:
+    """El camí de /api/history de les últimes «hores», amb el final EXPLÍCIT.
+
+    És l'ÚNIC lloc on es construeix: el fan servir historic() —i, per ell,
+    analisi.py— i calibratge.py. El test és a `calibratge.py --prova`.
+
+    ⚠️ Sense «end_time», Home Assistant en torna només 24 h des de l'inici,
+       demanis les hores que demanis. Comprovat el 22/09/2026 amb HA 2026.9.3:
+       30 h demanades sense final s'aturaven just 24 h després de l'inici; amb
+       end_time=<ara> arribaven senceres.
+
+    Les dues marques van en UTC amb el fus escrit, i codificades: un «+» cru a
+    la URL arriba com un espai. Les «opcions» s'hi afegeixen tal com vénen
+    («minimal_response», «significant_changes_only=0»).
+    """
+    ara = ara or datetime.now(timezone.utc)
+    des = urllib.parse.quote((ara - timedelta(hours=hores)).strftime(FORMAT_HA))
+    fins = urllib.parse.quote(ara.strftime(FORMAT_HA))
+    return (f"/api/history/period/{des}?end_time={fins}"
+            f"&filter_entity_id={','.join(entitats)}"
+            + "".join(f"&{o}" for o in opcions))
+
+
 def historic(hores: float, entitats, *opcions: str) -> list:
-    """/api/history de les últimes «hores». ⚠️ Amb el final explícit: sense
-    «end_time», HA en torna només 24 h des de l'inici, calli el que calli
-    (trobat el 22/09/2026). El primer punt de cada sèrie és l'estat vigent a
-    l'inici, o sigui que un paràmetre que no ha canviat també hi surt."""
-    ara = datetime.now(timezone.utc)
-    des = urllib.parse.quote((ara - timedelta(hours=hores)).strftime("%Y-%m-%dT%H:%M:%S+00:00"))
-    fins = urllib.parse.quote(ara.strftime("%Y-%m-%dT%H:%M:%S+00:00"))
-    return json.loads(_crida(f"/api/history/period/{des}?end_time={fins}"
-                             f"&filter_entity_id={','.join(entitats)}"
-                             + "".join(f"&{o}" for o in opcions), temps=300))
+    """/api/history de les últimes «hores», sencer (vegeu cami_historic). El
+    primer punt de cada sèrie és l'estat vigent a l'inici, o sigui que un
+    paràmetre que no ha canviat també hi surt."""
+    return json.loads(_crida(cami_historic(hores, entitats, *opcions), temps=300))
 
 
 def deriva(hores: float) -> int:
