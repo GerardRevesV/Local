@@ -295,10 +295,38 @@ compressor després d'aquella hora. L'aigua treta, doncs, és **~3,0–3,2 L**:
 El € per litre es dona per tram perquè el d'un dipòsit sencer (~0,20 €/L aquest cop) depèn de
 quantes hores han caigut a cada tram, no de l'aparell.
 
+**Comparat amb la fitxa:**
+
+| | La fitxa | Mesurat (27,8 °C · 52,8 %) | |
+|---|---|---|---|
+| **Aigua** | **25 L/dia**, a 30 °C i 80 % ([inventari.md](inventari.md#deshumidificador)) | **~6 L/dia** | ~25 % |
+| **Potència** | **470 W** de placa | **345–396 W**, ~370 W de mitjana | ~80 % |
+| **Litres per kWh** | ~2,2, si gastés els 470 W | **~0,67–0,71** | ~30 % |
+| **Dipòsit** | 3,8 L | **~3 L** útils | ~80 % |
+
+Què se'n pot dir, amb només les dades mesurades:
+
+- **Els 25 L/dia són d'aire tropical.** A 30 °C i 80 % l'aire porta **21,5 g d'aigua per kg**
+  i té el punt de rosada a **26 °C**; el de la prova, **12,3 g/kg** i **17 °C**. L'aigua que
+  se'n pot treure no cau en proporció a l'aigua que porta, sinó més de pressa, perquè depèn de
+  quant per sobre de la bateria freda queda el punt de rosada. **Que en tregui una quarta part
+  s'explica sobretot per l'aire**, no per l'aparell. Si en treu una mica menys del que
+  s'esperaria, un sol punt amb un sensor d'HR sense calibrar no ho pot dir.
+- **Gasta menys del que diu la placa.** Els 470 W són el màxim: amb aire menys calent i menys
+  humit el compressor treballa amb menys càrrega. Per això, per calcular costos, cal fer servir
+  els **~370 W mesurats**, no la placa.
+- **L'aire de la prova no és tan lluny del soterrani de setembre.** La lectura de referència del
+  soterrani (*Fons*, 23,5 °C i 62 %, [inventari.md](inventari.md#distribució-dels-sensors)) fa
+  **11,2 g/kg** i un punt de rosada de **15,8 °C**. Al soterrani, doncs, n'hauria de treure
+  una mica menys per kWh, però del mateix ordre. A l'hivern, amb fred, molt menys.
+
 **Què en falta, per tenir-ne millors mesures:**
 
 - **El segon dipòsit**, de buit a codi 32 i amb la safata segur que plena: treu el marge de la
   safata. ~3 L entre els kWh que marqui HA, sense gerra.
+- **Un sensor calibrat a tocar de l'entrada d'aire** (un dels T315, acabat el calibratge). L'HR
+  i la temperatura d'aquesta prova són del sensor de l'aparell, sense calibrar: és el punt més
+  feble de la mesura, i el que fa que no es pugui dir si rendeix com toca.
 - **Punts a altres HR i temperatures.** Els L/kWh cauen amb l'HR i amb el fred: un sol punt a
   28 °C i un 53 % no dona la corba que demana la taula de [logica-v2.md](logica-v2.md#per-què-aquests-llindars--el-cost-per-litre).
   Cada dipòsit ple és un punt de franc: `tools/analisi.py diposits --litres 3 3 …` (un valor
