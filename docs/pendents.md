@@ -93,10 +93,11 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       tàper fixa el 75 % gairebé a qualsevol temperatura; la nevera hi afegeix el fred de
       l'hivern) → [calibratge.md](domotica/calibratge.md).
       ✅ La nit, i el **tàper al replà** des de les ~05:00 del 22/09 (73 %, 27,8 °C): els
-      desplaçaments del 21/09 **no hi valen** i tots cinc llegeixen **baix** contra la sal →
-      [el replà](domotica/calibratge.md#el-replà--22092026). ⏳ **La nevera, aquesta nit**:
-      entra **destapat**, prova de ràdio la primera mitja hora, es tapa allà dins al cap d'una
-      hora, i demà surt **tapat** → [tercera tanda](domotica/calibratge.md#tercera-tanda--la-nevera).
+      desplaçaments del 21/09 **no hi valen** i tots cinc semblen llegir **baix** contra la
+      sal (provisional) → [el replà](domotica/calibratge.md#el-replà--22092026).
+      🔄 **La nevera**: a dins des de les 12:45, ✅ ràdio bé, tapat a les 13:44. ⚠️ La pasta
+      sembla més freda que els sensors → **drap a sota i al voltant**. Demà surt **tapat** →
+      [tercera tanda](domotica/calibratge.md#tercera-tanda--la-nevera).
       Els graons ja no calen. En acabar: l'anàlisi per replans, `tools/calibratge.py`,
       aplicar els desplaçaments i **apagar el mode calibratge**.
 - [ ] ⚠️ **Refer qualsevol calibratge tret amb `--descarrega` abans del 22/09/2026.** L'eina
@@ -409,7 +410,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       humida. 🟡 **Segona tanda, 21–22/09/2026**: tàper amb sal, amb el marcador encès, replà
       al 73 % → [el replà](domotica/calibratge.md#el-replà--22092026). Dispersió de Td 0,61 °C
       sense corregir i 0,40 amb els desplaçaments del 21/09, que **no hi valen**; tots cinc
-      llegeixen baix contra la sal. ⏳ Falta el punt en fred →
+      semblen llegir baix contra la sal (provisional). ⏳ Falta el punt en fred →
       [tercera tanda, la nevera](domotica/calibratge.md#tercera-tanda--la-nevera).
       *Preparat des del 21/09/2026:* hi ha el marcador `input_boolean.mode_calibratge` —que posa
       la decisió a `calibratge` i impedeix que cap automatisme actuï—, el forat dels
