@@ -50,7 +50,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from replica import punt_de_rosada  # noqa: E402  (Magnus, sense duplicar-lo)
+from replica import cami_historic, punt_de_rosada  # noqa: E402  (Magnus i l'històric, sense duplicar-los)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -72,38 +72,17 @@ MAX_DISPERSIO_TD = 0.30     # °C — criteri d'acceptació (vegeu calibratge.md
 
 
 # ─────────────────────────────────────────────────────────────── dades ──────
-FORMAT_HA = "%Y-%m-%dT%H:%M:%S+00:00"
-
-
-def url_historic(base: str, hores: float, entitats, ara: datetime | None = None) -> str:
-    """/api/history de les últimes «hores», amb el final EXPLÍCIT.
-
-    ⚠️ Sense «end_time», Home Assistant en torna només 24 h des de l'inici,
-       demanis les hores que demanis. Comprovat el 22/09/2026 amb HA 2026.9.3:
-       30 h demanades sense final s'aturaven just 24 h després de l'inici; amb
-       end_time=<ara> arribaven senceres. Amb les 72 h per defecte, l'ajust es
-       quedava les 24 h MÉS VELLES de la finestra i perdia les 48 més recents
-       —les rampes de la caixa de sal i de la nevera— sense cap avís.
-
-    Les dues marques van en UTC amb el fus escrit, i codificades: un «+» cru a
-    la URL arriba com un espai.
-    """
-    ara = ara or datetime.now(timezone.utc)
-    des = urllib.parse.quote((ara - timedelta(hours=hores)).strftime(FORMAT_HA))
-    fins = urllib.parse.quote(ara.strftime(FORMAT_HA))
-    return (f"{base}/api/history/period/{des}?end_time={fins}"
-            f"&filter_entity_id={','.join(entitats)}&minimal_response")
-
-
 def descarrega(hores: float) -> dict[str, list[tuple[datetime, str]]]:
     """Baixa l'històric de Home Assistant. URL i testimoni per variable d'entorn.
 
     No es posa cap adreça al repositori: és públic.
 
-    ⚠️ Fins al 22/09/2026 la petició no portava «end_time» (vegeu url_historic):
-       qualsevol calibratge tret amb --descarrega abans d'aquesta correcció va
-       fer servir només les PRIMERES 24 h de la finestra, i s'ha de tornar a
-       calcular.
+    ⚠️ Fins al 22/09/2026 la petició no portava «end_time» (vegeu
+       replica.cami_historic), i HA en torna només 24 h des de l'inici. Amb les
+       72 h per defecte, l'ajust es quedava les 24 h MÉS VELLES de la finestra i
+       perdia les 48 més recents —les rampes de la caixa de sal i de la nevera—
+       sense cap avís. Qualsevol calibratge tret amb --descarrega abans
+       d'aquesta correcció s'ha de tornar a calcular.
     """
     base = os.environ.get("HA_URL", "").rstrip("/")
     testimoni = os.environ.get("HA_TOKEN", "")
@@ -120,7 +99,7 @@ def descarrega(hores: float) -> dict[str, list[tuple[datetime, str]]]:
     entitats += [f"sensor.{n}_humitat" for n in SENSORS]
     entitats.append(MARCADOR)
 
-    url = url_historic(base, hores, entitats)
+    url = base + cami_historic(hores, entitats, "minimal_response")
     peticio = urllib.request.Request(url, headers={"Authorization": f"Bearer {testimoni}"})
     with urllib.request.urlopen(peticio, timeout=120) as resposta:
         cru = json.load(resposta)
@@ -457,7 +436,7 @@ def tests() -> int:
 
     print("\nL'històric es demana sencer, amb el final explícit")
     ara = datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc)
-    url = url_historic("http://ha:8123", 72, ["sensor.x", MARCADOR], ara)
+    url = cami_historic(72, ["sensor.x", MARCADOR], "minimal_response", ara=ara)
     parts_url = urllib.parse.urlsplit(url)
     consulta = urllib.parse.parse_qs(parts_url.query, keep_blank_values=True)
     fins = consulta.get("end_time", [None])[0]
