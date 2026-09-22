@@ -76,6 +76,11 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       tàper fixa el 75 % gairebé a qualsevol temperatura; la nevera hi afegeix el fred de
       l'hivern) → [calibratge.md](domotica/calibratge.md). En acabar: `tools/calibratge.py`,
       aplicar els desplaçaments i **apagar el mode calibratge**.
+- [ ] ⚠️ **Refer qualsevol calibratge tret amb `--descarrega` abans del 22/09/2026.** L'eina
+      demanava l'històric sense `end_time`, i HA en torna només 24 h des de l'inici: amb més
+      de 24 h demanades, l'ajust feia servir **només les primeres 24 h** i perdia les rampes
+      més recents, sense avís. ✅ Eina corregida el 22/09/2026 →
+      [calibratge.md](domotica/calibratge.md#després).
 
 **Demà, a casa**
 
