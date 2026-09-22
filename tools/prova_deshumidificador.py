@@ -390,7 +390,7 @@ def exp_assecat(reg: Registre) -> None:
 
 def exp_diposit(reg: Registre, max_hores: float = 16) -> None:
     """Els litres per kWh: en continu fins que el dipòsit s'omple i l'aparell s'atura sol (codi 32).
-    Els litres els ha de mesurar algú amb una gerra: el flotador salta abans dels 3,8 L nominals.
+    El flotador salta a ~3 L, no als 3,8 nominals (mesurat amb una gerra el 22/09/2026).
     ⚠️ La safata interior s'omple abans que el dipòsit: si l'aparell no ha treballat abans, el
        primer dipòsit surt car. Es fa amb la safata ja mullada (21/09/2026)."""
     global PAS_S
@@ -412,8 +412,7 @@ def exp_diposit(reg: Registre, max_hores: float = 16) -> None:
           f" del temps · HR de l'aparell {hr[0] if hr else '—'} → {hr[-1] if hr else '—'} %")
     if kwh0 is not None and kwh1 is not None:
         kwh = kwh1 - kwh0
-        print(f"  energia: {kwh:.3f} kWh · litres per kWh = LITRES MESURATS / {kwh:.3f}")
-        print(f"  (amb els 3,8 L nominals, com a sostre: {3.8 / kwh:.2f} L/kWh si kWh > 0)" if kwh > 0 else "")
+        print(f"  energia: {kwh:.3f} kWh" + (f" · amb els ~3 L d'un ple: {3.0 / kwh:.2f} L/kWh" if kwh > 0 else ""))
 
 
 EXPERIMENTS = {"resposta": exp_resposta, "memoria": exp_memoria, "operacio": exp_operacio,

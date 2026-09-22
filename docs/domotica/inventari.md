@@ -114,7 +114,7 @@ especificacions completes, el veredicte raonat i les xifres són a
 | **Consum elèctric** | **470 W** (2,2 A) |
 | Cabal d'aire | 200 m³/h |
 | Per a estances de | 140–165 m³ *(el soterrani ≈ 115 m³ — hi cap de sobres)* |
-| Dipòsit | 3,8 L |
+| Dipòsit | 3,8 L (el flotador l'atura a **~3 L**, mesurat el 22/09/2026 → [deshumidificador.md](deshumidificador.md#9-el-primer-dipòsit-ple--22092026)) |
 | **Bomba de condensats incorporada** | ✅ Sí — la «PA» del nom |
 | **Desguàs continu** | ✅ Sí, amb el tub inclòs |
 | **Reinici automàtic després d'un tall** | ✅ **SÍ** |
@@ -314,7 +314,7 @@ feble; **«el ventilador va consumir 45 W durant 18 h/dia els 140 dies» és una
 **Què cal mesurar, i per què:**
 
 - **L'aigua que treu el deshumidificador**, en litres. Al soterrani anirà amb la bomba cap al
-  desguàs, i sense dipòsit no hi ha codi 32 que marqui «3,8 L». És la dada que confirma la taula
+  desguàs, i sense dipòsit no hi ha codi 32 que marqui «~3 L». És la dada que confirma la taula
   del cost per litre de [logica-v2.md](logica-v2.md), i una casella de la Porta B.
 - **La temperatura de la paret més freda**, amb una sonda enganxada i tapada amb aïllant. És el
   que diu si la paret s'acosta a condensar: la urgència de debò.
