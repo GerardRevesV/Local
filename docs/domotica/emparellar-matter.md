@@ -415,6 +415,6 @@ local, el router hi va amb ella i l'SSID no canvia. La regla de dalt es compleix
 ## Registre
 
 Quan estigui fet, apuntar al **registre d'instal·lació** de
-[home-assistant.md](home-assistant.md#registre-dinstal·lació): data, **model exacte**,
+[home-assistant.md](home-assistant.md#registre-dinstallació): data, **model exacte**,
 **versió de microprogramari**, i quines entitats han aparegut. I tornar a mirar la memòria del
 `matter-server`, que fins ara s'ha mesurat amb la **xarxa Matter buida**.
