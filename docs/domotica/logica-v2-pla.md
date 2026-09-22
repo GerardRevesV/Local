@@ -116,7 +116,7 @@ Tots sense `initial:` (D7). En **negreta**, els nous. Els valors són **hipòtes
 | **`hr_urgencia`** | 70 % | 60–85 · 1 | HR màxima que dispara la urgència |
 | **`hr_urgencia_objectiu`** | 50 % | 40–60 · 5 | On asseca la urgència, i s'atura sol |
 | **`hr_mentre_ventila`** | 70 % | 50–80 · 5 | El deshumidificador mentre ventila per assecar o renovar |
-| `marge_superficie_min` | 3,0 °C | 1,5–5,0 · 0,1 | Marge de paret per sota del qual és urgència (quan hi hagi els DS18B20) |
+| `marge_superficie_min` | 3,0 °C | 1,5–5,0 · 0,1 | Marge de paret per sota del qual és urgència (quan hi hagi la sonda de paret: DS18B20 o, a priori, Ecowitt) |
 | `delta_td_on` · `delta_td_off` | 2,0 · 0,8 °C | 1–5 · 0–3 | Ventilar per assecar, amb histèresi |
 | **`delta_td_higiene`** | 0,0 °C | −3–3 · 0,1 | ΔTd a partir del qual renovar ja no mulla |
 | `t_int_minima` | 13 °C | 8–18 · 0,5 | Massa fred per ventilar |
