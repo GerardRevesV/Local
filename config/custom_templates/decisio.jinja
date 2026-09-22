@@ -14,7 +14,8 @@
 
     decideix(e, p, minuts_fins_mitjanit) → JSON
       e   les entrades, tal com les recull control.yaml (i les grava a l'atribut
-          «entrades»): números, o none si el sensor no en dona cap de fiable
+          «entrades»): números, o none si el sensor no en dona cap de fiable; i
+          «parametres», si ja tenen els valors de partida
       p   els paràmetres (input_number), en número; none si algun no té valor
       minuts_fins_mitjanit   per a la renovació d'aire, que s'ha de fer dins del dia
 
@@ -60,6 +61,15 @@
     {%- set o.estat = 'aturat' -%}
     {%- set o.ventiladors = false -%}
     {%- set o.motiu = 'Tot aturat (a mà): cap ordre al deshumidificador, i els ventiladors aturats' -%}
+  {#- Sense estat previ (la primera vegada, o si es perd .storage), els
+      paràmetres valen el MÍNIM del rang fins que l'inicialitzador hi posa els
+      valors de partida. Una decisió presa en aquell instant seria falsa, i
+      amb histèresi s'hi podria quedar: la prova de punta a punta del
+      22/09/2026 va entrar en urgència amb hr_urgencia a 60. -#}
+  {%- elif not e.parametres -%}
+    {%- set o.estat = 'sense_dades' -%}
+    {%- set o.ventiladors = false -%}
+    {%- set o.motiu = 'Els paràmetres encara no tenen els valors de partida' -%}
   {%- elif o.falta is not none -%}
     {%- set o.estat = 'sense_dades' -%}
     {%- set o.ventiladors = false -%}
