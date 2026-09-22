@@ -130,7 +130,7 @@
                           or (pendent is not none and pendent > 0 and (moment_bo or fi_de_dia)) -%}
 
     {#- Urgència: la HR del pitjor racó, o el marge de la paret quan hi hagi
-        els DS18B20. Surt amb histèresi, perquè no oscil·li al llindar. -#}
+        la sonda. Surt amb histèresi, perquè no oscil·li al llindar. -#}
     {%- set hr_llindar = p.hr_urgencia - (HISTERESI_URGENCIA_HR if e.urgencia_previ else 0) -%}
     {%- set marge_llindar = p.marge_superficie_min + (HISTERESI_MARGE if e.urgencia_previ else 0) -%}
     {%- set per_hr = e.hr_max >= hr_llindar -%}
