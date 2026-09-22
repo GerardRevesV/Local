@@ -292,7 +292,7 @@ template:
       # ─────────────────────────────────────────────────────────────────────
       #  LA HR MÉS ALTA DELS TRES PUNTS — la que mira la urgència de la v2.
       #  El pitjor racó per punt de rosada no és sempre el pitjor per HR, i el
-      #  fong el marca la HR (a tocar de la paret, quan hi hagi els DS18B20).
+      #  fong el marca la HR (a tocar de la paret, quan hi hagi la sonda).
       #
       #  És la HR CALIBRADA: es desfà Magnus amb el Td calibrat de cada punt i
       #  la seva temperatura. ⚠️ Exacte perquè el calibratge de T dels tres

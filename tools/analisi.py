@@ -439,7 +439,7 @@ def informe(nom: str, dades: dict[str, Serie], litres: list[float] | None = None
         print("\n═══ Marge de la paret ═══")
         files = marge(dades)
         if all(f["minim"] is None for f in files):
-            print("  sense dades (els DS18B20 encara no hi són)")
+            print("  sense dades (la sonda de paret encara no hi és)")
         else:
             for f in files:
                 print(f"  {f['dia']:%d/%m}  per sota de 3 °C: {f['hores_sota']:.1f} h · mínim {_v(f['minim'], '.1f')} °C")
