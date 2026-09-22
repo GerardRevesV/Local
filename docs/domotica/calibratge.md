@@ -326,11 +326,14 @@ el que el consens no podia veure mai. A la resta ΔTd no li fa res, perquè s'an
 en tot el que és **absolut**: el marge contra la paret (≈0,5 °C de Td) i els llindars d'HR del
 deshumidificador.
 
-⚠️ **Amb una condició: que la tapa tanqui del tot.** Una fuita petita deixa el replà per sota del
-75,3 % i es confondria amb uns sensors que llegeixen baix; el sotrac de les 15:00 (vegeu les
-[incidències](#registre)) demostra que, si es mou, la tapa deixa entrar aire. La nevera ho
-aclarirà: si en fred tornen a llegir baix en la mateixa mesura, és cosa dels sensors, perquè
-seria molta casualitat que una fuita donés el mateix número amb un altre aire a fora.
+⚠️ **Amb dues condicions.** Que la tapa tanqui del tot: una fuita petita deixa el replà per sota
+del 75,3 % i es confondria amb uns sensors que llegeixen baix, i el sotrac de les 15:00 (vegeu
+les [incidències](#registre)) demostra que, si es mou, la tapa deixa entrar aire. I que **la
+pasta sigui a la mateixa temperatura que els sensors**: la sal fixa el 75,3 % a la seva
+temperatura, i a 28 °C cada grau de diferència són ~5 punts d'HR. Els 2,4 punts de la mediana
+equivalen a una pasta **només 0,5 °C més freda** que els sensors —la taula, per exemple—, i
+ningú no ho va mesurar. *(Es va veure a la nevera, el 22/09, on la diferència era de graus.)*
+L'ancoratge absolut, doncs, és **provisional**; les correccions **entre sensors** no en depenen.
 
 **Dispersió de Td al replà, sense corregir: 0,61 °C** (al 55 % del 21/09, 0,95).
 
@@ -356,6 +359,12 @@ convé, perquè el soterrani no hi baixarà mai.
   prestatge del mig. L'ideal són uns **8 °C**, com el soterrani.
 - **Lluny de la paret del fons**, que és on hi ha l'evaporador: és el punt més fred, i allà sí
   que podria condensar dins del tàper.
+- ⚠️ **Sobre un drap plegat i embolicat amb un altre**, secs. La sal fixa el 75,7 % **a la
+  temperatura de la pasta**; si la pasta, damunt del prestatge fred, és més freda que els
+  sensors, ells llegeixen menys (a 5 °C, cada grau de diferència són ~5 punts). El drap aïlla el
+  tàper del prestatge i dels corrents d'aire, i fa que tot sigui a la mateixa temperatura. *(Après
+  el 22/09: sense drap, 2 °C de diferència entre sensors i la pasta fent baixar l'aigua de
+  l'aire.)*
 
 ### Els riscos, i com s'eviten
 
@@ -432,3 +441,36 @@ descàrrega ha de portar `end_time`, perquè sense HA en torna només 24.
 > - **18:49:41** — **reinici d'HA** per carregar `tuya-local`, decidit amb l'usuari. L'API
 >   torna al cap de **9 s**, i als cinc sensors **no hi queda cap `unavailable` gravat** ni
 >   cap salt: la rampa humida segueix llisa.
+> - **22/09, ~05:00** — **replà** del tàper → [el replà](#el-replà--22092026).
+> - **22/09, 12:45:20** — **el tàper entra destapat a la nevera** (tercera tanda). Per
+>   col·locar-lo, els sensors s'han hagut de **tocar mínimament**; la T no en mostra rastre. En
+>   baixar l'HR de pressa, **el hub informa cada 6–12 s** per sensor: la resolució temporal
+>   d'un graó, que era la incògnita, és de segons. L'ordre de reacció: `exterior` 12:45:21,
+>   `gran` :22, `centre` :26, `baixa` :30, `fons` :36.
+> - **22/09, 13:18** — ✅ **prova de ràdio superada**: en 30 min cap sensor no calla (la T de
+>   cadascun arriba com a mínim cada 2,4 min) i no hi ha cap `unavailable`. La nevera no fa de
+>   gàbia. L'aire de dins és sec, **~40 %**, i els sensors van per 12–13 °C, encara baixant.
+> - **22/09, 13:44:35** — **tàper tapat** dins de la nevera, amb els sensors a ~8 °C. L'HR salta
+>   de ~40 a ~55 % en dos minuts: és l'aire de l'habitació que entra en obrir la porta i queda
+>   atrapat (el Td passa de −4,8 a −0,5 °C).
+> - **22/09, 13:52–14:40** — ⚠️ **l'aigua de l'aire BAIXA dins del tàper tapat** (Td de +0,3 a
+>   −1,1 °C; 4,8 → 4,4 g/m³), i entre sensors hi ha **2,1–2,4 °C de diferència** de T, quan a
+>   l'habitació quadraven a ±0,05. En un tàper tancat amb sal, amb l'aire al 55–64 %, l'aigua
+>   només hauria de pujar. L'explicació més probable: **la pasta és més freda que els
+>   sensors**, sobre el prestatge fred, i la sal fixa el 75,7 % **a la seva temperatura**, no a
+>   la dels sensors; amb 2–3 °C de diferència, on són ells l'aire marca ~60 %. També hi podria
+>   haver una fuita a la tapa o un costat tocant la paret del fons. **Remei**: un drap plegat a
+>   sota i un altre al voltant, sense obrir-lo, perquè tot el tàper sigui a la mateixa
+>   temperatura.
+> - **22/09, 15:50–16:44** — el Td **deixa de baixar i s'atura a ~−2,1 °C** (4,1 g/m³), amb els
+>   sensors a 3,1–5,0 °C i encara 1,9–2,0 °C de diferència entre ells. Reforça la pasta freda i no
+>   la fuita: una fuita l'hauria fet seguir baixant cap als −4,8 °C de l'aire de la nevera. Aquest
+>   Td és el que dona la sal a **~2 °C**, més fred que qualsevol dels cinc. La nevera és **més
+>   freda del previst**, 3–5 °C i no 7–8.
+> - **22/09, ~16:45** — **el tàper, embolicat amb un drap** (l'hora surt de les dades: un sotrac
+>   de +0,2–0,3 °C als cinc alhora, en obrir la nevera). Després, fins a les ~17:20, la T puja
+>   0,5 °C —el drap era a temperatura d'habitació— i torna a baixar. A les 18:30 el Td ja
+>   **torna a pujar** (−2,1 → −1,9 °C): la sal guanya. La diferència de T entre sensors, però,
+>   **segueix en 1,9 °C**. La nit ho dirà: si amb el drap s'esvaeix, era un gradient; **si es
+>   manté, és dels sensors en fred**, i és justament el que calia saber (1 °C de T són ~1 °C de
+>   Td).
