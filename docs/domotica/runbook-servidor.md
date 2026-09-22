@@ -388,6 +388,38 @@ Amb `config/entity_registry/list` se saben els noms reals abans de tocar res, i 
 > `rosada.yaml` s'enganxen a la seva font **en arrencar**: fins que no es reinicia, els
 > comptadors segueixen dient `unknown` encara que l'entitat nova ja existeixi.
 
+### 🪤 Recarregar un `input_select` que ha perdut l'opció vigent
+
+*Trobat desplegant la lògica v2, el 22/09/2026.* `input_select.reload` canvia la **llista**
+d'opcions però **no l'opció triada**: si la d'ara ja no hi és, HA la conserva igualment i
+l'entitat surt com a **`unknown`** (una opció que no és a la llista no es pot mostrar). No en
+tria cap altra: això només passa en arrencar, que és quan pren la primera.
+
+Va passar amb `input_select.mode_soterrani`, que era *Auto* i la v2 va deixar sense *Auto*. La
+decisió ho aguanta —un mode desconegut es comporta com *Òptim*, a posta—, però l'automatisme de
+caducitat i el tauler no ho entenen. **Després de recarregar un `input_select` al qual s'ha tret
+l'opció vigent, triar-ne una a mà:**
+
+```bash
+curl -X POST -H "Authorization: Bearer $(cat ~/.ha_token)" -H "Content-Type: application/json" \
+  -d '{"entity_id": "input_select.mode_soterrani", "option": "Òptim"}' \
+  http://127.0.0.1:8123/api/services/input_select/select_option
+```
+
+Si només s'hi **afegeixen** opcions, o se'n treuen d'altres, no passa res.
+
+### 🪤 Els PR apilats es fusionen a la seva base, no a `main`
+
+*Trobat el 22/09/2026.* Quan un PR té com a base la branca d'un altre PR (per revisar-los per
+separat), en fusionar-los **cadascun va a parar a la seva base**. Si la branca de base no
+s'esborra en fusionar-la —i en aquest repositori no s'esborra sola—, GitHub **no** canvia la base
+del PR de sobre a `main`, i el PR surt com a «fusionat» sense que res hagi arribat a `main`. Va
+passar amb els #43, #44 i #45 de la lògica v2: `main` només tenia el pla.
+
+**Abans de fusionar el segon d'una pila, canviar-ne la base a `main`** (*Edit* al costat del
+títol) i esperar que GitHub en recalculi el diff. O, si ja ha passat, portar la punta de la pila a
+`main` amb un PR nou i comprovar que el `git diff` contra el que s'havia fusionat surt buit.
+
 ---
 
 ## 9. Si s'ha de refer perquè s'ha mort el disc

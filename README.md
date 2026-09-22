@@ -42,6 +42,7 @@ documentació de la finca i, més endavant, el codi per controlar-ne els aparell
 - **Lògica de control:** des del 22/09/2026, la **v2** —llindar del deshumidificador per tram
   de la tarifa, urgència per sobre del preu, ventilació contra la planta baixa o l'exterior, i
   modes— **es codifica per fases, primer en ombra**: grava què faria sense tocar cap aparell.
+  ✅ **Fases 1 a 3 desplegades el 22/09/2026**, amb l'actuació apagada.
   → [logica-v2-pla.md](docs/domotica/logica-v2-pla.md)
 
 ## Privacitat
