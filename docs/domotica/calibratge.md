@@ -1,9 +1,10 @@
 # Calibratge creuat dels sensors — procediment
 
-> **Estat: primera tanda feta el 21/09/2026, provisional.** Els desplaçaments de la franja
-> **49–59 % d'HR** estan mesurats, però **no s'han aplicat**: falta la franja humida, que és
-> on viurà el soterrani a l'hivern. Els de `rosada.yaml` segueixen sent identitat. Fase
-> **A.13** de [fases.md](fases.md).
+> **Estat: dues tandes mesurades, cap d'aplicada (22/09/2026).** La primera dona la franja
+> **49–59 % d'HR**; la segona, el **replà del tàper de sal al 73 %**, i diu que els desplaçaments
+> de la primera **no hi valen** i que tots cinc llegeixen baix → [el replà](#el-replà--22092026).
+> Falta el punt en fred: la [tercera tanda, a la nevera](#tercera-tanda--la-nevera). Els de
+> `rosada.yaml` segueixen sent identitat. Fase **A.13** de [fases.md](fases.md).
 
 ## Per què, i quant val
 
@@ -205,7 +206,7 @@ descartar que part de la desviació sigui retard del hub**.
 
 Per això no s'han aplicat: la tanda següent és barata i tapa exactament aquests dos forats.
 
-## Segona tanda proposada — la franja humida
+## Segona tanda — la franja humida
 
 **Un tàper tancat amb sal de cuina.** Una pasta de sal comuna (NaCl) i una mica d'aigua —**amb
 cristalls sense dissoldre a la vista**— manté l'aire d'un recipient tancat al **75,3 % d'HR**,
@@ -291,14 +292,139 @@ hores. Amb sal no hi arriba; amb aigua sola, sí.
 
 **Opcional, per a un punt més alt:** el clorur de potassi (KCl) **pur** dona el **84 %**.
 
+### El replà — 22/09/2026
+
+Tàper tancat a les **12:09 del 21/09**, amb el marcador encès. **Al replà des de les ~05:00 del
+22/09**, i quiet més de set hores: cap sensor s'hi mou més d'un punt, que és el gra. Va trigar
+**~17 hores**, no les 2–4 previstes: fins al 70 % en unes 7 h, i els últims tres punts, tota la
+nit. L'habitació es va escalfar fins a 29,6 °C a la tarda, i com més calent és l'aire, més aigua
+ha d'evaporar la pasta per arribar al mateix percentatge.
+
+Mitjanes de 05:00 a 12:20, a **27,8 °C**, on la sal fixa el **75,2 %**. Com a la primera tanda,
+la correcció és el que s'ha de **sumar** a la lectura:
+
+| Sensor | Llegeix | Correcció contra la mediana | La del 21/09, al 49–59 % | **Correcció contra la sal** |
+|---|---|---|---|---|
+| `soterrani_fons` | 72,0 | +0,8 | +2,2 | **+3,2** |
+| `soterrani_centre` | 74,8 | **−2,0** | −1,1 | +0,4 |
+| `soterrani_gran` | 72,0 | +0,8 | +0,3 | **+3,2** |
+| `baixa` | 74,0 | −1,2 | −1,2 | +1,2 |
+| `exterior` | 72,8 | 0,0 | 0,0 | **+2,4** |
+
+**1. La temperatura torna a quadrar**: els cinc, dins de **±0,05 °C** de la mediana. Confirmat
+que no cal corregir-la.
+
+**2. Els desplaçaments del 21/09 no valen al 73 %.** Aplicats al replà, la dispersió de Td baixa
+de **0,61 a 0,40 °C**: millora, però queda per sobre dels 0,30. `baixa` i `exterior` no es mouen,
+però `fons` passa de +2,2 a +0,8 i `centre`, de −1,1 a −2,0: en aquests dos **la desviació depèn
+de l'HR**, amb canvis més grans que el gra d'un replà (±0,5). Va ser bona decisió no aplicar-los.
+I el recorregut ja va del 49 al 75 %, 26 punts: per sobre dels 20 que l'eina demana per ajustar
+un pendent.
+
+**3. Tots cinc llegeixen baix contra la sal**, de 0,4 a 3,2 punts; la mediana, uns **2,4**. És
+el que el consens no podia veure mai. A la resta ΔTd no li fa res, perquè s'anul·la; sí que pesa
+en tot el que és **absolut**: el marge contra la paret (≈0,5 °C de Td) i els llindars d'HR del
+deshumidificador.
+
+⚠️ **Amb una condició: que la tapa tanqui del tot.** Una fuita petita deixa el replà per sota del
+75,3 % i es confondria amb uns sensors que llegeixen baix; el sotrac de les 15:00 (vegeu les
+[incidències](#registre)) demostra que, si es mou, la tapa deixa entrar aire. La nevera ho
+aclarirà: si en fred tornen a llegir baix en la mateixa mesura, és cosa dels sensors, perquè
+seria molta casualitat que una fuita donés el mateix número amb un altre aire a fora.
+
+**Dispersió de Td al replà, sense corregir: 0,61 °C** (al 55 % del 21/09, 0,95).
+
+**Els graons ja no calen per als números.** Servien per saber si el retard del hub contaminava
+els desplaçaments trets de **rampes**. Els d'aquesta tanda surten d'un **replà**, on el retard no
+hi pesa, i la primera tanda va ser gairebé tota plana. L'entrada a la nevera dona igualment un
+graó on es veu qui reacciona i quan.
+
+## Tercera tanda — la nevera
+
+**Per què.** Les dues tandes s'han fet a 26–29 °C, i el soterrani al gener serà a **8–15 °C**.
+L'error dels capacitius pot dependre de la temperatura, i sense un punt en fred no se sabria fins
+a l'hivern. La sal hi continua valent: a 5–10 °C fixa el **75,7 %**, pràcticament el mateix. I
+com que la segona tanda ja té un replà gairebé a la mateixa HR, **la diferència entre tots dos
+replans és l'efecte de la temperatura, i prou**.
+
+**No és massa fred.** Una nevera a 4–8 °C és dins del que aguanten. El congelador, no: ni cal ni
+convé, perquè el soterrani no hi baixarà mai.
+
+### On
+
+- A la zona **menys freda i més quieta**: el **calaix de les verdures**, si hi cap, o un
+  prestatge del mig. L'ideal són uns **8 °C**, com el soterrani.
+- **Lluny de la paret del fons**, que és on hi ha l'evaporador: és el punt més fred, i allà sí
+  que podria condensar dins del tàper.
+
+### Els riscos, i com s'eviten
+
+| Risc | Per què | Com s'evita |
+|---|---|---|
+| **La ràdio** | La nevera és una caixa de metall, com l'olla descartada. Per la junta de la porta sovint en surt prou, però no es pot garantir | Es prova la primera mitja hora, abans de jugar-s'hi la nit |
+| **Condensació en entrar** | Tancat, l'aire del tàper (28 °C, Td 22 °C) s'entelaria per dins en refredar-se, i gotejaria | Entra **obert**: l'aire humit en surt i el substitueix el de la nevera. Els sensors, mentre es refreden, són més calents que l'aire del voltant i no hi condensa res. Es tapa al cap d'una hora, allà dins |
+| **Condensació en sortir** | Uns sensors a 6 °C en una habitació a 28 °C «suen» a l'instant, com una llauna freda | Surt **tapat**, i no s'obre fins que és a temperatura d'habitació: l'aigua condensa per fora del plàstic |
+| **La porta i el compressor** | Cada obertura hi fica aire calent; el compressor fa pujar i baixar la T un o dos graus | Avisar a casa que aquella nit **no l'obrin gaire ni moguin el tàper** (vegeu el sotrac del 21/09). La resta, el tàper l'esmorteeix |
+
+### El recorregut
+
+El **marcador segueix encès** des del 21/09: aquesta tanda continua la segona i no s'apaga
+entremig.
+
+1. **Destapar el tàper i posar-lo a la nevera**, amb la sal i el suport a dins, sense tocar els
+   sensors. La tapa, al costat, perquè es refredi també. **Apuntar l'hora.**
+2. **La primera mitja hora, la prova de ràdio.** Els cinc han d'enviar lectures noves amb la
+   temperatura baixant; es mira des del tauler, sense obrir. Si en falta algun, provar un lloc
+   més a prop de la porta; si no n'arriba cap, s'abandona: sense dades a HA, la tanda no serveix.
+3. **Al cap d'una hora**, quan la T dels cinc ja no baixi, **tapar el tàper allà dins**, ràpid i
+   sense treure'l. **Apuntar l'hora.**
+4. **Tota la nit.** En fred tot s'evapora més a poc a poc: compta amb **12 hores o més**. El replà
+   el marquen les dades —l'HR dels cinc quieta almenys una hora—, no el rellotge.
+5. **Treure'l tapat**, eixugar-lo per fora i **no obrir-lo** fins que la T dels cinc sigui la de
+   l'habitació, **1–2 hores**. **Apuntar l'hora.**
+6. **Obrir-lo i deixar-los 1–2 hores a l'aire de l'habitació**, junts. És la **prova
+   d'histèresi** del tram 4: si, a la mateixa HR, un sensor no torna a la desviació que tenia el
+   21/09 després d'haver passat pel 75 % i pel fred, aquell sensor no admet cap corba.
+7. **Apagar el marcador.**
+
+### Com es llegeix
+
+Per **replans**, no per rampes:
+
+| Replà | HR | T | Què en surt |
+|---|---|---|---|
+| La nit del 20–21/09 | ~55 % | ~26 °C | Desplaçaments contra la mediana |
+| El tàper, 22/09 | 73 % (sal: 75,2) | 27,8 °C | Desplaçaments i ancoratge absolut |
+| La nevera | sal: ~75,7 | ~6–8 °C | El mateix, **en fred** |
+
+La proposta per decidir què s'aplica:
+
+- **Si el replà fred dona les mateixes correccions que el calent** (dins del gra, ±0,5), el
+  calibratge no depèn de la temperatura entre 6 i 28 °C: pendent i desplaçament amb els dos
+  replans calents, i s'apliquen.
+- **Si no**, mana el **fred**, que és el que s'assembla a l'hivern del soterrani: se n'apliquen
+  les constants, i es repeteix al soterrani al gener.
+- **L'ancoratge absolut**, si les dues sals coincideixen, es dona per bo.
+
+⚠️ **`tools/calibratge.py` no fa aquesta lectura**: parteix la finestra per rampes, compara
+contra la mediana i barrejaria el fred i el calent en un sol ajust. ⏳ Cal afegir-hi els replans i
+la sal; fins llavors, l'anàlisi d'aquesta tanda es fa a part. I la finestra ja fa **més de
+24 h**: l'eina ja la baixa sencera ([corregit el 22/09](#després)), però qualsevol altra
+descàrrega ha de portar `end_time`, perquè sense HA en torna només 24.
+
 ## Registre
 
 | Data | Rang assolit | Dispersió abans → després | Notes |
 |---|---|---|---|
 | 21/09/2026 | HR 49–59 % · T 25,9–27,0 °C | **0,95 → 0,24 °C** (només desplaçament) | ~11 h a casa, marcador sense encendre. Temperatura sense correcció. **No aplicat**: falta la franja humida |
+| 22/09/2026 | HR 73 % (replà del tàper de sal, 75,2 %) · T 27,8 °C | **0,61 °C** sense corregir · 0,40 amb els desplaçaments del 21/09 | Tàper tancat el 21/09 a les 12:09, replà des de les ~05:00. Tots cinc llegeixen **baix** contra la sal (0,4–3,2 punts). **No aplicat**: falta el punt en fred |
 
 > **Incidències de la tanda en marxa** (marcador encès des de les 12:09 del 21/09/2026):
 >
+> - **15:00–15:20** — **algú mou el tàper** i la tapa deixa entrar aire: l'aigua de l'aire baixa
+>   de 18,1 a 16,7 g/m³, i `centre` i `gran` perden 4–5 punts en cinc minuts. En un tàper tancat
+>   amb sal l'aigua de l'aire només pot pujar, i la T no salta. **Tram descartat**; com a graó no
+>   serveix, perquè no se'n sap l'hora exacta ni si va afectar tots cinc alhora.
 > - **18:15** — el **deshumidificador** s'endolla i arrenca. ✅ **En una altra habitació, a
 >   posta** per no influir en el calibratge (confirmat per l'usuari), i amb un aire condicionat
 >   que també asseca: per això ell llegia 44 % amb els sensors al 66–72 %. **No toca les
