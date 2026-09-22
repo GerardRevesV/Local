@@ -131,7 +131,7 @@ feina i tu menys.
 | B.4 | ✅ **Fet** — `packages/rosada.yaml` (445 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C. *(22/09/2026: la decisió, els paràmetres i els modes passen a `packages/control.yaml` amb la [lògica v2](logica-v2-pla.md), en ombra)* | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
-| B.7 | ✅ **Fet** — `tools/replica.py` (857 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor. *(22/09/2026: rèplica de la v2, amb `--prova-ha`, que compara la macro avaluada per HA, i `--deriva`, que torna a decidir cada fila gravada)* | 🤖 Jo |
+| B.7 | ✅ **Fet** — `tools/replica.py` (867 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor. *(22/09/2026: rèplica de la v2, amb `--prova-ha`, que compara la macro avaluada per HA, i `--deriva`, que torna a decidir cada fila gravada)* | 🤖 Jo |
 | B.8 | **Filtratge d'espuris en paral·lel, sense decidir res** ([R1](requisits.md#r1--netejar-les-lectures-espúries-sense-perdre-la-prova)): primer mesurar cadència, soroll base i pendent màxima creïble; després escriure'l. La sèrie crua **no es toca** | 🤖 Jo |
 | B.9 | **Avançar el guió de gràfics del dossier** (era D.1) i fer-hi la **correlació creuada Td soterrani ↔ Td exterior**: és la resposta continuada a *per on entra l'aire* | 🤖 Jo |
 | B.10 | Obrir `diari-de-la-serie.md` i anotar-hi els esdeveniments externs —pluges, visites, un sensor agafat amb la mà— perquè cada pic tingui explicació | 🤝 Tu aportes els fets, jo els munto |
