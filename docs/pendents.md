@@ -91,7 +91,13 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
             `tools/analisi.py diposits --litres 3 3 …` (un valor per dipòsit).
 - [ ] **Calibratge: la nit sencera**, i demà la **rampa amb el tàper de sal i la nevera** (el
       tàper fixa el 75 % gairebé a qualsevol temperatura; la nevera hi afegeix el fred de
-      l'hivern) → [calibratge.md](domotica/calibratge.md). En acabar: `tools/calibratge.py`,
+      l'hivern) → [calibratge.md](domotica/calibratge.md).
+      ✅ La nit, i el **tàper al replà** des de les ~05:00 del 22/09 (73 %, 27,8 °C): els
+      desplaçaments del 21/09 **no hi valen** i tots cinc llegeixen **baix** contra la sal →
+      [el replà](domotica/calibratge.md#el-replà--22092026). ⏳ **La nevera, aquesta nit**:
+      entra **destapat**, prova de ràdio la primera mitja hora, es tapa allà dins al cap d'una
+      hora, i demà surt **tapat** → [tercera tanda](domotica/calibratge.md#tercera-tanda--la-nevera).
+      Els graons ja no calen. En acabar: l'anàlisi per replans, `tools/calibratge.py`,
       aplicar els desplaçaments i **apagar el mode calibratge**.
 - [ ] ⚠️ **Refer qualsevol calibratge tret amb `--descarrega` abans del 22/09/2026.** L'eina
       demanava l'històric sense `end_time`, i HA en torna només 24 h des de l'inici: amb més
@@ -400,9 +406,11 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
 - [ ] 🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13). 🟡 **Primera tanda feta
       el 21/09/2026**, franja 49–59 %: dispersió de Td **0,95 → 0,24 °C**, temperatura sense
       correcció, i desplaçaments d'HR entre −1,2 i +2,2 punts. **No aplicats**: falta la franja
-      humida. Següent pas, una **caixa tancada amb sal de cuina** (75,3 % d'HR, absolut i amb
-      pujada lenta) → [calibratge.md](domotica/calibratge.md#segona-tanda-proposada--la-franja-humida).
-      ⚠️ **I encendre el marcador aquesta vegada**: la primera tanda es va fer sense.
+      humida. 🟡 **Segona tanda, 21–22/09/2026**: tàper amb sal, amb el marcador encès, replà
+      al 73 % → [el replà](domotica/calibratge.md#el-replà--22092026). Dispersió de Td 0,61 °C
+      sense corregir i 0,40 amb els desplaçaments del 21/09, que **no hi valen**; tots cinc
+      llegeixen baix contra la sal. ⏳ Falta el punt en fred →
+      [tercera tanda, la nevera](domotica/calibratge.md#tercera-tanda--la-nevera).
       *Preparat des del 21/09/2026:* hi ha el marcador `input_boolean.mode_calibratge` —que posa
       la decisió a `calibratge` i impedeix que cap automatisme actuï—, el forat dels
       desplaçaments a les cinc plantilles de `rosada.yaml` (avui identitat, no corregeixen
