@@ -92,9 +92,12 @@ condensació, i connecta amb la responsabilitat de la **comunitat** (vegeu
    d'humitat en parets, termografia) que deixi constància datada.
 2. **Monitoritzar-ho amb dades.** És exactament el que ha de fer el projecte de
    [domòtica](../domotica/objectius.md): sensors de temperatura i humitat relativa,
-   registre continu, correlació amb l'estat de la ventilació forçada. Un històric que
-   demostri que la ventilació ha estat operativa i que tot i així hi ha humitat és la prova
-   més directa contra la tesi de la condensació.
+   registre continu, correlació amb l'estat de la ventilació forçada. Que la ventilació
+   hagi estat operativa i tot i així hi hagi humitat **només compta en les hores que l'aire de
+   fora era més sec que el de dins**: ventilar amb aire més humit mulla, i la ventilació en
+   continu ho fa a l'estiu. La prova més directa és la **temperatura de la paret**: si no
+   arriba al punt de rosada i és molla, no és condensació. Les tres formes de l'argument, a
+   [objectius.md](../domotica/objectius.md#el-motiu-de-fons-les-humitats).
 3. **Seguir la derrama de la façana** de la comunitat: si la impermeabilització resol les
    filtracions, apunta a causa comunitària; si no, apunta a capil·laritat del soterrani.
 4. **Conservar factures** de qualsevol actuació: són el mecanisme pactat per deduir de la

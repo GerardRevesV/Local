@@ -40,17 +40,36 @@ comprador la condensació derivada de **manca de ventilació imputable a ell** d
 lliurament, i hi ha una **retenció de 3.000 € que venç cap al març de 2027** per determinar
 l'origen de les humitats. → [humitats.md](../local/humitats.md)
 
-La defensa és tenir **dades**: un històric que demostri que la ventilació ha estat operativa
-i que tot i així hi ha humitat és l'element més fort contra la tesi de la condensació. I la
-mateixa instrumentació que serveix per a l'automatisme serveix per a això:
+La defensa és tenir **dades**. Però «la ventilació funcionava i tot i així hi havia humitat»
+**no n'hi ha prou tot sol**: ventilar amb aire que té el punt de rosada més alt que el de dins
+**mulla** el soterrani ([per què](control-punt-rosada.md#per-què-punt-de-rosada-i-no-humitat-relativa)).
+Amb els ventiladors en continu —el règim actual, que la clàusula QUINTA obliga a mantenir—, a
+l'estiu i els dies humits entra aigua per la ventilació, i la humitat d'aquelles hores és
+justament la que l'altra part pot atribuir a condensació. *(Precisat el 22/09/2026.)*
+
+L'argument aguanta en aquestes tres formes, de més a menys directa:
+
+1. **La paret no arriba al punt de rosada.** Si la superfície es manté per sobre del Td de
+   l'aire i tot i així és molla, l'aigua no ve de l'aire, faci el que faci la ventilació. Per
+   això la sonda de paret és la peça que decideix el cas.
+2. **El deshumidificador segueix traient aigua quan la ventilació asseca.** Separant les hores
+   pel signe del ΔTd contra l'aire que entra de debò —el de fora o el de la planta baixa, segons
+   la prova de fum; HA grava tots dos, `sensor.dtd_interior_exterior` i
+   `sensor.dtd_interior_planta_baixa`—: si en les hores que l'aire que entra és més sec els
+   litres no baixen, aquella aigua no entra per la ventilació.
+3. **El balanç d'aigua.** Els litres que treu el deshumidificador contra els que pot portar la
+   ventilació (cabal × diferència de vapor entre fora i dins × hores). El que sobra entra per
+   l'estructura. Demana el **cabal dels ventiladors**, encara pendent.
+
+La mateixa instrumentació que serveix per a l'automatisme serveix per a això:
 
 - Registre continu de temperatura i humitat relativa al soterrani, a la planta baixa i a
   **l'exterior**.
 - Registre de l'estat i les hores de funcionament dels dos sistemes de ventilació forçada.
 - Correlació amb la pluja i la humitat exterior: si la humitat puja quan plou, apunta a
   **filtració**; si és constant i independent de la ventilació, apunta a **capil·laritat**.
-- Idealment, **temperatura superficial de les parets** afectades: si la superfície està per
-  sobre del punt de rosada i tot i així hi ha humitat, no és condensació.
+- **Temperatura superficial de la paret més freda:** si la superfície està per sobre del punt
+  de rosada i tot i així hi ha humitat, no és condensació.
 
 ## Altres usos, més endavant
 

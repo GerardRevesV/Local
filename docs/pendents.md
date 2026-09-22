@@ -39,6 +39,11 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
       (es van demanar durant la negociació; verificar que no restringeixen l'ús del local).
 - [ ] **Fotografiar el local** — la carpeta de fotos és buida i les humitats convé
       documentar-les amb imatges datades.
+- [ ] **Preguntar a l'advocat:** si la condensació que porta la mateixa ventilació —la que la
+      clàusula QUINTA obliga a mantenir, i que en continu fa entrar aire humit a l'estiu— queda
+      fora de l'exoneració, que només cobreix la manca de ventilació imputable a la compradora.
+      I si, un cop automatitzada (Fase C), aturar-la quan l'aire de fora és més humit compta com
+      a mantenir-la operativa. → [objectius.md](domotica/objectius.md#el-motiu-de-fons-les-humitats)
 
 ## Instal·lacions
 
@@ -143,7 +148,7 @@ una diu **com es respon** i **què decideix**: una incògnita que no decideix re
 
 | Què | Com es respon | Què decideix |
 |---|---|---|
-| **Models, potència i cabal dels ventiladors** | Les fotos de la placa → [installacions.md](local/installacions.md) | Les renovacions en minuts i el ΔTd en litres per kWh: sense el cabal, els llindars de ventilació són provisionals |
+| **Models, potència i cabal dels ventiladors** | Les fotos de la placa → [installacions.md](local/installacions.md) | Les renovacions en minuts i el ΔTd en litres per kWh: sense el cabal, els llindars de ventilació són provisionals. I el **balanç d'aigua**: quanta en pot portar la ventilació contra la que treu el deshumidificador → [objectius.md](domotica/objectius.md#el-motiu-de-fons-les-humitats) |
 | Els **S110E**: càrrega de motor i temporitzador propi | La fitxa del relé; si els ventiladors van endollats o cablejats | La fallada segura de la ventilació, i si cal instal·lador |
 | El **marge de la paret** i quina paret és la més freda | Una sonda a la paret més freda (termòmetre IR de mà per trobar-la). A priori, **escenari C**: dues Ecowitt WN34L sense fils → [tres escenaris](domotica/inventari.md#comptar-laigua-i-mesurar-la-paret--tres-escenaris-22092026) | La urgència de debò: avui mira l'aire, no la paret |
 | El **CO₂** (i potser el radó) | Un SCD40; un detector de radó si cal | Renovar per demanda en comptes de per rellotge |
