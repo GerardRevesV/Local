@@ -146,6 +146,9 @@ def decideix(e: dict, p: dict, minuts_fins_mitjanit: int) -> dict:
     elif mode == "Tot aturat":
         o.update(estat="aturat", ventiladors=False,
                  motiu="Tot aturat (a mà): cap ordre al deshumidificador, i els ventiladors aturats")
+    elif not e["parametres"]:
+        o.update(estat="sense_dades", ventiladors=False,
+                 motiu="Els paràmetres encara no tenen els valors de partida")
     elif falta is not None:
         o.update(estat="sense_dades", ventiladors=False, motiu=f"Paràmetre sense valor: {falta}")
     elif e["td_int"] is None:
@@ -277,7 +280,7 @@ def entrades(**canvis) -> dict:
     e = {"calibratge": False, "mode": "Òptim", "referencia": "Planta baixa",
          "td_int": 12.0, "hr_max": 58.0, "t_int": 20.0, "marge": None,
          "td_baixa": 12.5, "td_ext": 13.0, "hr_ext": 60.0, "plou": False,
-         "tram": "pla", "minuts_ventilats": 200.0, "estat_previ": "repos",
+         "tram": "pla", "minuts_ventilats": 200.0, "parametres": True, "estat_previ": "repos",
          "ventila_previ": False, "urgencia_previ": False}
     desconegudes = set(canvis) - set(e)
     if desconegudes:
@@ -351,6 +354,11 @@ def tests() -> int:
     ok &= _prop("fins i tot sense dades", _d(calibratge=True, td_int=None, hr_max=None,
                                                t_int=None)["estat"] == "calibratge")
     ok &= _prop("fins i tot en «Tot aturat»", _d(calibratge=True, mode="Tot aturat")["estat"] == "calibratge")
+    d = _d(parametres=False, hr_max=66.0, p=parametres(hr_urgencia=60.0))
+    ok &= _prop("HA que arrenca SENSE estat previ: amb els paràmetres al mínim (hr_urgencia 60), "
+                "sense_dades i no urgència (la prova de punta a punta hi va entrar)",
+                d["estat"] == "sense_dades" and d["ventiladors"] is False and d["llindar"] is None
+                and "valors de partida" in d["motiu"], d)
     ok &= _prop("i amb un paràmetre sense valor", _d(calibratge=True, p=parametres(hr_vall=None))["estat"]
                 == "calibratge")
 
@@ -566,7 +574,8 @@ def tests_fitxers() -> bool:
     ok &= _prop("la macro espera els mateixos paràmetres que la rèplica, en el mateix ordre",
                 a_la_macro == list(PARAMETRES_DE_PARTIDA), a_la_macro)
 
-    passats = re.findall(r"'(\w+)': states\('input_number\.(\w+)'\)", control)
+    bloc_p = control[control.index("      p: >"):control.index("      t_int: >")]
+    passats = re.findall(r"'(\w+)': states\('input_number\.(\w+)'\)", bloc_p)
     ok &= _prop("control.yaml els passa tots, cadascun amb el seu input_number",
                 sorted(k for k, _ in passats) == sorted(PARAMETRES_DE_PARTIDA)
                 and all(k == ent for k, ent in passats), passats)
@@ -652,6 +661,7 @@ def casos_aleatoris(n: int, llavor: int = 22092026) -> list[dict]:
             "estat_previ": rnd.choice(ESTATS + ("unknown",)),
             "ventila_previ": rnd.random() < 0.3,
             "urgencia_previ": rnd.random() < 0.3,
+            "parametres": rnd.random() > 0.05,
         }
         p = dict(PARAMETRES_DE_PARTIDA)
         for k in rnd.sample(list(p), rnd.randint(0, 3)):

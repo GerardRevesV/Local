@@ -151,7 +151,14 @@ a [noms-entitats.md](noms-entitats.md) **abans de crear res**, i els pendents.
 > pel HA de debò, els 12 estats coberts, **cap diferència**, motiu inclòs —i amb una histèresi
 > canviada a posta en una còpia de la macro, en troba 81—; `check_config` net; i les plantilles
 > noves (HR màxima, ΔTd contra la planta baixa, la recollida d'entrades i la targeta del
-> tauler), avaluades contra els estats reals sense desplegar res. ⏳ **Pendent de desplegar.**
+> tauler), avaluades contra els estats reals sense desplegar res.
+>
+> 🐛 **I una prova de punta a punta** —un HA d'un sol ús al servidor, sense xarxa, amb aquesta
+> configuració i uns sensors de mentida— va trobar el que cap prova per peces no veia: en un HA
+> que arrenca **sense estat previ**, la decisió s'avaluava un instant abans que l'inicialitzador
+> posés els valors de partida, amb `hr_urgencia` al mínim del rang (60), entrava en urgència i la
+> histèresi l'hi mantenia. Ara, fins que els valors de partida hi són, diu `sense_dades`.
+> ⏳ **Pendent de desplegar.**
 
 **Entra:** `custom_templates/decisio.jinja` · `packages/control.yaml` amb els paràmetres, els
 modes i la seva caducitat, `referencia_ventilacio`, els dos interruptors d'actuació (apagats),
