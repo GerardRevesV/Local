@@ -94,6 +94,13 @@ export HA_TOKEN_FILE=~/.ha_token
 python3 tools/calibratge.py --descarrega --hores 48
 ```
 
+> ⚠️ **Corregit el 22/09/2026:** fins llavors l'eina demanava l'històric **sense `end_time`**, i
+> Home Assistant en torna només **24 h des de l'inici**, demanis les hores que demanis
+> (comprovat amb HA 2026.9.3). Amb `--hores 48` o les 72 per defecte, l'ajust es quedava les
+> 24 h **més velles** i perdia les més recents —les rampes de la sal i de la nevera— **sense
+> cap avís**. Només afecta les descàrregues de més de 24 h, però **qualsevol calibratge tret amb
+> `--descarrega` abans de la correcció s'ha de tornar a calcular.**
+
 L'eina **troba sola la finestra** a partir del marcador, parteix les rampes, ajusta i escriu
 les línies per enganxar. El que has de mirar de la seva sortida:
 
