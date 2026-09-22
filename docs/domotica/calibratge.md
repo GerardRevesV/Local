@@ -467,10 +467,14 @@ descàrrega ha de portar `end_time`, perquè sense HA en torna només 24.
 >   la fuita: una fuita l'hauria fet seguir baixant cap als −4,8 °C de l'aire de la nevera. Aquest
 >   Td és el que dona la sal a **~2 °C**, més fred que qualsevol dels cinc. La nevera és **més
 >   freda del previst**, 3–5 °C i no 7–8.
-> - **22/09, ~16:45** — **el tàper, embolicat amb un drap** (l'hora surt de les dades: un sotrac
->   de +0,2–0,3 °C als cinc alhora, en obrir la nevera). Després, fins a les ~17:20, la T puja
->   0,5 °C —el drap era a temperatura d'habitació— i torna a baixar. A les 18:30 el Td ja
->   **torna a pujar** (−2,1 → −1,9 °C): la sal guanya. La diferència de T entre sensors, però,
->   **segueix en 1,9 °C**. La nit ho dirà: si amb el drap s'esvaeix, era un gradient; **si es
->   manté, és dels sensors en fred**, i és justament el que calia saber (1 °C de T són ~1 °C de
->   Td).
+> - **22/09, ~16:45** — sotrac petit (+0,2–0,3 °C als cinc alhora): la nevera oberta un moment.
+> - **22/09, 18:33** — **el tàper, embolicat amb un drap.** En 20 min la T puja **3 °C** (de
+>   3,1–5,1 a 6,4–7,8) i el Td, de −1,8 a **+0,9 °C**: el drap era a temperatura d'habitació i
+>   escalfa el que embolica. Des de les 18:56 tot torna a baixar.
+>   ⚠️ **Primer es va llegir malament**: el sotrac de les 16:45 es va prendre pel drap. El va
+>   desmentir el mateix usuari, i la mida del salt ho confirma: un drap calent no fa 0,3 °C, en
+>   fa 3.
+>   ✅ **I dona la resposta que es buscava**: en tornar-lo a col·locar, **l'ordre dels cinc
+>   canvia** (abans `fons` > `centre` > `gran` ≈ `baixa` > `exterior`; després `fons` > `baixa` >
+>   `exterior` > `centre` > `gran`). Els 2 °C de diferència són, doncs, **la posició dins de la
+>   nevera i no els sensors**: un error propi de cada sensor no canviaria d'ordre en moure'ls.
