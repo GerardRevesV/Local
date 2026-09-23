@@ -229,8 +229,8 @@ else
   # Noms fixos a /tmp fallarien si el guió el llança un altre usuari (cron,
   # root): el fitxer ja existiria i seria d'algú altre, i el redirigit petaria
   # amb un «l'API no respon» que seria mentida.
-  REAL=$(mktemp); REF=$(mktemp)
-  trap 'rm -f "$REAL" "$REF"' EXIT
+  REAL=$(mktemp); REF=$(mktemp); DECL=$(mktemp); TAUL=$(mktemp)
+  trap 'rm -f "$REAL" "$REF" "$DECL" "$TAUL"' EXIT
   curl -s -m 15 -H "Authorization: Bearer $T" http://127.0.0.1:8123/api/states \
     | python3 -c 'import sys,json;print("\n".join(sorted(x["entity_id"] for x in json.load(sys.stdin))))' \
     > "$REAL" 2>/dev/null
@@ -251,6 +251,72 @@ else
     done < "$REF"
     [ "$trencades" -eq 0 ] && ok "cap referència trencada als paquets"
     [ "$pendents" -gt 0 ] && avis "$pendents referències esperen maquinari (Tapo, ESP32, AEMET) — és normal fins a la integració"
+
+    # Les còpies «_2», «_3»… d'una entitat que hi ha a HA, en una línia.
+    copies(){ grep -xE "${1%%.*}\.${1#*.}_[0-9]+" "$REAL" | tr '\n' ' ' | sed 's/ $//'; }
+
+    # ⚠️ Els noms que DECLAREM amb «default_entity_id». Amb «unique_id», HA
+    # només el fa servir LA PRIMERA VEGADA que crea l'entitat: si aquell nom
+    # ja era pres —una entitat vella, un registre brut—, n'hi posa un altre
+    # amb «_2» al darrere, i des d'aleshores el registre d'entitats el recorda
+    # per l'unique_id. L'històric comença sota el nom equivocat PER SEMPRE, i
+    # el tauler, els states() i replica.py miren el nom bo, que és d'una altra
+    # entitat o de cap. Que la plantilla carregui no prova res: el nom ha de
+    # ser exactament aquest, i no hi ha d'haver cap «_2» al costat.
+    #
+    # Les línies comentades no hi entren: el patró demana la clau a l'inici.
+    sed -nE "s/^[[:space:]]*default_entity_id:[[:space:]]*[\"']?([a-z_]+\.[a-z0-9_]+).*/\1/p" \
+      config/packages/*.yaml | sort -u > "$DECL"
+    mal_decl=0
+    while read -r e; do
+      c=$(copies "$e")
+      if grep -qxF "$e" "$REAL"; then
+        [ -z "$c" ] && continue
+        mal "hi ha $e i també $c: el nom era pres quan HA va crear la plantilla — mira al registre d'entitats quina és la seva"
+      elif [ -n "$c" ]; then
+        mal "$e NO EXISTEIX, però sí $c: HA l'ha creada amb un altre nom perquè aquest era pres"
+      else
+        mal "$e NO EXISTEIX: la plantilla no s'ha recarregat (template.reload) o no carrega"
+      fi
+      mal_decl=$((mal_decl+1))
+    done < "$DECL"
+    # Zero declarats vol dir que el patró s'ha trencat, no que tot vagi bé.
+    if [ ! -s "$DECL" ]; then
+      mal "no trobo cap default_entity_id a config/packages/ — el patró d'aquest guió s'ha trencat"
+    elif [ "$mal_decl" -eq 0 ]; then
+      ok "els $(wc -l < "$DECL") noms declarats (default_entity_id) hi són tal qual, sense cap «_2»"
+    fi
+
+    # El tauler no el valida ningú més: check_config no el mira, i una entitat
+    # que hi falta només surt com un requadre groc per a qui hi entri. Les que
+    # ja són a la llista de dalt no es tornen a comptar.
+    { sed -nE "s/^[[:space:]]*(-[[:space:]]+)?entity:[[:space:]]*[\"']?([a-z_]+\.[a-z0-9_]+).*/\2/p" \
+        config/dashboards/*.yaml
+      grep -ohE "(states|state_attr|is_state)\(\s*'[a-z_]+\.[a-z0-9_]+'" config/dashboards/*.yaml \
+        | grep -oE "[a-z_]+\.[a-z0-9_]+"
+    } | sort -u > "$TAUL"
+    mal_taul=0; revisades=0
+    while read -r e; do
+      grep -qxF "$e" "$DECL" && continue
+      revisades=$((revisades+1))
+      c=$(copies "$e")
+      if grep -qxF "$e" "$REAL"; then
+        [ -z "$c" ] && continue
+        mal "tauler: hi ha $e i també $c — la sèrie s'ha partit (un aparell reemparellat?)"
+      elif [ -n "$c" ]; then
+        mal "tauler: $e NO EXISTEIX, però sí $c — la sèrie s'ha partit (un aparell reemparellat?)"
+      else
+        mal "tauler: $e NO EXISTEIX"
+      fi
+      mal_taul=$((mal_taul+1))
+    done < "$TAUL"
+    if [ ! -s "$TAUL" ]; then
+      mal "no trobo cap entitat a config/dashboards/ — el patró d'aquest guió s'ha trencat"
+    elif [ "$mal_taul" -eq 0 ] && [ "$mal_decl" -eq 0 ]; then
+      ok "les $(wc -l < "$TAUL") entitats del tauler hi són totes"
+    elif [ "$mal_taul" -eq 0 ]; then
+      ok "la resta del tauler hi és: $revisades entitats més"
+    fi
 
     # El sensor que decideix: ha d'existir. Que digui «sense_dades» és correcte
     # mentre no hi hagi sensors; el que no pot és faltar.
