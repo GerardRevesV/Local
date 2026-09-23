@@ -90,7 +90,7 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
             32. Treu el marge de la safata, i ja no cal mesurar-lo:
             `tools/analisi.py diposits --litres 3 3 …` (un valor per dipòsit).
 - [x] ~~**Calibratge: la nit sencera, el tàper de sal i la nevera.**~~ ✅ **Tancat el
-      23/09/2026**: tres tandes i números a `custom_templates/calibratge.jinja` (⏳ per desplegar). ⏳ Queda **apagar el
+      23/09/2026**: tres tandes i números a `custom_templates/calibratge.jinja`, desplegats a les 16:48. ⏳ Queda **apagar el
       marcador** quan els sensors siguin al seu lloc, al local. La
       nevera no va servir per al punt fred (gradients de 2–3 °C dins del tàper) i això queda
       obert per a l'hivern → [els números](domotica/calibratge.md#els-números--23092026).
@@ -420,7 +420,8 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       Dades crues i l'script que en treu cada xifra a
       [`dades/`](domotica/dades/calibratge-2026-09.csv), i l'ajust es refà sense HA amb l'ordre
       que hi ha al doc → [els números](domotica/calibratge.md#els-números--23092026).
-- [ ] ⏳ **Desplegar el calibratge** al servidor, amb el procediment de
+- [x] ~~**Desplegar el calibratge**~~ ✅ **Desplegat el 23/09/2026 a les 16:48:53**, verificat i
+      apuntat al [registre d'instal·lació](domotica/home-assistant.md#registre-dinstallació). Amb el procediment de
       [calibratge.md](domotica/calibratge.md#desplegar-un-calibratge): **primer**
       `reload_custom_templates` i **després** `template.reload`; `bash scripts/comprova.sh`,
       que ja mira que les deu entitats noves hi siguin amb el nom exacte i sense `_2` —serà
