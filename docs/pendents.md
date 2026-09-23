@@ -142,7 +142,15 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       fluixa (0,54 °C). Unes hores junts ho diuen de franc: si els cinc calibrats hi coincideixen,
       l'extrapolació aguanta; si no, és el tercer ancoratge. Treure'n les dades amb
       `tools/calibratge.py --descarrega` **abans** d'`inicia-serie.sh`, que arxiva la base →
-      [els números](domotica/calibratge.md#els-números--23092026).
+      [els números](domotica/calibratge.md#els-números--23092026). ⚠️ **L'arribada del 23/09 no
+      val per a això**: `baixa` es va poder mullar pel camí i el deshumidificador assecava la sala
+      a ~5 punts/h, i a més la sala era al 57–58 %, dins del rang ja calibrat. Es fa amb `baixa`
+      sec i, per arribar per sobre del 73 % i estar estable, amb el deshumidificador aturat →
+      [incidències](domotica/calibratge.md#registre).
+- [ ] 🔬 **Que `baixa` torni a coincidir amb els altres quatre quan sigui sec.** El 23/09, en
+      arribar al local, marcava ~6 punts d'HR de més, i baixant: el que fa un sensor que
+      s'asseca. Si un cop sec no hi torna, el mullat li ha deixat un desplaçament i el seu
+      calibratge ja no val → [incidències](domotica/calibratge.md#registre).
 - [ ] Repartir els sensors segons l'assignació, **apagar `input_boolean.mode_calibratge`** (fins
       llavors, encès: mentre ho és, res no actua) i `scripts/inicia-serie.sh` per marcar l'inici
       de la sèrie de debò. *Des del 23/09/2026 el guió **s'hi nega** si el marcador és encès —la
