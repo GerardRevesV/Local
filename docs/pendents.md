@@ -130,6 +130,15 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
 
 **Al local**
 
+- [ ] 🔬 **Abans de repartir-los, els cinc junts al soterrani 3–4 hores** (la primera, perquè
+      s'aclimatin), amb el marcador encara encès. El calibratge s'ha ajustat entre el **51 i el
+      73 % d'HR a 26–30 °C**, i el soterrani és del 65 al 90 % i més fred: per sobre del 73 % les
+      rectes s'extrapolen sense que ningú les hagi vistes. Al 90 % la correcció ja és gran
+      —`centre` hi baixa 2,9 punts i `gran` en puja 1,4—, i la franja del 60–70 % és la més
+      fluixa (0,54 °C). Unes hores junts ho diuen de franc: si els cinc calibrats hi coincideixen,
+      l'extrapolació aguanta; si no, és el tercer ancoratge. Treure'n les dades amb
+      `tools/calibratge.py --descarrega` **abans** d'`inicia-serie.sh`, que arxiva la base →
+      [els números](domotica/calibratge.md#els-números--23092026).
 - [ ] Repartir els sensors segons l'assignació, **apagar `input_boolean.mode_calibratge`** (fins
       llavors, encès: mentre ho és, res no actua) i `scripts/inicia-serie.sh` per marcar l'inici
       de la sèrie de debò. *Des del 23/09/2026 el guió **s'hi nega** si el marcador és encès —la
@@ -426,7 +435,7 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       `reload_custom_templates` i **després** `template.reload`; `bash scripts/comprova.sh`,
       que ara mira que les deu entitats noves hi siguin amb el nom exacte i sense `_2` —el
       servidor encara anava a `95c2868`, d'abans de #55: aquell dia els noms es van mirar a mà,
-      i ⏳ la primera passada d'aquesta versió contra el servidor queda per fer—; a mà, l'atribut `calibratge` a les deu que
+      i ✅ la primera passada d'aquesta versió contra el servidor, a les 19:10, va sortir correcta—; a mà, l'atribut `calibratge` a les deu que
       fan servir la correcció (els `_cru` no en porten); **apuntar l'hora** al registre d'instal·lació, perquè totes les sèries derivades
       hi fan un salt (amb els sensors junts: +0,3 a +0,8 °C al Td de `fons`, −1,5 punts a la HR
       màxima, i el ΔTd contra la planta baixa gairebé igual). Fer-ho a casa, abans del trasllat, i queda a la base d'experimentació que
