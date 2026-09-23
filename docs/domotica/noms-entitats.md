@@ -33,6 +33,15 @@ seva germana *(23/09/2026)*.
 
 ## Taula d'entitats
 
+> ⚠️ **Dues d'aquestes taules les llegeix un guió** *(23/09/2026)*. La porta 2 de
+> [`scripts/inicia-serie.sh`](../../scripts/inicia-serie.sh) treu d'aquí quines entitats han
+> d'existir abans de començar la sèrie: les `sensor.*_temperatura` i `*_humitat` de **Sensors
+> d'ambient**, i les `*_humitat_calibrada` i `*_punt_de_rosada` de **Derivades — les calcula
+> `packages/rosada.yaml`**. Cada `entity_id` sencer i entre backticks, dins de la taula (una
+> abreviatura com «*i `centre`*» no hi compta), i els dos títols de secció com són. Si la
+> lectura no quadra —dues crues per cada calibrada i per cada punt de rosada—, el guió s'hi
+> nega en lloc de mirar-ne menys.
+
 ### Sensors d'ambient — font: **Matter** (hub H110 via `matter-server`)
 
 | Aparell | Ubicació | `entity_id` de temperatura | `entity_id` d'humitat |
@@ -133,7 +142,7 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 
 | `entity_id` | Què és |
 |---|---|
-| `sensor.soterrani_fons_punt_de_rosada` *(i `centre`, `gran`)* | Punt de rosada de cada punt, **calibrat** |
+| `sensor.soterrani_fons_punt_de_rosada` · `sensor.soterrani_centre_punt_de_rosada` · `sensor.soterrani_gran_punt_de_rosada` | Punt de rosada de cada punt, **calibrat** |
 | `sensor.planta_baixa_punt_de_rosada` · `sensor.exterior_punt_de_rosada` | Punt de rosada, **calibrat** |
 | `sensor.soterrani_fons_humitat_calibrada` · `sensor.soterrani_centre_humitat_calibrada` · `sensor.soterrani_gran_humitat_calibrada` · `sensor.baixa_humitat_calibrada` · `sensor.exterior_humitat_calibrada` | L'HR amb la correcció de `custom_templates/calibratge.jinja`, i l'atribut `calibratge` amb la versió. **És la que miren els gràfics** i la HR màxima; la crua (`*_humitat`) no es toca mai i segueix a l'històric *(23/09/2026)* |
 | `sensor.soterrani_fons_punt_de_rosada_cru` · `sensor.soterrani_centre_punt_de_rosada_cru` · `sensor.soterrani_gran_punt_de_rosada_cru` · `sensor.planta_baixa_punt_de_rosada_cru` · `sensor.exterior_punt_de_rosada_cru` | El punt de rosada **sense** calibrar. **Només per depurar**: cap decisió no el mira *(23/09/2026)* |
