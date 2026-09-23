@@ -121,6 +121,36 @@ que ja tenen el forat preparat:
 ⚠️ **Es corregeix només el Td derivat. La lectura crua no es toca mai**, de manera que l'arxiu
 conserva la mesura i la correcció per separat i sempre es pot desfer.
 
+### En T i HR, no en punt de rosada
+
+La correcció s'aplica **a les dues magnituds que el sensor mesura** —T i HR— i el punt de rosada
+surt de Magnus a partir d'elles ja corregides. **No** es corregeix el Td amb un desplaçament seu,
+ni es busquen punts propers en una taula. Tres raons:
+
+1. **L'error viu a la mesura, no al càlcul.** El que està desviat és l'element capacitiu d'HR i,
+   si de cas, el termòmetre. Corregint-los, la correcció val a qualsevol temperatura i humitat;
+   és física, no un pedaç al resultat.
+2. **Un desplaçament de Td no és portable.** Barreja dues coses que es comporten diferent: 1 °C
+   d'error de T entra sencer al Td, mentre que 1 punt d'HR hi entra com ~0,2 °C —i aquest factor
+   canvia amb la temperatura—. El mateix número no valdria al soterrani a l'hivern.
+3. **No tot el que decideix és un Td.** La urgència de la v2 mira la **HR més alta** dels tres
+   punts, i els llindars del deshumidificador també són en HR. `rosada.yaml` la refà desfent
+   Magnus amb el Td calibrat i la T ⚠️ **—exacte només mentre `c_t` sigui zero—**, i
+   `tools/replica.py` falla si algun dia no ho és sense tocar-ho. Amb la correcció en HR, tot
+   plegat queda consistent; amb un pedaç al Td, el Td aniria calibrat i la HR no.
+
+**Per què no una taula de punts propers:** en tindríem **tres** (49–59 % a 26 °C, 73 % a 28 °C i
+la nevera), que no fan graella; interpolar-hi seria ajustar soroll. El model lineal en HR
+(`c_rh_a·HR + c_rh_b`) ja recull la dependència que s'ha vist —la desviació de `fons` i `centre`
+canvia amb la humitat— i l'eina només ajusta el pendent si hi ha **20 punts d'HR de recorregut**,
+que ara sí que hi són (49 → 75 %).
+
+⚠️ **Si la prova d'intercanvi (23/09) troba errors de T propis de cada sensor en fred**, un `c_t`
+constant no els representaria: serien un error que **depèn de la temperatura**, i caldria decidir
+si s'aplica el valor d'hivern —que és el que importa al soterrani— o es deixa a zero i el llindar
+de ventilació es queda alt. En qualsevol dels dos casos, tocar `c_t` obliga a revisar la **HR
+màxima** de `rosada.yaml`.
+
 I en acabat: **apagar el mode calibratge** i repartir els sensors.
 
 ## ⚠️ Això no serà un calibratge d'hivern
