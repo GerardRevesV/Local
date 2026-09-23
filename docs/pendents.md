@@ -132,8 +132,11 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
 
 - [ ] Repartir els sensors segons l'assignació, **apagar `input_boolean.mode_calibratge`** (fins
       llavors, encès: mentre ho és, res no actua) i `scripts/inicia-serie.sh` per marcar l'inici
-      de la sèrie de debò. ⚠️ Si el marcador s'oblida encès, la sèrie comença amb la decisió
-      dient `calibratge`.
+      de la sèrie de debò. *Des del 23/09/2026 el guió **s'hi nega** si el marcador és encès —la
+      sèrie començaria amb la decisió dient `calibratge`—; amb `--apaga-marcador` l'apaga ell
+      per l'API just abans d'aturar HA, i el canvi queda a la base arxivada. També es nega si
+      no pot llegir l'API, i la porta dels sensors ja mira la planta baixa (`sensor.baixa_*`),
+      que abans se li escapava.*
 - [ ] La **setmana de base**: deshumidificador fix al 55 % i ventiladors com ara
       ([logica-v2.md](domotica/logica-v2.md)).
 - [ ] **Fotos de les plaques dels ventiladors**, la **porta de l'escala** i, quan es pugui, la
