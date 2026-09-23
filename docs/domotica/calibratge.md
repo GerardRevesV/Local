@@ -152,7 +152,9 @@ conserva la mesura i la correcció per separat i sempre es pot desfer.
 3. Comprovar que **existeixen les deu entitats noves** amb el nom exacte —
    `sensor.{soterrani_fons,soterrani_centre,soterrani_gran,baixa,exterior}_humitat_calibrada` i
    `sensor.{soterrani_fons,soterrani_centre,soterrani_gran,planta_baixa,exterior}_punt_de_rosada_cru`;
-   si en surt alguna amb `_2` al final, s'ha de renombrar **abans** que gravi res— i que **l'atribut
+   si en surt alguna amb `_2` al final, s'ha de renombrar **abans** que gravi res. Ho fa
+   `bash scripts/comprova.sh`: mira cada `default_entity_id` dels paquets i cada entitat del
+   tauler, i canta les que falten i les còpies `_2`— i que **l'atribut
    `calibratge` sigui la versió** a les deu que fan servir la correcció: les cinc
    `*_humitat_calibrada` i els cinc `*_punt_de_rosada` (els `_cru`, a posta, no el porten).
 4. **Apuntar l'hora exacta** al [registre d'instal·lació](home-assistant.md#registre-dinstallació)
