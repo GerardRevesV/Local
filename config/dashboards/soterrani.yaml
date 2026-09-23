@@ -93,6 +93,38 @@ views:
               yellow: 0.8
               green: 2.0
 
+      # ── DINS I FORA, EN NÚMEROS ─────────────────────────────────────────────
+      #  El que hi ha darrere dels dos ΔTd: temperatura, HR calibrada i punt de
+      #  rosada de cada lloc. «Dins» és el racó amb el punt de rosada més alt
+      #  (l'atribut punt_mes_humit de la referència), en negreta: els ΔTd són
+      #  el seu Td menys el de l'altre lloc, i amb dos decimals es comproven a
+      #  mà. L'higròmetre del deshumidificador va a part i sense calibrar.
+      - type: markdown
+        title: Dins i fora, ara
+        content: |
+          {%- macro n(e, d, u) -%}
+            {%- set x = states(e) -%}
+            {%- if x | is_number -%}{{ ('%.' ~ d ~ 'f') | format(x | float) | replace('.', ',') }}{{ u }}{%- else -%}—{%- endif -%}
+          {%- endmacro -%}
+          {%- set ref = state_attr('sensor.soterrani_punt_de_rosada_de_referencia', 'punt_mes_humit') -%}
+          {%- set files = [
+               ('Soterrani · fons', 'fons', 'soterrani_fons', 'soterrani_fons'),
+               ('Soterrani · centre', 'centre', 'soterrani_centre', 'soterrani_centre'),
+               ('Soterrani · gran', 'gran', 'soterrani_gran', 'soterrani_gran'),
+               ('Planta baixa', '', 'baixa', 'planta_baixa'),
+               ('Fora', '', 'exterior', 'exterior') ] -%}
+          | | Temperatura | Humitat | Punt de rosada |
+          |---|---:|---:|---:|
+          {% for nom, clau, s, r in files -%}
+          | {{ '**' ~ nom ~ ' · dins**' if clau and clau == ref else nom }} | {{ n('sensor.' ~ s ~ '_temperatura', 1, ' °C') }} | {{ n('sensor.' ~ s ~ '_humitat_calibrada', 1, ' %') }} | {{ n('sensor.' ~ r ~ '_punt_de_rosada', 2, ' °C') }} |
+          {% endfor -%}
+          | Deshumidificador *(el seu higròmetre)* | {{ n('sensor.deshumidificador_temperatura', 0, ' °C') }} | {{ n('sensor.deshumidificador_humitat', 0, ' %') }} | — |
+
+          **Dins** és el racó del soterrani amb el punt de rosada més alt: el que
+          els dos ΔTd comparen amb la planta baixa i amb fora (ΔTd = Td de dins −
+          Td de l'altre lloc). Humitats **calibrades**; la temperatura no en
+          necessita. La del deshumidificador és **la seva, sense calibrar**.
+
       # ── EL QUE FAN DE DEBÒ ──────────────────────────────────────────────────
       #  Contra el que vol la decisió (dalt). En ombra, no han de coincidir.
       - type: entities
