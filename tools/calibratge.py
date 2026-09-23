@@ -40,6 +40,7 @@ Surt amb codi 1 si l'ajust no es pot donar per bo.
 from __future__ import annotations
 
 import csv
+import re
 import json
 import os
 import statistics as est
@@ -72,6 +73,7 @@ MAX_DISPERSIO_TD = 0.30     # °C — criteri d'acceptació (vegeu calibratge.md
 MINUTS_BLOC = 20            # el bloc que es promitja per fer un punt d'ajust
 RITME_MAX_BLOC = 4.0        # punts d'HR/hora: per sobre, el bloc és transitori
 MIN_BLOCS = 10              # menys blocs que això no és una recta, és un dibuix
+GRA_T = 0.05                # °C — per sota d'això, un c_t és soroll i s'escriu 0
 
 
 # ─────────────────────────────────────────────────────────────── dades ──────
@@ -299,7 +301,11 @@ def blocs(files, minuts: int = MINUTS_BLOC, ritme_max: float = RITME_MAX_BLOC) -
         per_bloc.setdefault(clau, []).append((quan, valors))
     sortida = []
     for clau in sorted(per_bloc):
-        tall = per_bloc[clau]
+        # ⚠️ Ordenat pel rellotge: si les files arriben partides per rampes, el
+        #    primer i l'últim d'un bloc no són els del rellotge, i el ritme
+        #    —que és el que descarta els transitoris— surt malament. Amb les
+        #    dades del 21–23/09 això sol canviava 91 blocs per 98.
+        tall = sorted(per_bloc[clau], key=lambda f: f[0])
         if len(tall) < minuts * 0.75:        # bloc incomplet: forats de dades
             continue
         med = [est.median([v[f"sensor.{n}_humitat"] for n in SENSORS]) for _, v in tall]
@@ -353,6 +359,31 @@ def ajusta_blocs(llista: list[dict]) -> dict[str, dict[str, float]]:
             "blocs": len(llista),
         }
     return resultat
+
+
+def dispersio_td_blocs(llista: list[dict], correccions=None) -> float:
+    """La mateixa dispersió, però sobre les mitjanes de cada bloc.
+
+    QUÈ HI GUANYA
+    ─────────────
+    La dispersió minut a minut mai no baixa de ~0,3 °C, i no és culpa del
+    calibratge: amb l'HR en enters, cada lectura ja porta ±0,5 punts (~0,1 °C
+    de Td), i el màxim menys el mínim de CINC sorolls independents val unes
+    2,3 desviacions. Promitjant blocs, aquest soroll marxa i queda el que de
+    debò és sistemàtic — que és el que un calibratge pot arreglar.
+    """
+    pitjor = []
+    for b in llista:
+        tds = []
+        for nom in SENSORS:
+            t, rh = b["t"][nom], b["hr"][nom]
+            if correccions and nom in correccions:
+                c = correccions[nom]
+                t = t + c["c_t"]
+                rh = rh * c["c_rh_a"] + c["c_rh_b"]
+            tds.append(punt_de_rosada(t, min(max(rh, 1.0), 100.0)))
+        pitjor.append(max(tds) - min(tds))
+    return est.median(pitjor) if pitjor else float("nan")
 
 
 def dispersio_td(files, correccions=None) -> float:
@@ -438,10 +469,15 @@ def informe(files_per_rampa) -> int:
     abans = dispersio_td(totes)
     despres = dispersio_td(totes, final)
     print(f"\n── Dispersió de Td entre els cinc (mediana)")
-    print(f"   abans:   {abans:.2f} °C")
-    print(f"   després: {despres:.2f} °C   (objectiu ≤ {MAX_DISPERSIO_TD:.2f})")
+    print(f"   minut a minut:  {abans:.2f} → {despres:.2f} °C   (objectiu ≤ {MAX_DISPERSIO_TD:.2f})")
+    if llista:
+        # El que queda minut a minut és gra del sensor; per blocs es veu el que
+        # el calibratge ha arreglat de debò.
+        ab_b, de_b = dispersio_td_blocs(llista), dispersio_td_blocs(llista, final)
+        print(f"   per blocs:      {ab_b:.2f} → {de_b:.2f} °C   (sense la quantització)")
     if despres > MAX_DISPERSIO_TD:
-        print("   ⚠ per sobre de l'objectiu: el llindar ΔTd s'ha de quedar alt")
+        print("   ⚠ minut a minut, per sobre de l'objectiu. Mira la xifra per blocs:\n"
+              "     si aquella és petita, el que queda és gra de la mesura i no calibratge.")
         problemes += 1
 
     print("\n── Per enganxar a config/packages/rosada.yaml")
@@ -453,8 +489,14 @@ def informe(files_per_rampa) -> int:
     for nom in SENSORS:
         c = final[nom]
         nota = "" if c["pendent_ajustat"] else "   # sense recorregut: només desplaçament"
+        # ⚠️ Un c_t per sota del gra (±0,05 °C) és soroll, i escriure'l tindria un
+        #    preu: la HR màxima de rosada.yaml es calcula desfent Magnus amb la T
+        #    CRUA, i això només és exacte amb c_t = 0. replica.py ho vigila i falla.
+        c_t = 0.0 if abs(c["c_t"]) < GRA_T else c["c_t"]
+        if c_t == 0.0 and c["c_t"] != 0.0:
+            nota += f"   # c_t {c['c_t']:+.2f} → 0: sota el gra de la mesura"
         print(f"   {nom}:{nota}")
-        print(f"     {{% set c_t = {c['c_t']:.2f} %}}"
+        print(f"     {{% set c_t = {c_t:.2f} %}}"
               f"{{% set c_rh_a = {c['c_rh_a']:.4f} %}}"
               f"{{% set c_rh_b = {c['c_rh_b']:.2f} %}}")
     return problemes
@@ -505,6 +547,38 @@ def _sintetic_recta(veritat, hores=12.0):
             valors[f"sensor.{nom}_temperatura"] = round(26.0 + 0.5 * i / n, 1)
         files.append((t0 + timedelta(seconds=PAS_GRAELLA_S * i), valors))
     return files
+
+
+ARREL = Path(__file__).resolve().parent.parent
+CSV_REAL = ARREL / "docs/domotica/dades/calibratge-2026-09.csv"
+JINJA_REAL = ARREL / "config/custom_templates/calibratge.jinja"
+# La tanda del 21–23/09/2026, tal com es va analitzar (vegeu calibratge.md).
+FINESTRA_REAL = ("2026-09-21T00:43+02:00", "2026-09-23T13:45+02:00")
+EXCLOSOS_REALS = [("2026-09-21T11:26+02:00", "2026-09-21T12:39+02:00"),   # entre tandes, a la mà
+                  ("2026-09-21T14:50+02:00", "2026-09-21T15:35+02:00"),   # el sotrac del tàper
+                  ("2026-09-22T12:45+02:00", "2026-09-23T13:00+02:00")]   # la nevera: gradients
+
+
+def calibratge_del_repo() -> dict[str, dict[str, float]]:
+    """Els números que hi ha a custom_templates/calibratge.jinja, que és el que corre."""
+    text = JINJA_REAL.read_text(encoding="utf-8")
+    sortida = {}
+    for nom in SENSORS:
+        m = re.search(rf"'{nom}':\s*\{{'a':\s*([-\d.]+),\s*'b':\s*([-\d.]+),\s*'t':\s*([-\d.]+)", text)
+        if m:
+            sortida[nom] = {"c_rh_a": float(m.group(1)), "c_rh_b": float(m.group(2)),
+                            "c_t": float(m.group(3))}
+    return sortida
+
+
+def _blocs_reals():
+    """Els blocs de la tanda de debò, del CSV del repositori."""
+    dades = carrega_csv(CSV_REAL)
+    files = graella(dades, _quan(FINESTRA_REAL[0]), _quan(FINESTRA_REAL[1]))
+    for des, fins in EXCLOSOS_REALS:
+        a, b = _quan(des), _quan(fins)
+        files = [f for f in files if not (a <= f[0] <= b)]
+    return blocs(files)
 
 
 def tests() -> int:
@@ -573,6 +647,81 @@ def tests() -> int:
              _dispersio(res_b) < 0.5 < _dispersio(None),
              f"{_dispersio(None):.2f} → {_dispersio(res_b):.2f} punts")
 
+    if CSV_REAL.exists() and JINJA_REAL.exists():
+        print("\nLES DADES DE DEBÒ (docs/domotica/dades/calibratge-2026-09.csv)")
+        llista = _blocs_reals()
+        refs = [b["ref"] for b in llista]
+        prop("hi ha els blocs de l'anàlisi del 23/09", len(llista) >= 85, f"{len(llista)} blocs")
+        prop("i el recorregut permet ajustar pendent", max(refs) - min(refs) >= MIN_RECORREGUT_HR,
+             f"{min(refs):.0f}–{max(refs):.0f} %")
+
+        ajust, repo = ajusta_blocs(llista), calibratge_del_repo()
+        for nom in SENSORS:
+            iguals = (abs(ajust[nom]["c_rh_a"] - repo[nom]["c_rh_a"]) < 0.001
+                      and abs(ajust[nom]["c_rh_b"] - repo[nom]["c_rh_b"]) < 0.01)
+            prop(f"{nom}: el que corre és el que diuen les dades", iguals,
+                 f"jinja {repo[nom]['c_rh_a']:.4f}/{repo[nom]['c_rh_b']:+.2f} · "
+                 f"dades {ajust[nom]['c_rh_a']:.4f}/{ajust[nom]['c_rh_b']:+.2f}")
+
+        abans, despres = dispersio_td_blocs(llista), dispersio_td_blocs(llista, repo)
+        prop("amb la correcció del repositori, els cinc diuen gairebé el mateix",
+             despres <= MAX_DISPERSIO_TD and despres < abans / 2,
+             f"dispersió de Td {abans:.2f} → {despres:.2f} °C")
+        def _separacio(desplacament=0.0, correccions=None):
+            """Quant se separen els cinc, en punts d'HR: mediana i pitjor bloc.
+
+            Amb la MEDIANA i no només el màxim: hi ha blocs de transitori on
+            els cinc encara no han arribat al mateix valor, i un sol bloc així
+            no ha de decidir si el calibratge és bo.
+            """
+            seps = []
+            for b in llista:
+                crus = [min(max(b["hr"][n] + desplacament, 1.0), 100.0) for n in SENSORS]
+                vals = ([crus[i] * correccions[n]["c_rh_a"] + correccions[n]["c_rh_b"]
+                         for i, n in enumerate(SENSORS)] if correccions else crus)
+                seps.append((max(vals) - min(vals), vals, crus))
+            return (est.median(s[0] for s in seps), max(s[0] for s in seps), seps)
+
+        med_cru, _, _ = _separacio()
+        med_cor, pitjor_cor, _ = _separacio(correccions=repo)
+        prop("i en HR s'ajunten dins d'un punt", med_cor < 1.0,
+             f"mediana {med_cru:.2f} → {med_cor:.2f} punts (pitjor bloc, {pitjor_cor:.2f})")
+
+        print("\nEXTRAPOLACIÓ: les mateixes dades desplaçades, com serà el soterrani")
+        # Desplaçar TOTS els sensors per igual no canvia qui és qui: és la
+        # manera de veure què fa la correcció fora del rang mesurat, sense
+        # inventar-se cap sensor nou.
+        for desplacament, etiqueta in ((+15.0, "hivern, ~64–88 %"), (-15.0, "sec, ~34–58 %")):
+            m_cru, _, _ = _separacio(desplacament)
+            m_cor, _, seps = _separacio(desplacament, repo)
+            fora = sum(1 for _, vals, _ in seps for v in vals if not 0.0 <= v <= 100.0)
+            maxima = max(abs(vals[i] - crus[i]) for _, vals, crus in seps for i in range(5))
+            prop(f"{etiqueta}: cap valor corregit se'n va fora de l'escala", fora == 0, f"{fora} valors")
+            # ⚠️ Fora del rang no se li pot demanar que ajunti tant com a dins:
+            #    desplaçar totes les lectures per igual suposa que l'error NO
+            #    canvia amb la humitat, i el model diu justament que sí. El que
+            #    se li exigeix és que no ho empitjori i que no es desboqui.
+            prop(f"{etiqueta}: no els separa més que sense corregir",
+                 m_cor < m_cru, f"mediana {m_cru:.2f} → {m_cor:.2f} punts")
+            prop(f"{etiqueta}: i no mou cap lectura més de 4 punts",
+                 maxima < 4.0, f"la més gran, {maxima:.2f} punts")
+
+        print("\nEXTRAPOLACIÓ: la correcció desfà exactament l'error que suposa")
+        # Si un sensor llegís el que el model diu que llegiria amb l'aire a X,
+        # corregir-lo ha de tornar X. Val a qualsevol humitat, també fora del
+        # rang mesurat: així es veu si la recta es desboca en algun extrem.
+        pitjor_volta, pitjor_lectura = 0.0, 0.0
+        for x in range(30, 100, 5):
+            for nom in SENSORS:
+                c = repo[nom]
+                cru = (x - c["c_rh_b"]) / c["c_rh_a"]
+                pitjor_lectura = max(pitjor_lectura, abs(cru - x))
+                pitjor_volta = max(pitjor_volta, abs(cru * c["c_rh_a"] + c["c_rh_b"] - x))
+        prop("del 30 al 95 % torna el valor de partida", pitjor_volta < 0.01,
+             f"error màxim {pitjor_volta:.4f} punts")
+        prop("i cap sensor no hauria de llegir res absurd per arribar-hi",
+             pitjor_lectura < 5.0, f"la lectura més allunyada, {pitjor_lectura:.2f} punts")
+
     print("\nEls trams exclosos es llegeixen bé de la línia d'ordres")
     fr = _franges_excloses(["--exclou", "2026-09-21T14:54+02:00/2026-09-21T15:30+02:00"])
     prop("una franja, i el fus es respecta (12:54–13:30 UTC)",
@@ -640,23 +789,30 @@ def tests() -> int:
 
 
 # ───────────────────────────────────────────────────────────────── main ─────
-def _franges_excloses(argv: list[str]) -> list[tuple[datetime, datetime]]:
-    """--exclou INICI/FI, repetible. Trams que NO han d'entrar a l'ajust.
+def _franja(argv: list[str], opcio: str) -> list[tuple[datetime, datetime]]:
+    """«opcio INICI/FI», repetible. Marques ISO amb fus.
 
-    N'hi ha sempre: el sotrac de qui mou el recipient, el tram dins d'una nevera
-    amb gradients... Queden a l'històric —són dades—, però no fan calibratge.
-    Les marques van en ISO, amb fus: 2026-09-21T14:54+02:00/2026-09-21T15:30+02:00
+    --exclou són els trams que NO entren a l'ajust: el sotrac de qui mou el
+    recipient, el tram dins d'una nevera amb gradients... Queden a l'històric
+    —són dades—, però no fan calibratge.
+
+    --finestra substitueix el marcador, i només s'hauria de fer servir per als
+    trams antics que es van mesurar sense encendre'l.
     """
     franges = []
     for i, arg in enumerate(argv):
-        if arg != "--exclou":
+        if arg != opcio:
             continue
         des, _, fins = argv[i + 1].partition("/")
         if not fins:
-            raise SystemExit("--exclou vol INICI/FI, per exemple "
+            raise SystemExit(f"{opcio} vol INICI/FI, per exemple "
                              "2026-09-21T14:54+02:00/2026-09-21T15:30+02:00")
         franges.append((_quan(des), _quan(fins)))
     return franges
+
+
+def _franges_excloses(argv: list[str]) -> list[tuple[datetime, datetime]]:
+    return _franja(argv, "--exclou")
 
 
 def main(argv: list[str]) -> int:
@@ -677,11 +833,17 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 1
 
-    finestra = finestra_de_calibratge(dades)
-    if finestra is None:
-        print(f"No hi ha cap tram amb {MARCADOR} encès. L'experiment s'ha de marcar.")
-        return 1
-    inici, fi = finestra
+    manual = _franja(argv, "--finestra")
+    if manual:
+        inici, fi = manual[0]
+        print("⚠ Finestra donada a mà: el marcador no mana. Només per a trams antics\n"
+              "  que es van fer sense encendre'l (la primera tanda, 21/09/2026).")
+    else:
+        finestra = finestra_de_calibratge(dades)
+        if finestra is None:
+            print(f"No hi ha cap tram amb {MARCADOR} encès. L'experiment s'ha de marcar.")
+            return 1
+        inici, fi = finestra
     print(f"Finestra de calibratge: {inici.isoformat()} → {fi.isoformat()}")
 
     files = graella(dades, inici, fi)

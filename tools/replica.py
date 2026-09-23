@@ -739,12 +739,23 @@ def tests_fitxers() -> bool:
 
     # sensor.soterrani_humitat_maxima desfà Magnus amb la T CRUA. És exacte
     # mentre el calibratge de T dels tres punts del soterrani sigui zero.
+    # Els números viuen a custom_templates/calibratge.jinja (l'únic lloc).
+    calib = (ARREL / "config/custom_templates/calibratge.jinja").read_text(encoding="utf-8")
     cts = {}
-    for punt in ("fons", "centre", "gran"):
-        m = re.search(rf'name: "Soterrani {punt} — punt de rosada".*?set c_t = ([-\d.]+)', rosada, re.S)
+    for punt in ("soterrani_fons", "soterrani_centre", "soterrani_gran"):
+        m = re.search(rf"'{punt}':\s*\{{[^}}]*'t':\s*([-\d.]+)", calib)
         cts[punt] = float(m.group(1)) if m else None
     ok &= _prop("el calibratge de T del soterrani és zero (si no, la HR màxima s'ha de corregir)",
                 all(v == 0.0 for v in cts.values()), cts)
+
+    # I que els cinc punts de rosada llegeixin d'aquell fitxer i no de números
+    # escrits a mà: dos llocs amb el mateix número acaben sempre divergint.
+    ok &= _prop("cap plantilla de rosada.yaml no porta el calibratge escrit a dins",
+                "set c_rh_a" not in rosada,
+                "n'hi ha alguna amb c_rh_a a dins" if "set c_rh_a" in rosada else "cap")
+    ok &= _prop("i les cinc importen calibratge.jinja",
+                rosada.count("from 'calibratge.jinja' import CALIBRATGE") >= 5,
+                f"{rosada.count(chr(39) + 'calibratge.jinja' + chr(39))} usos")
     return ok
 
 

@@ -89,22 +89,13 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       - [ ] **El segon dipòsit**, sense tocar res: de l'hora que es torna a posar buit al proper
             32. Treu el marge de la safata, i ja no cal mesurar-lo:
             `tools/analisi.py diposits --litres 3 3 …` (un valor per dipòsit).
-- [ ] **Calibratge: la nit sencera**, i demà la **rampa amb el tàper de sal i la nevera** (el
-      tàper fixa el 75 % gairebé a qualsevol temperatura; la nevera hi afegeix el fred de
-      l'hivern) → [calibratge.md](domotica/calibratge.md).
-      ✅ La nit, i el **tàper al replà** des de les ~05:00 del 22/09 (73 %, 27,8 °C): els
-      desplaçaments del 21/09 **no hi valen** i tots cinc semblen llegir **baix** contra la
-      sal (provisional) → [el replà](domotica/calibratge.md#el-replà--22092026).
-      🔄 **La nevera**: a dins des de les 12:45, ✅ ràdio bé, tapat a les 13:44. ⚠️ La pasta
-      sembla més freda que els sensors → **drap a sota i al voltant**. Demà surt **tapat** →
-      [tercera tanda](domotica/calibratge.md#tercera-tanda--la-nevera).
-      Els graons ja no calen. ⏳ **Feina de codi que en surt** (23/09): portar a
-      `tools/calibratge.py` l'ajust per **blocs de 20 min** i **invers** —el minut a minut sobre
-      rampa dona pendents de 0,81 a 1,23 i no serveix—, i, si l'ancoratge fred difereix del
-      calent més de 0,3 punts, la **interpolació en temperatura** a `rosada.yaml` i a
-      `replica.py` → [com s'ajusta](domotica/calibratge.md#com-sajusta-la-correcció-i-on-saplica).
-      En acabar: l'anàlisi,
-      aplicar els desplaçaments i **apagar el mode calibratge**.
+- [x] ~~**Calibratge: la nit sencera, el tàper de sal i la nevera.**~~ ✅ **Tancat el
+      23/09/2026**: tres tandes i números aplicats a `rosada.yaml`. ⏳ Queda **apagar el
+      marcador** quan els sensors siguin al seu lloc, al local. La
+      nevera no va servir per al punt fred (gradients de 2–3 °C dins del tàper) i això queda
+      obert per a l'hivern → [els números](domotica/calibratge.md#els-números-aplicats--23092026).
+      L'eina ja ajusta **per blocs de 20 min i en sentit invers**, i sap **excloure trams** i
+      rebre la **finestra a mà** (la primera tanda es va fer sense marcador).
 - [ ] ⚠️ **Refer qualsevol calibratge tret amb `--descarrega` abans del 22/09/2026.** L'eina
       demanava l'històric sense `end_time`, i HA en torna només 24 h des de l'inici: amb més
       de 24 h demanades, l'ajust feia servir **només les primeres 24 h** i perdia les rampes
@@ -409,21 +400,22 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       mecanisme ja funciona per al deshumidificador a `rosada.yaml`; els blocs dels
       ventiladors hi són escrits però **comentats a posta** fins a la Fase C, perquè fins que
       els S110E no estiguin instal·lats quedarien `unavailable` i embrutarien l'històric.*
-- [ ] 🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13). 🟡 **Primera tanda feta
-      el 21/09/2026**, franja 49–59 %: dispersió de Td **0,95 → 0,24 °C**, temperatura sense
-      correcció, i desplaçaments d'HR entre −1,2 i +2,2 punts. **No aplicats**: falta la franja
-      humida. 🟡 **Segona tanda, 21–22/09/2026**: tàper amb sal, amb el marcador encès, replà
-      al 73 % → [el replà](domotica/calibratge.md#el-replà--22092026). Dispersió de Td 0,61 °C
-      sense corregir i 0,40 amb els desplaçaments del 21/09, que **no hi valen**; tots cinc
-      semblen llegir baix contra la sal (provisional). ⏳ Falta el punt en fred →
-      [tercera tanda, la nevera](domotica/calibratge.md#tercera-tanda--la-nevera).
-      *Preparat des del 21/09/2026:* hi ha el marcador `input_boolean.mode_calibratge` —que posa
-      la decisió a `calibratge` i impedeix que cap automatisme actuï—, el forat dels
-      desplaçaments a les cinc plantilles de `rosada.yaml` (avui identitat, no corregeixen
-      res) i `tools/calibratge.py` per ajustar-ho. ⚠️ **Són rampes lentes en els dos sentits,
-      no 24 h quiets**: amb l'HR en enters, un replà mort no deixa baixar de ±0,5 %, i amb una
-      sola rampa el retard del hub no es distingeix del calibratge.
-      → [calibratge.md](domotica/calibratge.md)
+- [x] ~~🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13).~~ ✅ **Fet i aplicat el
+      23/09/2026** en tres tandes (nit a casa, tàper amb sal fins al 73 %, i nevera). Dispersió
+      de Td entre els cinc: **0,89 → 0,28 °C** per blocs. Els pendents i desplaçaments d'HR són
+      a les cinc plantilles de `rosada.yaml`; la T no es corregeix (`c_t` = 0, coincideixen dins
+      de ±0,05 °C). Histèresi comprovada. Dades crues a
+      [`dades/calibratge-2026-09.csv`](domotica/dades/calibratge-2026-09.csv), i l'ajust es refà
+      sense HA amb l'ordre que hi ha al doc →
+      [els números](domotica/calibratge.md#els-números-aplicats--23092026).
+- [ ] 🔬 **Repetir el calibratge al soterrani, a l'hivern** — l'única part que ha quedat sense
+      resposta. El d'ara val **entre el 49 i el 73 % d'HR a 26–30 °C**, i el soterrani serà de
+      **65–90 % a 8–20 °C**: la temperatura queda del tot fora del rang mesurat. La nevera no ho
+      va poder resoldre (gradients de 2–3 °C dins del tàper, tres col·locacions i tres patrons
+      diferents). Al soterrani és barat: els sensors ja hi seran, el fred ve sol i la sala és
+      gran i ben barrejada; només cal tornar a encendre el marcador i tenir-los junts unes hores
+      abans de repartir-los. Amb dos ancoratges es podrà fer que la correcció **depengui de la
+      temperatura**, interpolant → [com s'ajusta](domotica/calibratge.md#com-sajusta-la-correcció-i-on-saplica).
 - [ ] 🔋 **Les bateries dels cinc Tapo no arriben a Home Assistant.** Comprovat el
       21/09/2026: l'HA no té cap entitat de bateria dels sensors —pel que sembla, el hub H110
       no les passa per Matter—, tot i que el conveni de noms en preveu la magnitud `bateria`.
