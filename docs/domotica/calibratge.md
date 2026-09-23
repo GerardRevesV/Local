@@ -1,10 +1,13 @@
 # Calibratge creuat dels sensors — procediment
 
-> **Estat: dues tandes mesurades, cap d'aplicada (22/09/2026).** La primera dona la franja
+> **Estat: tres tandes mesurades, cap d'aplicada (23/09/2026).** La primera dona la franja
 > **49–59 % d'HR**; la segona, el **replà del tàper de sal al 73 %**, i diu que els desplaçaments
-> de la primera **no hi valen** i que tots cinc llegeixen baix → [el replà](#el-replà--22092026).
-> Falta el punt en fred: la [tercera tanda, a la nevera](#tercera-tanda--la-nevera). Els de
-> `rosada.yaml` segueixen sent identitat. Fase **A.13** de [fases.md](fases.md).
+> de la primera **no hi valen** → [el replà](#el-replà--22092026); la tercera, a la
+> [nevera](#tercera-tanda--la-nevera), havia de donar el punt en fred i **queda pendent de la
+> prova d'intercanvi**. El mètode d'ajust i el model de correcció —blocs de 20 min, ajust invers,
+> i quan cal fer que depengui de la temperatura— són a [com s'ajusta la
+> correcció](#com-sajusta-la-correcció-i-on-saplica). Els números de `rosada.yaml` segueixen sent
+> identitat. Fase **A.13** de [fases.md](fases.md).
 
 ## Per què, i quant val
 
@@ -47,6 +50,13 @@ D'aquí surt tot el disseny de l'experiment:
 > **Rampes lentes, no replans.** En una rampa cada sensor creua el 60→61 % en un instant una
 > mica diferent, i aquest desfasament és informació **per sota del gra**. Un replà mort no
 > dona dither i et deixa clavat a ±0,5 %.
+
+⚠️ **Revisat el 23/09/2026, amb les dades a la mà: això era mig cert.** El raonament del *dither*
+es manté —i el replà del 22/09 en va donar un exemple de llibre, amb `fons` clavat a 72,00 set
+hores—, **però ajustar minut a minut sobre la rampa és pitjor**, no millor: els pendents surten
+de 0,81 a 1,23 segons el sensor. El que funciona és **partir-ho tot en blocs de 20 minuts**, que
+aprofita la rampa i els replans alhora → [d'on surten els punts de
+l'ajust](#don-surten-els-punts-de-lajust-blocs-no-replans-sols-ni-minut-a-minut).
 
 I d'aquí surt també per què calen **les dues rampes**, la seca i la humida: si el hub triga
 sempre una mica més a enviar un sensor concret, aquest **retard sistemàtic s'assembla
@@ -103,7 +113,9 @@ python3 tools/calibratge.py --descarrega --hores 48
 > `--descarrega` abans de la correcció s'ha de tornar a calcular.**
 
 L'eina **troba sola la finestra** a partir del marcador, parteix les rampes, ajusta i escriu
-les línies per enganxar. El que has de mirar de la seva sortida:
+les línies per enganxar. ⏳ **Això és el que fa avui; el mètode bo és un altre** → [com s'ajusta
+la correcció](#com-sajusta-la-correcció-i-on-saplica). Mentre no estigui portat a l'eina, el que
+has de mirar de la seva sortida:
 
 | Què diu | Què vol dir |
 |---|---|
@@ -120,6 +132,11 @@ que ja tenen el forat preparat:
 
 ⚠️ **Es corregeix només el Td derivat. La lectura crua no es toca mai**, de manera que l'arxiu
 conserva la mesura i la correcció per separat i sempre es pot desfer.
+
+## Com s'ajusta la correcció, i on s'aplica
+
+*Escrit el 23/09/2026, amb les dades de les tres tandes a la mà. Aquesta secció mana sobre el
+mètode que es descrivia abans de tenir-les.*
 
 ### En T i HR, no en punt de rosada
 
@@ -503,28 +520,22 @@ entremig.
 
 ### Com es llegeix
 
-Per **replans**, no per rampes:
+Les tres tandes donen això:
 
-| Replà | HR | T | Què en surt |
+| Tanda | HR | T | Què en surt |
 |---|---|---|---|
-| La nit del 20–21/09 | ~55 % | ~26 °C | Desplaçaments contra la mediana |
-| El tàper, 22/09 | 73 % (sal: 75,2) | 27,8 °C | Desplaçaments i ancoratge absolut |
-| La nevera | sal: ~75,7 | ~6–8 °C | El mateix, **en fred** |
+| La nit del 20–21/09 | 49–59 % | ~26 °C | Blocs per a l'ajust |
+| El tàper, 21–22/09 | 48 → 73 % (sal: 75,2) | 26–29,6 °C | La resta dels blocs, i l'ancoratge absolut *(provisional)* |
+| La nevera, 22–23/09 | 66–74 % | 3,8–8,4 °C | L'**ancoratge fred**, si l'intercanvi el neteja |
 
-La proposta per decidir què s'aplica:
+El mètode d'ajust, el model i el criteri per decidir si la correcció ha de dependre de la
+temperatura són a [com s'ajusta la correcció](#com-sajusta-la-correcció-i-on-saplica). En dues
+línies: **blocs de 20 minuts** de tota la finestra, ajust invers, pendent en HR del tram calent i
+desplaçament interpolat entre el fred i el calent **si** difereixen més del gra.
 
-- **Si el replà fred dona les mateixes correccions que el calent** (dins del gra, ±0,5), el
-  calibratge no depèn de la temperatura entre 6 i 28 °C: pendent i desplaçament amb els dos
-  replans calents, i s'apliquen.
-- **Si no**, mana el **fred**, que és el que s'assembla a l'hivern del soterrani: se n'apliquen
-  les constants, i es repeteix al soterrani al gener.
-- **L'ancoratge absolut**, si les dues sals coincideixen, es dona per bo.
-
-⚠️ **`tools/calibratge.py` no fa aquesta lectura**: parteix la finestra per rampes, compara
-contra la mediana i barrejaria el fred i el calent en un sol ajust. ⏳ Cal afegir-hi els replans i
-la sal; fins llavors, l'anàlisi d'aquesta tanda es fa a part. I la finestra ja fa **més de
-24 h**: l'eina ja la baixa sencera ([corregit el 22/09](#després)), però qualsevol altra
-descàrrega ha de portar `end_time`, perquè sense HA en torna només 24.
+⚠️ **`tools/calibratge.py` encara no ho fa així**: parteix la finestra per rampes i ajusta minut
+a minut contra la mediana, que és justament el que s'ha demostrat pitjor. ⏳ Portar-hi els blocs,
+l'ajust invers i els dos ancoratges; fins llavors, l'anàlisi es fa a part i queda escrita aquí.
 
 ## Registre
 
