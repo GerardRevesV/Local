@@ -63,7 +63,9 @@ if [ "$DE_DEBO" -ne 1 ]; then
 
     · Els sensors, al seu lloc DEFINITIU del local.
     · Els noms d'entitat fixats i renombrats. Canviar-ne un després
-      parteix la sèrie.
+      parteix la sèrie. El guió els busca un per un, amb el nom de
+      docs/domotica/noms-entitats.md, i s'hi nega si en falta algun o si
+      n'hi ha un de duplicat («…_2»).
     · El calibratge desplegat (custom_templates/calibratge.jinja).
     · El marcador input_boolean.mode_calibratge APAGAT. Si és encès, el
       guió s'hi nega; amb --apaga-marcador l'apaga ell just abans
@@ -94,6 +96,8 @@ fi
 # sensors deia «tots reporten» sense haver-ne mirat cap.
 HA=http://127.0.0.1:8123
 MARCADOR=input_boolean.mode_calibratge
+DECISIO=sensor.decisio_del_soterrani
+NOMS=docs/domotica/noms-entitats.md
 TOK=~/.ha_token
 ESTATS=$(mktemp)
 trap 'rm -f "$ESTATS"' EXIT
@@ -118,9 +122,31 @@ estat(){ curl -sf -m 5 -H "Authorization: Bearer $T" "$HA/api/states/$1" \
            | python3 -c 'import sys,json; print(json.load(sys.stdin)["state"])' 2>/dev/null \
          || echo "?"; }
 
-# ── 2. Cap sensor mort ─────────────────────────────────────────────────────
+# ── 2. Els sensors: hi són, un sol cop, i reporten ─────────────────────────
 # Començar la sèrie amb un sensor caigut vol dir un forat des del dia u,
 # i el dia u és precisament el que es mirarà.
+#
+# Mirar l'estat no n'hi ha prou. Un sensor que NO HI ÉS no surt a /api/states
+# i per tant no pot sortir mort; i si HA l'ha tornat a crear com a
+# sensor.baixa_humitat_2 (calibratge.md, «Desplegar un calibratge», pas 3), la
+# sèrie es parteix en dues entitats sense que cap de les dues sembli morta.
+# Fins al 23/09/2026 la porta no veia cap de les dues coses. Ara en són tres:
+#   · FALTA     cada entitat esperada, amb el nom exacte.
+#   · DUPLICAT  cap «<esperada>_2», «_3»…
+#   · MORT      cap sensor del local sense lectura vàlida.
+#
+# Les esperades NO són una llista d'aquí: surten de les taules de
+# docs/domotica/noms-entitats.md, que és on es fixen els noms. De «Sensors
+# d'ambient», les deu crues (T i HR); de «Derivades — les calcula
+# packages/rosada.yaml», les cinc *_humitat_calibrada i els cinc
+# *_punt_de_rosada. La decisió, que és una sola, va a part ($DECISIO, com el
+# marcador). Les parets (ESPHome) i els ventiladors (S110E) són en altres
+# seccions: no hi entren fins que existeixin i algú els hi posi.
+#
+# Si les taules no es llegeixen com cal —cada sensor d'ambient dona una T, una
+# HR, una HR calibrada i un punt de rosada—, la porta queda TANCADA: una llista
+# escurçada per una taula reformatada la faria passar sense haver mirat res.
+#
 # La planta baixa té dos prefixos, i cap no conté l'altre: el Tapo i la seva
 # humitat calibrada són sensor.baixa_*, els punts de rosada sensor.planta_baixa_*
 # (noms-entitats.md). Fins al 23/09/2026 només hi havia el segon, i el sensor
@@ -128,22 +154,78 @@ estat(){ curl -sf -m 5 -H "Authorization: Bearer $T" "$HA/api/states/$1" \
 # Aquesta porta veu les que hi són però no llegeixen. Les que FALTEN, o que
 # tenen una còpia «_2», les canta comprova.sh, a la porta 1.
 if [ "$LLEGIT" -eq 1 ]; then
-  morts=$(python3 -c '
-import sys, json
-mal = []
-for e in json.load(open(sys.argv[1])):
-    i = e["entity_id"]
-    if i.startswith(("sensor.soterrani", "sensor.exterior",
-                     "sensor.planta_baixa", "sensor.baixa_")) \
-       and e["state"] in ("unavailable", "unknown", "sense_dades"):
-        mal.append(i)
-print("\n".join(mal))' "$ESTATS")
-  if [ -n "$morts" ]; then
-    mal "hi ha sensors sense lectura vàlida:"
-    printf '%s\n' "$morts" | sed 's/^/      /'
+  sensors=$(python3 - "$ESTATS" "$NOMS" "$DECISIO" <<'PY'
+import json, re, sys
+estats, noms, decisio = sys.argv[1:]
+
+def taula(titol):
+    # Els sensor.* de les files de taula de la secció «### <titol>…».
+    try:
+        text = open(noms, encoding="utf-8").read()
+    except OSError:
+        return []
+    m = re.search(r"^### " + titol + r"[^\n]*\n(.*?)(?=^#|\Z)", text, re.M | re.S)
+    files = [l for l in (m.group(1).splitlines() if m else []) if l.startswith("|")]
+    return re.findall(r"`(sensor\.[a-z0-9_]+)`", "\n".join(files))
+
+crues = [e for e in taula("Sensors d'ambient")
+         if e.endswith(("_temperatura", "_humitat"))]
+derivades = taula(r"Derivades[^\n]*packages/rosada\.yaml")
+calibrades = [e for e in derivades if e.endswith("_humitat_calibrada")]
+rosades = [e for e in derivades if e.endswith("_punt_de_rosada")]
+if not (crues and len(crues) == 2 * len(calibrades) == 2 * len(rosades)):
+    print("illegible", len(crues), "crues,", len(calibrades), "calibrades,",
+          len(rosades), "punts de rosada")
+    sys.exit()
+
+esperades = crues + calibrades + rosades + [decisio]
+estat = {e["entity_id"]: e["state"] for e in json.load(open(estats))}
+for e in esperades:
+    if e not in estat:
+        print("falta", e)
+    for i in sorted(estat):
+        if re.fullmatch(re.escape(e) + r"_[0-9]+", i):
+            print("duplicat", i, e)
+local = ("sensor.soterrani", "sensor.exterior", "sensor.planta_baixa", "sensor.baixa_")
+for i, s in sorted(estat.items()):
+    if (i in esperades or i.startswith(local)) \
+       and s in ("unavailable", "unknown", "sense_dades"):
+        print("mort", i, s)
+print("esperades", len(esperades))
+PY
+  )
+  # Les files d'un grup de l'informe, sense l'etiqueta.
+  grup(){ printf '%s\n' "$sensors" | sed -n "s/^$1 //p"; }
+  n=$(grup esperades)
+  if [ -z "$n" ]; then
+    if [ -n "$(grup illegible)" ]; then
+      mal "no sé quins sensors esperar: $NOMS no es llegeix com cal"
+      grup illegible | sed 's/^/      /'
+    else
+      mal "la comprovació dels sensors ha petat: l'error és a sobre"
+    fi
     PROBLEMES=$((PROBLEMES+1))
   else
-    ok "tots els sensors del local reporten"
+    falten=$(grup falta); duplicats=$(grup duplicat); morts=$(grup mort)
+    if [ -n "$falten" ]; then
+      mal "falten entitats de $NOMS: la sèrie començaria amb un forat"
+      printf '%s\n' "$falten" | sed 's/^/      /'
+      PROBLEMES=$((PROBLEMES+1))
+    fi
+    if [ -n "$duplicats" ]; then
+      mal "hi ha duplicats: la sèrie es partiria en dues entitats"
+      printf '%s\n' "$duplicats" | sed 's/^\([^ ]*\) \(.*\)$/      \1  (la del conveni és \2)/'
+      echo "      Treu la que sobra i deixa el nom del conveni a la que grava:"
+      echo "      runbook-servidor.md, «Renombrar entitats sense tocar .storage»."
+      PROBLEMES=$((PROBLEMES+1))
+    fi
+    if [ -n "$morts" ]; then
+      mal "hi ha sensors sense lectura vàlida:"
+      printf '%s\n' "$morts" | sed 's/^\([^ ]*\) \(.*\)$/      \1  «\2»/'
+      PROBLEMES=$((PROBLEMES+1))
+    fi
+    [ -z "$falten$duplicats$morts" ] \
+      && ok "les $n entitats de $(basename "$NOMS") hi són, sense duplicats, i tots els sensors del local reporten"
   fi
 fi
 
