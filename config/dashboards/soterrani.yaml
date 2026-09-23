@@ -98,7 +98,10 @@ views:
       #  rosada de cada lloc. «Dins» és el racó amb el punt de rosada més alt
       #  (l'atribut punt_mes_humit de la referència), en negreta: els ΔTd són
       #  el seu Td menys el de l'altre lloc, i amb dos decimals es comproven a
-      #  mà. L'higròmetre del deshumidificador va a part i sense calibrar.
+      #  mà. L'higròmetre del deshumidificador va a part i sense calibrar, i
+      #  el seu Td es calcula aquí mateix (Magnus, les constants de
+      #  rosada.yaml) i no és cap entitat: és orientatiu, perquè la T li arriba
+      #  en graus sencers (±0,5 °C de Td només d'arrodonir) i l'HR és la crua.
       - type: markdown
         title: Dins i fora, ara
         content: |
@@ -113,17 +116,29 @@ views:
                ('Soterrani · gran', 'gran', 'soterrani_gran', 'soterrani_gran'),
                ('Planta baixa', '', 'baixa', 'planta_baixa'),
                ('Fora', '', 'exterior', 'exterior') ] -%}
+          {%- set dt = states('sensor.deshumidificador_temperatura') -%}
+          {%- set dh = states('sensor.deshumidificador_humitat') -%}
+          {%- set td = none -%}
+          {%- if dt | is_number and dh | is_number -%}
+            {%- set t = dt | float -%}
+            {%- set rh = [[dh | float, 1] | max, 100] | min -%}
+            {%- set a = 17.625 -%}{%- set b = 243.04 -%}
+            {%- set g = log(rh / 100) + (a * t) / (b + t) -%}
+            {%- set td = (b * g) / (a - g) -%}
+          {%- endif -%}
           | | Temperatura | Humitat | Punt de rosada |
           |---|---:|---:|---:|
           {% for nom, clau, s, r in files -%}
           | {{ '**' ~ nom ~ ' · dins**' if clau and clau == ref else nom }} | {{ n('sensor.' ~ s ~ '_temperatura', 1, ' °C') }} | {{ n('sensor.' ~ s ~ '_humitat_calibrada', 1, ' %') }} | {{ n('sensor.' ~ r ~ '_punt_de_rosada', 2, ' °C') }} |
           {% endfor -%}
-          | Deshumidificador *(el seu higròmetre)* | {{ n('sensor.deshumidificador_temperatura', 0, ' °C') }} | {{ n('sensor.deshumidificador_humitat', 0, ' %') }} | — |
+          | Deshumidificador *(el seu higròmetre)* | {{ n('sensor.deshumidificador_temperatura', 0, ' °C') }} | {{ n('sensor.deshumidificador_humitat', 0, ' %') }} | {{ '≈ ' ~ ('%.1f' | format(td)) | replace('.', ',') ~ ' °C' if td is not none else '—' }} |
 
           **Dins** és el racó del soterrani amb el punt de rosada més alt: el que
           els dos ΔTd comparen amb la planta baixa i amb fora (ΔTd = Td de dins −
           Td de l'altre lloc). Humitats **calibrades**; la temperatura no en
-          necessita. La del deshumidificador és **la seva, sense calibrar**.
+          necessita. La del deshumidificador és **la seva, sense calibrar**, i el
+          seu punt de rosada és **només orientatiu**: la T li arriba en graus
+          sencers, i això sol ja el mou fins a mig grau.
 
       # ── EL QUE FAN DE DEBÒ ──────────────────────────────────────────────────
       #  Contra el que vol la decisió (dalt). En ombra, no han de coincidir.
