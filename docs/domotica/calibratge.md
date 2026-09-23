@@ -231,11 +231,24 @@ si els desplaçaments en fred s'assemblen als de calent **dins del gra (±0,3 pu
 res i es documenta que s'ha comprovat; si difereixen més, s'implementa la interpolació a les cinc
 plantilles de `rosada.yaml` i **també a `tools/replica.py`**, que ha de seguir dient el mateix.
 
-**Per què l'intercanvi salva l'ancoratge fred:** amb els cinc en fila i la fila invertida entre
-les dues rondes, cada sensor ocupa les posicions *p* i *6−p*. Si el gradient és aproximadament
-lineal al llarg de la fila, la mitjana de les dues rondes és la mateixa per a tots cinc
-—(g₁+g₅)/2 = (g₂+g₄)/2 = g₃— i **la posició s'anul·la**, deixant només l'error propi del sensor.
-És el mateix truc que fer servir la balança dues vegades amb els plats canviats.
+**L'intercanvi, però, no fabricarà l'ancoratge fred.** La idea era posar-los en fila i invertir-la:
+amb les posicions *p* i *6−p* i un gradient lineal, la mitjana de les dues rondes és la mateixa
+per a tots cinc —(g₁+g₅)/2 = (g₂+g₄)/2 = g₃— i la posició s'anul·la, com pesar dues vegades amb
+els plats de la balança canviats. ⚠️ **Al tàper real no hi caben en fila**: hi van com poden, i
+sense posicions conegudes la cancel·lació no està garantida —un sensor es podria quedar les dues
+vegades al racó fred i el seu error sortiria doblat, disfressat de calibratge—. **Decidit el
+23/09 amb l'usuari: no es fa servir cap número basat en la posició.**
+
+La segona ronda de nevera es fa igualment, **1,5 h i amb els cinc col·locats de manera ben
+diferent**, però com a **verificació qualitativa**:
+
+- Si les desviacions entre sensors **canvien** en canviar la col·locació → són del lloc, no dels
+  sensors. L'ancoratge fred **no és aprofitable**, no s'implementa cap interpolació en T, i la
+  dependència de la temperatura queda per al soterrani a l'hivern.
+- Si **es mantenen** → apunta a error propi de cada sensor en fred, i llavors sí que val la pena
+  muntar-ho bé (un recipient petit, isoterm, o un bany d'aigua freda) abans de tocar `c_t`.
+  ⚠️ Amb un matís: la col·locació nova ha de ser **realment diferent**; si per casualitat deixa
+  els mateixos sensors a la mateixa zona freda, el patró es mantindria sense voler dir res.
 
 ⚠️ **Si la prova d'intercanvi (23/09) troba errors de T propis de cada sensor en fred**, un `c_t`
 constant no els representaria: serien un error que **depèn de la temperatura**, i caldria decidir
