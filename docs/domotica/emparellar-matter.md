@@ -210,8 +210,11 @@ ssh local-ha "timeout 8 avahi-browse -rpt _matterc._udp | grep '^='"
 ssh local-ha "ping -c2 LA-IP-DE-L-ENDOLL"
 
 # 3. I per IPv6 d'enllaç local, que és el que Matter fa servir de debò?
-ssh local-ha "ping -6 -c3 'fe80::…%enp1s0'"
+ssh local-ha "ping -6 -c3 'fe80::…%wlp0s20f3'"
 ```
+
+*(Des del 23/09/2026 el servidor va per Wi-Fi: la interfície és `wlp0s20f3`. El 21/09 era
+`enp1s0`, el cable.)*
 
 El 21/09/2026 les tres van sortir bé: l'endoll anunciava `CM=2` —finestra d'emparellament
 **oberta**—, i responia tant per IPv4 com per IPv6 d'enllaç local en 4 ms. **La xarxa no era
@@ -400,7 +403,7 @@ es decideix, que un forat explicat val molt més que un forat net.
 ## ✅ La xarxa ja és la definitiva
 
 Aquesta secció deia *«espera't a tenir la SIM»*. **Ja no cal:** el **router de la SIM ja hi
-és**, i el 21/09/2026 tot penja d'ell —el servidor per **cable** (`enp1s0`), i el hub, l'endoll
+és**, i el 21/09/2026 tot penja d'ell —el servidor per **cable** (`enp1s0`; per Wi-Fi des del 23/09/2026), i el hub, l'endoll
 i el mòbil per Wi-Fi.
 
 Això vol dir que **l'emparellament que es faci ara ja és el bo**: quan la màquina vagi al
