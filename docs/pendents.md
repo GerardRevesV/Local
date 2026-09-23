@@ -136,7 +136,11 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       sèrie començaria amb la decisió dient `calibratge`—; amb `--apaga-marcador` l'apaga ell
       per l'API just abans d'aturar HA, i el canvi queda a la base arxivada. També es nega si
       no pot llegir l'API, i la porta dels sensors ja mira la planta baixa (`sensor.baixa_*`),
-      que abans se li escapava.*
+      que abans se li escapava.* *I la mateixa porta ja veu el que **no hi és**: les deu crues,
+      les cinc `*_humitat_calibrada`, els cinc `*_punt_de_rosada` i la decisió han d'existir amb
+      el nom de [noms-entitats.md](domotica/noms-entitats.md), que és d'on els llegeix, i cap no
+      pot tenir un `…_2` al costat. Vol dir que **el calibratge ha d'estar desplegat** abans: sense,
+      les calibrades no existeixen i s'hi nega.*
 - [ ] La **setmana de base**: deshumidificador fix al 55 % i ventiladors com ara
       ([logica-v2.md](domotica/logica-v2.md)).
 - [ ] **Fotos de les plaques dels ventiladors**, la **porta de l'escala** i, quan es pugui, la
