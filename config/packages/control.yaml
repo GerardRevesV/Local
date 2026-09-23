@@ -366,6 +366,9 @@ template:
       # replica.py torna a decidir cada fila amb elles. L'hora NO hi és a
       # posta (canviaria cada minut i faria una fila per minut): surt de la
       # marca de temps de la fila. Els paràmetres tampoc: tenen històric propi.
+      # ⚠️ «hr_ext» és l'HR de fora CRUA, a posta: només decideix si el sensor de
+      #    fora és xop (> hr_ext_bloqueig, 88–100 %), i en enters, crua o
+      #    calibrada creuen el llindar al mateix punt (revisió del 23/09/2026).
       e: >
         {% set pluja = states('sensor.aemet_precipitation') %}
         {% set tram = states('sensor.tarifa_periode') %}
