@@ -444,6 +444,8 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       gran i ben barrejada; només cal tornar a encendre el marcador i tenir-los junts unes hores
       abans de repartir-los. Amb dos ancoratges es podrà fer que la correcció **depengui de la
       temperatura**, interpolant → [com s'ajusta](domotica/calibratge.md#com-sajusta-la-correcció-i-on-saplica).
+      Els números porten el **rang de validesa** escrit al costat precisament per poder-los
+      comparar quan hi hagi els dos.
 - [ ] 🔋 **Les bateries dels cinc Tapo no arriben a Home Assistant.** Comprovat el
       21/09/2026: l'HA no té cap entitat de bateria dels sensors —pel que sembla, el hub H110
       no les passa per Matter—, tot i que el conveni de noms en preveu la magnitud `bateria`.
@@ -451,9 +453,6 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       `unavailable`, i per a llavors ja hi ha un forat a la sèrie. De moment es miren a l'app
       de Tapo. Cal valorar un avís quan un sensor porti massa hores sense reportar, que és
       l'únic senyal que sí que tenim.
-- [ ] 🔁 **Repetir el calibratge al soterrani a l'hivern.** El primer es farà a casa a 22–28 °C
-      i el soterrani al gener serà de 8 a 15 °C. Els números porten el **rang de validesa**
-      escrit al costat precisament per poder-los comparar quan hi hagi els dos.
 - [x] ~~Fixar els **noms d'entitat definitius** abans de posar cap sensor en producció.~~ ✅
       **Aplicats als sis sensors del hub** (verificat al registre d'entitats el 21/09/2026:
       `soterrani_fons`, `soterrani_centre`, `soterrani_gran`, `baixa`, `exterior` i
