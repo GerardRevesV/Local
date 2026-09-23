@@ -145,6 +145,39 @@ la nevera), que no fan graella; interpolar-hi seria ajustar soroll. El model lin
 canvia amb la humitat— i l'eina només ajusta el pendent si hi ha **20 punts d'HR de recorregut**,
 que ara sí que hi són (49 → 75 %).
 
+### D'on surten els punts de l'ajust: blocs, no replans sols ni minut a minut
+
+Un replà sencer promitjat dona **un sol punt** per sensor: 441 mostres al mateix 72–73 % no
+allarguen el recorregut, només afinen aquell punt. I ni això sempre: al replà del 22/09, `fons` i
+`gran` van estar clavats a **72,00** set hores seguides —sense *dither*—, de manera que el seu
+valor real és 71,5–72,5 i **promitjar no ho arregla**. Amb dos replans en tens dos punts i una
+recta exacta, sense cap manera de saber si és bona.
+
+L'altre extrem, **ajustar minut a minut sobre una rampa**, és pitjor encara. Provat amb la pujada
+del 21/09 (575 min, 57 → 71 %), els pendents surten disparats i incoherents entre sensors —de
+**0,81 a 1,23**— i la correcció que en resulta s'allunya fins a **5 punts** de la dels replans.
+Tres motius: el recorregut és curt (12–17 punts per sensor, per sota dels 20 que demana l'eina),
+la variable independent porta l'error de quantització (±0,5), cosa que **esbiaixa el pendent cap
+avall**, i el retard hi és encara que sigui petit.
+
+**El punt mig funciona:** partir la finestra marcada en **blocs de 20 minuts**, fer la mitjana de
+cada bloc, descartar els blocs on l'HR es mou més de 4 punts/hora i els trams contaminats, i
+ajustar sobre els blocs **en sentit invers** —el sensor en funció de la referència, i després
+s'inverteix—, que és com s'esquiva el biaix. Amb les dades del 20 al 22/09 en surten **98 blocs**
+repartits del **48 al 73 %**:
+
+| Sensor | a | b | Correcció al 55 % | al 73 % | al 85 % | Diferència amb els dos replans |
+|---|---|---|---|---|---|---|
+| `soterrani_fons` | 0,9474 | +5,20 | +2,31 | +1,36 | +0,73 | ≤ 0,8 |
+| `soterrani_centre` | 0,9576 | +0,90 | −1,43 | −2,20 | −2,71 | ≤ 0,4 |
+| `soterrani_gran` | 1,0287 | −1,36 | +0,22 | +0,74 | +1,08 | ≤ 0,2 |
+| `baixa` | 1,0015 | −1,44 | −1,36 | −1,33 | −1,31 | ≤ 0,2 |
+| `exterior` | 0,9874 | +0,98 | +0,29 | +0,06 | −0,09 | ≤ 0,3 |
+
+Els dos mètodes —98 blocs de tota la corba i dos replans independents— **coincideixen dins de
+0,2–0,8 punts d'HR**, o sigui **0,04–0,16 °C de Td**. Aquesta coincidència és el que dona dret a
+fer servir els números; el desacord entre ells és la incertesa honesta del calibratge.
+
 ⚠️ **Si la prova d'intercanvi (23/09) troba errors de T propis de cada sensor en fred**, un `c_t`
 constant no els representaria: serien un error que **depèn de la temperatura**, i caldria decidir
 si s'aplica el valor d'hivern —que és el que importa al soterrani— o es deixa a zero i el llindar
