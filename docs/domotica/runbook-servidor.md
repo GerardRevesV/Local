@@ -420,6 +420,59 @@ passar amb els #43, #44 i #45 de la lògica v2: `main` només tenia el pla.
 títol) i esperar que GitHub en recalculi el diff. O, si ja ha passat, portar la punta de la pila a
 `main` amb un PR nou i comprovar que el `git diff` contra el que s'havia fusionat surt buit.
 
+### 🪤 El servidor per Wi-Fi: Matter va lligat a una interfície
+
+*Trobat el 23/09/2026*, en passar el portàtil del cable a la Wi-Fi. `--primary-interface`, al
+`docker-compose.yml`, diu per quina interfície surt Matter cap als aparells. Si es canvia de cable
+a Wi-Fi —o al revés— sense tocar-la, Matter **no arriba a cap aparell**, i HA ho mostra tot
+`unavailable` sense cap error que ho expliqui. L'ordre bo:
+
+1. Connectar la interfície nova **amb la vella encara activa** (`nmcli dev status`), i comprovar
+   que és la mateixa xarxa: la mateixa porta d'enllaç, amb la mateixa MAC (`ip neigh`).
+2. Canviar `--primary-interface` (PR), `git pull` i `docker compose up -d matter-server`. HA no
+   es toca.
+3. Treure la vella. Els nodes tornen sols: el hub, en uns segons; l'endoll, en uns 3 minuts.
+
+I en un servidor per Wi-Fi, l'**estalvi d'energia fora**: Mint el porta activat a tot el sistema
+(`wifi.powersave = 3`). Al perfil de la connexió, amb el UUID (`nmcli -g NAME,UUID con show
+--active`), que no porta espais:
+
+```bash
+ssh -t local-ha 'sudo nmcli connection modify EL-UUID 802-11-wireless.powersave 2 && sudo nmcli connection up EL-UUID'
+```
+
+La segona ordre reconnecta la Wi-Fi uns segons. Queda al perfil, o sigui que no val per a una
+altra xarxa.
+
+### 🪤 PowerShell treu les cometes de dins d'una ordre `ssh`
+
+*Trobat el 23/09/2026.* Des de PowerShell,
+`ssh -t local-ha 'sudo nmcli connection modify "Auto MERCUSYS_BE8A" …'` arriba al portàtil
+**sense les cometes dobles**, i `nmcli` respon `unknown connection 'Auto'`. No és el portàtil:
+és com PowerShell passa els arguments a un programa extern. Fer servir noms sense espais —el UUID
+d'una connexió, per exemple— o Git Bash.
+
+### 🪤 Les còpies de `matter-data` des del host no porten les claus
+
+*Trobat el 23/09/2026*, en fer la còpia d'abans del trasllat. Els fitxers que importen de
+`matter-data/` —el `.json` gran del *fabric* i els `chip_*.ini`— són de `root` i amb permisos
+`0600`. Un `tar` fet com a usuari no els pot llegir: si l'error no es mira, l'arxiu **només porta
+els certificats**, que es tornen a baixar sols. Es fa des de dins dels contenidors, que hi entren
+com a `root`:
+
+```bash
+ssh local-ha "docker exec matter-server tar -C / -czf - data" > matter-data.tgz
+```
+
+```bash
+ssh local-ha "docker exec homeassistant tar -C /config -czf - .storage" > storage.tgz
+```
+
+I **mirar-ne el contingut** (`tar -tzvf`): hi ha de ser el `.json` de mig MB. La base d'HA no es
+copia com un fitxer, que amb HA en marxa pot sortir incoherent: es fa amb la funció de còpia de
+SQLite, des de dins del contenidor (`sqlite3.connect(...).backup(...)` en Python), i es comprova
+la integritat abans de donar-la per bona.
+
 ---
 
 ## 9. Si s'ha de refer perquè s'ha mort el disc

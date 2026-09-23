@@ -51,7 +51,7 @@ cadastre, registre, protocol notarial, noms de les parts i imports van a
       ubicació, forma de control. → [inventari.md](domotica/inventari.md)
 - [ ] Comprovar l'estat de l'**aigua**.
 - [x] ~~**Contractar la SIM de dades.**~~ ✅ **Contractada i en servei** *(21/09/2026)*: tot
-      l'estat penja ja del **router de la SIM** —el servidor per **cable** a `enp1s0`, i el
+      l'estat penja ja del **router de la SIM** —el servidor per **cable** a `enp1s0` (per **Wi-Fi**, `wlp0s20f3`, des del 23/09/2026), i el
       hub, l'endoll i el mòbil per Wi-Fi—, o sigui que l'assaig general es fa sobre la xarxa
       definitiva i **els emparellaments d'ara ja són els bons**.
 - [ ] **Saber el límit mensual de dades de la SIM** i apuntar operadora i pla. No es pot
@@ -122,8 +122,12 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
 - [ ] **La tanda física del portàtil**, si també va al local: BIOS (*restore on AC power loss*,
       límit de càrrega, disc intern primer), cable RJ-45 → *Tanda física*, més avall. Al local,
       cada casella és un viatge.
-- [ ] **Còpia de `matter-data/` i de `config/.storage` a casa.** Si el portàtil pateix en el
-      trasllat, sense aquestes claus cal reemparellar-ho tot i la sèrie es parteix.
+- [x] ~~**Còpia de `matter-data/` i de `config/.storage` a casa.**~~ ✅ **Feta el 23/09/2026**
+      (20:13–20:34), a casa i fora del repositori: `.storage`, `matter-data` sencer i una còpia
+      coherent de la base d'HA (amb la còpia de SQLite, integritat `ok`). Si el portàtil pateix en el
+      trasllat, sense aquestes claus cal reemparellar-ho tot i la sèrie es parteix. 🪤 La primera
+      còpia de `matter-data` **no portava les claus** →
+      [runbook](domotica/runbook-servidor.md#-les-còpies-de-matter-data-des-del-host-no-porten-les-claus).
 - [ ] **Moure-ho tot amb el mateix router de la SIM**: si la xarxa és la mateixa, no cal
       reemparellar res. Apagar el portàtil net; al local, primer el router, després el hub i
       l'endoll, i el portàtil l'últim.
