@@ -650,7 +650,14 @@ l'informe de l'eina i el que l'eina no calcula.
   16:00 del 23/09, amb els cinc junts a l'habitació i després d'exportar el CSV —o sigui, dades
   que l'ajust no ha vist mai—, la dispersió per blocs passa de **1,01 a 0,36 °C** (mediana de 7
   blocs, HR 48–54 %, al límit baix del rang). *(Una lectura sola no serveix per a això: amb l'HR
-  en enters, un instant concret pot donar tant 0,29 com 0,57 per pura sort.)*
+  en enters, un instant concret pot donar tant 0,29 com 0,57 per pura sort.)* ✅ **I un cop
+  desplegat, amb el que grava HA:** de 13:00 a 18:16 del 23/09, amb els cinc junts
+  (13:00–13:33 encara era dins de l'ajust), la separació entre els cinc —mediana, cada 2 min—
+  passa de **1,02 a 0,37 °C** de Td (fins a les 16:50) i de **3,0 a 1,3 punts** d'HR. Abans de
+  les 16:48 el calibrat és calculat amb els números desplegats; des de llavors, les **220
+  lectures de `*_humitat_calibrada` que ha gravat HA són idèntiques al càlcul**. Amb l'HR en
+  enters, cinc sensors no poden quedar més a prop de **~0,7 punts** d'HR, pel mateix gra que
+  posa el terra del Td a ~0,17 °C.
 - **Dins de mostra, gairebé tot el que queda és el gra.** Amb un model perfecte i l'HR en enters,
   la dispersió mínima és de ~0,17 °C, per blocs i minut a minut: en un replà, un sensor clavat en
   un enter arrossega el mateix error tot el bloc, i promitjar no ho treu. Per sobre d'això, la
