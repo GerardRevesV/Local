@@ -612,6 +612,25 @@ l'ajust invers i els dos ancoratges; fins llavors, l'anàlisi es fa a part i que
 >   Que a 28 °C quadrin a ±0,05 no garanteix que a 5 °C ho facin: podria haver-hi les dues coses
 >   alhora, gradient i error propi. **Per separar-ho cal intercanviar-los de lloc i repetir**: el
 >   que segueixi la posició és gradient; el que segueixi el sensor és calibratge.
+> - **23/09, 10:15–11:35 — segona ronda de nevera, amb els cinc col·locats diferent.** ✅ **La
+>   desviació de T no és dels sensors: és del lloc.** Tres col·locacions, tres patrons diferents
+>   (desviació respecte de la mediana, en °C):
+>
+>   | Col·locació | `fons` | `centre` | `gran` | `baixa` | `exterior` |
+>   |---|---|---|---|---|---|
+>   | 22/09 tarda, sense drap | +1,1 | +0,7 | 0,0 | 0,0 | −0,9 |
+>   | 22/09 nit, amb drap | +0,4 | −1,1 | −1,1 | +0,4 | 0,0 |
+>   | 23/09, col·locació nova | +0,3 | **−2,3** | **+1,1** | 0,0 | −1,6 |
+>
+>   `centre` passa de +0,7 a −2,3 i `gran` de 0,0 a +1,1 **sense que els sensors hagin canviat**:
+>   un error propi no es reordena així. Queda, doncs, que el que a 28 °C quadra a ±0,05 °C **no
+>   s'ha pogut mesurar en fred**, perquè el banc de proves (un tàper dins d'una nevera) té
+>   gradients de 3 °C que tapen qualsevol error de dècimes. ⚠️ Això **acota** l'error propi, no el
+>   descarta: el que hi pogués haver quedaria per sota del gradient. **Conseqüència: no s'implementa
+>   cap interpolació en temperatura**, i la pregunta va al soterrani a l'hivern.
+>   *(De passada, un exemple de llibre de la no-uniformitat: `baixa` es va quedar al 60 % d'HR
+>   mentre els altres baixaven al 34–39 % a la mateixa temperatura —6 °C de Td de diferència—,
+>   perquè havia quedat arran de la pasta de sal.)*
 > - **22/09 21:00 – 23/09 08:00, la nit a la nevera** — ⚠️ **el drap no va fer el tàper
 >   isoterm**: entre sensors hi queden **0,8–1,8 °C**, i la nevera hi va afegir un cicle propi
 >   (3,8 → 8,4 °C a les 02:00 i tornada avall). La conseqüència és que **el Td tampoc no és
