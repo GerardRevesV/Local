@@ -1,7 +1,7 @@
 # Calibratge creuat dels sensors — procediment
 
-> **Estat: ✅ calibratge d'humitat fet el 23/09/2026 (versió `2026-09-23`), pendent de
-> desplegar** → [els números](#els-números--23092026). Dispersió de Td entre els cinc:
+> **Estat: ✅ calibratge d'humitat fet i desplegat el 23/09/2026 a les 16:48:53 (versió
+> `2026-09-23`)** → [els números](#els-números--23092026). Dispersió de Td entre els cinc:
 > **0,88 → 0,21 °C** per blocs dins de mostra (**~0,3–0,5 fora de mostra**), vàlid **entre el 51
 > i el 73 % d'HR a 26–30 °C**. La temperatura no
 > es corregeix. ⏳ **Queda obert el fred**: la [tanda de la nevera](#tercera-tanda--la-nevera) no va
@@ -613,8 +613,8 @@ que en surten, a sota.
 Ajustats amb `tools/calibratge.py` sobre **84 blocs de 20 minuts** (24 de la nit del 21/09, 38 de
 la pujada del tàper i 22 del replà), versió **`2026-09-23`**, i escrits a
 [`custom_templates/calibratge.jinja`](../../config/custom_templates/calibratge.jinja).
-`HR_corregida = a · HR + b`; la T no es corregeix. **Encara no desplegats** → [com es
-desplega](#desplegar-un-calibratge). Totes les xifres d'aquesta secció les treu
+`HR_corregida = a · HR + b`; la T no es corregeix. **Desplegats el 23/09/2026 a les 16:48:53**
+→ [com es desplega](#desplegar-un-calibratge). Totes les xifres d'aquesta secció les treu
 [`dades/calibratge-2026-09-analisi.py`](dades/calibratge-2026-09-analisi.py), que imprimeix
 l'informe de l'eina i el que l'eina no calcula.
 
@@ -720,7 +720,7 @@ aquesta anàlisi i falla si `calibratge.jinja` no en surt.
 | 21/09/2026 | HR 49–59 % · T 25,9–27,0 °C | **0,95 → ~0,25 °C** (només desplaçament) | ~11 h a casa, marcador sense encendre. Temperatura sense correcció. **No aplicat**: falta la franja humida |
 | 22/09/2026 | HR 73 % (replà del tàper de sal, 75,2 %) · T 27,8 °C | **0,61 °C** sense corregir · 0,40 amb els desplaçaments del 21/09 | Tàper tancat el 21/09 a les 12:09, replà des de les ~05:00. Tots cinc llegeixen **baix** contra la sal (0,4–3,2 punts). **No aplicat**: falta el punt en fred |
 | 22–23/09/2026 | HR 62–74 % · T 3,1–8,4 °C (nevera) | — | Tres col·locacions, tres patrons: la desviació de T és **del lloc**. Gradients de 2–3 °C dins del tàper: **no aprofitable** per calibrar |
-| **23/09/2026** | **HR 51–73 % · T 26,4–29,6 °C** (84 blocs de 20 min) | **0,88 → 0,21 °C** per blocs (0,88 → 0,26 minut a minut; fora de mostra ~0,3–0,5) | ✅ **Versió `2026-09-23`**, a `calibratge.jinja`: pendent i desplaçament d'HR, `t` = 0. Histèresi comprovada (≤ 0,49 punts). ⏳ **Pendent de desplegar**: apuntar-ne l'hora aquí |
+| **23/09/2026** | **HR 51–73 % · T 26,4–29,6 °C** (84 blocs de 20 min) | **0,88 → 0,21 °C** per blocs (0,88 → 0,26 minut a minut; fora de mostra ~0,3–0,5) | ✅ **Versió `2026-09-23`**, a `calibratge.jinja`: pendent i desplaçament d'HR, `t` = 0. Histèresi comprovada (≤ 0,49 punts). ✅ **Desplegat a les 16:48:53** → [registre d'instal·lació](home-assistant.md#registre-dinstallació) |
 
 > **Incidències de la tanda en marxa** (marcador encès des de les 12:09 del 21/09/2026):
 >
