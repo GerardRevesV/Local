@@ -418,9 +418,10 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       que hi ha al doc → [els números](domotica/calibratge.md#els-números--23092026).
 - [ ] ⏳ **Desplegar el calibratge** al servidor, amb el procediment de
       [calibratge.md](domotica/calibratge.md#desplegar-un-calibratge): **primer**
-      `reload_custom_templates` i **després** `template.reload`; comprovar les deu entitats
-      noves i l'atribut `calibratge` a les deu que fan servir la correcció (els `_cru` no en
-      porten); **apuntar l'hora** al registre d'instal·lació, perquè totes les sèries derivades
+      `reload_custom_templates` i **després** `template.reload`; `bash scripts/comprova.sh`,
+      que ja mira que les deu entitats noves hi siguin amb el nom exacte i sense `_2` —serà
+      la seva primera passada contra el servidor—; a mà, l'atribut `calibratge` a les deu que
+      fan servir la correcció (els `_cru` no en porten); **apuntar l'hora** al registre d'instal·lació, perquè totes les sèries derivades
       hi fan un salt (amb els sensors junts: +0,3 a +0,8 °C al Td de `fons`, −1,5 punts a la HR
       màxima, i el ΔTd contra la planta baixa gairebé igual). Fer-ho a casa, abans del trasllat, i queda a la base d'experimentació que
       arxiva `inicia-serie.sh`.
@@ -511,6 +512,13 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       Ara va servei per servei amb `-a`, distingeix `Exited (137)` i canta si al compose hi ha
       un servei que ningú no comprova.
       → [runbook-servidor.md](domotica/runbook-servidor.md#-docker-compose-ps-amaga-els-contenidors-aturats)
+- [x] ~~🐛 **`comprova.sh` no mirava ni els noms declarats ni el tauler.**~~ ✅ **23/09/2026:**
+      només comprovava les entitats que els paquets llegeixen amb `states('…')`. Ara també
+      **cada `default_entity_id`** dels paquets —amb `unique_id`, HA el fa servir només la
+      primera vegada, i si el nom era pres en posa un amb `_2` **per sempre**— i **cada
+      `entity:`** del tauler, més els `states('…')` de les targetes, que no validava ningú. Si
+      troba una còpia `_2`, ho diu. Cada falta compta com a problema, i el guió segueix.
+      Escrit arran de la revisió del calibratge, per les deu entitats noves.
 - [x] ~~🔁 **Desplegar els sostres al local i comprovar-los.**~~ ✅ **Desplegat el
       21/09/2026.** El servidor anava 15 commits enrere. `check_config` net, `docker compose
       up -d` (recrear és l'únic que aplica `mem_limit`), i **HA responent al cap de 15 s**.
