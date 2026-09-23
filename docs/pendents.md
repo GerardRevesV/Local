@@ -90,13 +90,15 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
             32. Treu el marge de la safata, i ja no cal mesurar-lo:
             `tools/analisi.py diposits --litres 3 3 …` (un valor per dipòsit).
 - [x] ~~**Calibratge: la nit sencera, el tàper de sal i la nevera.**~~ ✅ **Tancat el
-      23/09/2026**: tres tandes i números aplicats a `rosada.yaml`. ⏳ Queda **apagar el
+      23/09/2026**: tres tandes i números a `custom_templates/calibratge.jinja` (⏳ per desplegar). ⏳ Queda **apagar el
       marcador** quan els sensors siguin al seu lloc, al local. La
       nevera no va servir per al punt fred (gradients de 2–3 °C dins del tàper) i això queda
-      obert per a l'hivern → [els números](domotica/calibratge.md#els-números-aplicats--23092026).
+      obert per a l'hivern → [els números](domotica/calibratge.md#els-números--23092026).
       L'eina ja ajusta **per blocs de 20 min i en sentit invers**, i sap **excloure trams** i
       rebre la **finestra a mà** (la primera tanda es va fer sense marcador).
-- [ ] ⚠️ **Refer qualsevol calibratge tret amb `--descarrega` abans del 22/09/2026.** L'eina
+- [x] ~~⚠️ **Refer qualsevol calibratge tret amb `--descarrega` abans del 22/09/2026.**~~ ✅ **No hi ha res a
+      refer** (23/09/2026): cap calibratge d'abans no es va arribar a aplicar, i el definitiu surt del
+      CSV del repositori amb l'eina ja corregida. L'eina
       demanava l'històric sense `end_time`, i HA en torna només 24 h des de l'inici: amb més
       de 24 h demanades, l'ajust feia servir **només les primeres 24 h** i perdia les rampes
       més recents, sense avís. ✅ Eina corregida el 22/09/2026 →
@@ -404,30 +406,28 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       els S110E no estiguin instal·lats quedarien `unavailable` i embrutarien l'històric.*
 - [x] ~~🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13).~~ ✅ **Fet el
       23/09/2026** (versió `2026-09-23`) en tres tandes (nit a casa, tàper amb sal fins al 73 %,
-      i nevera, que no va servir). Dispersió de Td entre els cinc: **0,88 → 0,22 °C** per blocs
+      i nevera, que no va servir). Dispersió de Td entre els cinc: **0,88 → 0,21 °C** per blocs
       dins de mostra, **~0,3–0,5 fora de mostra**. Els pendents i desplaçaments d'HR viuen a
       `custom_templates/calibratge.jinja`; la T no es corregeix (`t` = 0, coincideixen dins de
       ±0,05 °C). Histèresi comprovada. Revisat per vuit revisors el mateix dia.
       Dades crues i l'script que en treu cada xifra a
       [`dades/`](domotica/dades/calibratge-2026-09.csv), i l'ajust es refà sense HA amb l'ordre
-      que hi ha al doc → [els números](domotica/calibratge.md#els-números-aplicats--23092026).
+      que hi ha al doc → [els números](domotica/calibratge.md#els-números--23092026).
 - [ ] ⏳ **Desplegar el calibratge** al servidor, amb el procediment de
       [calibratge.md](domotica/calibratge.md#desplegar-un-calibratge): **primer**
       `reload_custom_templates` i **després** `template.reload`; comprovar les deu entitats
-      noves i l'atribut `calibratge`; **apuntar l'hora** al registre d'instal·lació, perquè totes
-      les sèries derivades hi fan un salt (~+0,6 °C al Td de `fons`, ~+1 °C al ΔTd contra la
-      planta baixa). Fer-ho a casa, abans del trasllat, i queda a la base d'experimentació que
+      noves i l'atribut `calibratge` a les deu que fan servir la correcció (els `_cru` no en
+      porten); **apuntar l'hora** al registre d'instal·lació, perquè totes les sèries derivades
+      hi fan un salt (amb els sensors junts: +0,3 a +0,8 °C al Td de `fons`, −1,5 punts a la HR
+      màxima, i el ΔTd contra la planta baixa gairebé igual). Fer-ho a casa, abans del trasllat, i queda a la base d'experimentació que
       arxiva `inicia-serie.sh`.
 - [ ] **Revisar `delta_td_on`** (2,0 °C) ara que hi ha calibratge, **amb les xifres honestes**:
-      dins de mostra 0,22 °C, però **fora de mostra ~0,3–0,5**, i la referència interior —un
+      dins de mostra 0,21 °C, però **fora de mostra ~0,3–0,5**, i la referència interior —un
       màxim de tres— té un biaix de **+0,1 °C** cap a ventilar. Baixar-lo a ~1,2 com es pensava
       no queda justificat encara; es mira amb la setmana de base, contra la porta de la Fase B.
-      → [calibratge.md](domotica/calibratge.md#els-números-aplicats--23092026) Dades crues a
-      [`dades/calibratge-2026-09.csv`](domotica/dades/calibratge-2026-09.csv), i l'ajust es refà
-      sense HA amb l'ordre que hi ha al doc →
-      [els números](domotica/calibratge.md#els-números-aplicats--23092026).
+      → [calibratge.md](domotica/calibratge.md#els-números--23092026)
 - [ ] 🔬 **Repetir el calibratge al soterrani, a l'hivern** — l'única part que ha quedat sense
-      resposta. El d'ara val **entre el 49 i el 73 % d'HR a 26–30 °C**, i el soterrani serà de
+      resposta. El d'ara val **entre el 51 i el 73 % d'HR a 26–30 °C**, i el soterrani serà de
       **65–90 % a 8–20 °C**: la temperatura queda del tot fora del rang mesurat. La nevera no ho
       va poder resoldre (gradients de 2–3 °C dins del tàper, tres col·locacions i tres patrons
       diferents). Al soterrani és barat: els sensors ja hi seran, el fred ve sol i la sala és

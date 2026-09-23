@@ -69,7 +69,7 @@ MIN_MOSTRES = 60            # menys d'una hora de rampa no és una rampa
 MIN_RECORREGUT_HR = 20.0    # sense aquest recorregut no s'ajusta cap pendent
 # ⚠️ Era 8, i era massa poc. Amb les dades reals del 21/09/2026 (HR 49–59 %,
 #    10 punts de recorregut) s'ajustava un pendent que NO millorava gens
-#    l'ajust —dispersió 0,25 °C contra 0,24 sense pendent— però que extrapolat
+#    l'ajust —~0,25 °C amb pendent i sense— però que extrapolat
 #    al 85 % de l'hivern inventava fins a 1,5 punts d'HR de correcció (~0,3 °C
 #    de Td). Amb l'HR en enters, un pendent ajustat en 10 punts és soroll; i
 #    el que fa mal no és el soroll dins del rang, sinó el que fa fora d'ell.
@@ -297,11 +297,25 @@ def ajusta(files) -> dict[str, dict[str, float]]:
 
 def _ritme_mitjana(temps, mitjana, q0, minuts) -> float:
     """|pendent| (punts d'HR/hora) de la mitjana dels cinc, en una finestra de
-    3 blocs centrada en el que comença a q0. Pocs punts → infinit (no es fia)."""
+    3 blocs centrada en el que comença a q0.
+
+    ⚠️ Només es fia si els DOS veïns hi són gairebé sencers (≥ 75 % de files).
+       Un bloc al costat d'un tram exclòs o d'un forat té la finestra coixa:
+       el pendent es calcula amb un sol costat i pot semblar lent quan no ho
+       és. Passava amb dades reals: el bloc de les 14:20 del 21/09 (just abans
+       del sotrac) i el de les 13:00 del 23/09 (just després de la nevera)
+       entraven a l'ajust amb 1,9 punts/h quan, amb la finestra sencera, en
+       feien 2,1 i 3,5 (segona revisió, 23/09/2026). Sense veïns → infinit.
+    """
+    minim = 0.75 * minuts
+    esq_i = bisect.bisect_left(temps, q0 - timedelta(minutes=minuts))
+    esq_j = bisect.bisect_left(temps, q0)
+    dre_i = bisect.bisect_left(temps, q0 + timedelta(minutes=minuts))
+    dre_j = bisect.bisect_left(temps, q0 + timedelta(minutes=2 * minuts))
+    if esq_j - esq_i < minim or dre_j - dre_i < minim:
+        return float("inf")
     i = bisect.bisect_left(temps, q0 - timedelta(minutes=minuts))
     j = bisect.bisect_right(temps, q0 + timedelta(minutes=2 * minuts))
-    if j - i < minuts:
-        return float("inf")
     xs = [(temps[k] - q0).total_seconds() / 3600 for k in range(i, j)]
     p, _ = _minims_quadrats(xs, mitjana[i:j])
     return abs(p)
@@ -367,7 +381,7 @@ def blocs(files, minuts: int = MINUTS_BLOC, ritme_max: float = RITME_MAX_BLOC) -
     return sortida
 
 
-def ajusta_blocs(llista: list[dict]) -> dict[str, dict[str, float]]:
+def ajusta_blocs(llista: list[dict], forca_pendent: bool = False) -> dict[str, dict[str, float]]:
     """Per sensor, la recta HR_corregida = c_rh_a·HR + c_rh_b, ajustada pels blocs.
 
     ⚠️ L'AJUST ES FA AL REVÉS i després s'inverteix: es busca «sensor en funció
@@ -388,9 +402,13 @@ def ajusta_blocs(llista: list[dict]) -> dict[str, dict[str, float]]:
     for nom in SENSORS:
         ys = [b["hr"][nom] for b in llista]
         desplacament = est.mean([refs[i] - ys[i] for i in range(len(ys))])
-        if recorregut >= MIN_RECORREGUT_HR:
+        mort = False
+        if recorregut >= MIN_RECORREGUT_HR or forca_pendent:
             p, q = _minims_quadrats(refs, ys)      # sensor ≈ p·ref + q
-            a, b = (1.0, desplacament) if abs(p) < 1e-9 else (1 / p, -q / p)
+            # Un sensor que NO es mou mentre la referència recorre 20 punts no
+            # té un pendent de 1: està mort. Es marca, no es disfressa.
+            mort = abs(p) < 1e-9
+            a, b = (1.0, desplacament) if mort else (1 / p, -q / p)
         else:
             # Sense recorregut, un pendent seria soroll disfressat de ciència.
             a, b = 1.0, desplacament
@@ -401,7 +419,7 @@ def ajusta_blocs(llista: list[dict]) -> dict[str, dict[str, float]]:
             "c_rh_b": b,
             "recorregut_hr": recorregut,
             "pendent_ajustat": recorregut >= MIN_RECORREGUT_HR,
-            "pendent_absurd": abs(a - 1.0) > MAX_DESVIACIO_PENDENT,
+            "pendent_absurd": mort or abs(a - 1.0) > MAX_DESVIACIO_PENDENT,
             "residu_max": max(abs(r) for r in residus),
             "blocs": len(llista),
         }
@@ -489,27 +507,42 @@ def dispersio_td(files, correccions=None) -> float:
 
 
 def incertesa(llista: list[dict], hr: float, reps: int = 400, llavor: int = 1,
-              tros: int = 6) -> dict[str, float]:
+              tros: int = 6) -> tuple[dict[str, float], float]:
     """Desviació típica de la correcció a «hr», per bootstrap de blocs MÒBILS.
 
-    Es remostregen trossos de «tros» blocs seguits (2 hores), no blocs solts:
-    els blocs veïns no són independents, i remostrejar-los d'un en un
-    subestima la incertesa a la meitat (revisió del 23/09/2026).
+    Retorna (1σ per sensor, fracció de rèpliques que es queden sense els 20
+    punts de recorregut).
+
+    Es remostregen trossos de «tros» blocs seguits (nominalment 2 hores), no
+    blocs solts: els blocs veïns no són independents, i remostrejar-los d'un
+    en un subestima la incertesa a la meitat (revisió del 23/09/2026).
+
+    ⚠️ Cada rèplica s'ajusta SEMPRE amb pendent. Si no, les rèpliques que per
+       atzar es queden sense recorregut canvien d'estimador (només
+       desplaçament) i la desviació barreja dues coses: amb les dades del
+       21–23/09 passava en una de cada quatre, i inflava la incertesa de fons
+       de ±0,33 a ±0,49 (segona revisió). La fracció es retorna a part, perquè
+       diu una cosa certa: que el pendent depèn de pocs blocs dels extrems.
     """
     rnd = random.Random(llavor)
     n = len(llista)
     trossos = [llista[i:i + tros] for i in range(0, max(1, n - tros + 1))]
     mostres: dict[str, list[float]] = {nom: [] for nom in SENSORS}
+    curtes = 0
     for _ in range(reps):
         nova = []
         while len(nova) < n:
             nova.extend(rnd.choice(trossos))
-        aj = ajusta_blocs(nova[:n])
+        nova = nova[:n]
+        refs = [b["ref"] for b in nova]
+        curtes += (max(refs) - min(refs)) < MIN_RECORREGUT_HR
+        aj = ajusta_blocs(nova, forca_pendent=True)
         if not aj:
             continue
         for nom in SENSORS:
             mostres[nom].append(correccio(aj[nom], hr))
-    return {nom: (est.pstdev(v) if len(v) > 1 else float("nan")) for nom, v in mostres.items()}
+    sd = {nom: (est.pstdev(v) if len(v) > 1 else float("nan")) for nom, v in mostres.items()}
+    return sd, curtes / reps
 
 
 def linies_jinja(final: dict[str, dict[str, float]], rang_hr, rang_t, versio: str) -> list[str]:
@@ -605,12 +638,20 @@ def informe(files, versio: str | None = None) -> int:
 
     print("\n── Incertesa de la correcció fora del rang (bootstrap de blocs de 2 h, 1σ)")
     for hr in (85.0, 90.0):
-        sd = incertesa(llista, hr)
+        sd, curtes = incertesa(llista, hr)
         print(f"   al {hr:.0f} %: " + "  ".join(f"{n.split('_')[-1]} ±{sd[n]:.2f}" for n in SENSORS))
+    print(f"   ({curtes * 100:.0f} % de les rèpliques es queden sense {MIN_RECORREGUT_HR:.0f} punts de "
+          "recorregut: el pendent depèn de pocs blocs dels extrems)")
 
     t_ref = [b["t_ref"] for b in llista]
     rang_hr = (round(baix, 1), round(alt, 1))
     rang_t = (round(min(t_ref), 1), round(max(t_ref), 1))
+    if problemes:
+        print(f"\n── ⚠ {problemes} problemes: aquest ajust NO s'ha d'enganxar enlloc.")
+        return problemes
+    if not versio:
+        print("\n   ⚠ Falta --versio AAAA-MM-DD: sense versió, no se sabrà quines files de "
+              "l'històric es van calcular amb aquests números.")
     print("\n── Per enganxar a config/custom_templates/calibratge.jinja "
           "(l'ÚNIC lloc on viuen els números)")
     for linia in linies_jinja(final, rang_hr, rang_t, versio or "AAAA-MM-DD"):
@@ -682,7 +723,7 @@ FINESTRA_REAL = ("2026-09-21T00:43+02:00", "2026-09-23T13:33+02:00")
 EXCLOSOS_REALS = [("2026-09-21T11:26+02:00", "2026-09-21T12:39+02:00"),   # entre tandes, a la mà
                   ("2026-09-21T14:50+02:00", "2026-09-21T15:35+02:00"),   # el sotrac del tàper
                   ("2026-09-22T12:45+02:00", "2026-09-23T13:00+02:00")]   # la nevera: gradients
-BLOCS_REALS = 88     # fixat: si canvia, ha canviat el mètode o les dades, i s'ha de saber
+BLOCS_REALS = 84     # fixat: si canvia, ha canviat el mètode o les dades, i s'ha de saber
 
 
 def llegeix_jinja(text: str) -> dict:
@@ -713,13 +754,9 @@ def calibratge_del_repo() -> dict[str, dict[str, float]]:
 
 
 def _files_reals():
-    """Les files de la tanda de debò, del CSV del repositori, com les fa main()."""
-    dades = carrega_csv(CSV_REAL)
-    files = graella(dades, _quan(FINESTRA_REAL[0]), _quan(FINESTRA_REAL[1]))
-    for des, fins in EXCLOSOS_REALS:
-        a, b = _quan(des), _quan(fins)
-        files = [f for f in files if not (a <= f[0] <= b)]
-    return files
+    """Les files de la tanda de debò, del CSV del repositori: el mateix camí que main()."""
+    return files_de(carrega_csv(CSV_REAL), [(_quan(FINESTRA_REAL[0]), _quan(FINESTRA_REAL[1]))],
+                    [(_quan(a), _quan(b)) for a, b in EXCLOSOS_REALS])
 
 
 def _bloc(ref, hr_per_sensor, t=26.0):
@@ -768,6 +805,11 @@ def tests() -> int:
     prop("per blocs: amb ~6 punts, a = 1 i només desplaçament",
          bool(aj_curt) and all(r["c_rh_a"] == 1.0 and not r["pendent_ajustat"] for r in aj_curt.values()),
          f"{len(llista_curta)} blocs")
+    # La mediana dels desplaçaments (0, −2, +1,5, 0, −1) és 0: la referència és
+    # l'aire de debò, i el desplaçament ha de ser el contrari de l'error.
+    prop("i el desplaçament és el contrari de l'error de cada sensor",
+         bool(aj_curt) and all(abs(aj_curt[n]["c_rh_b"] + reals[n][1]) < 0.3 for n in SENSORS),
+         " ".join(f"{n.split('_')[-1]} {aj_curt[n]['c_rh_b']:+.2f}" for n in SENSORS) if aj_curt else "")
 
     print("\nBlocs: el filtre de ritme")
     # Rampes MONÒTONES de 27 punts: en «hores» hores, el ritme és 27/hores.
@@ -782,6 +824,21 @@ def tests() -> int:
         # amb un ritme estimat de menys o no sortir. No compten.
         prop(etiqueta, (n_blocs >= n_complets - 2) if esperat == "tots" else n_blocs == 0,
              f"{n_blocs} de {n_complets}")
+
+    print("\nBlocs: sense els dos veïns sencers, el ritme no es fia")
+    f_ = _sintetic_recta({n: (1.0, 0.0) for n in SENSORS}, hores=24.0)
+    tots_b = blocs(f_)
+    forat_a, forat_b = f_[400][0], f_[460][0]         # 60 minuts fora, al mig
+    amb_forat = [f for f in f_ if not (forat_a <= f[0] <= forat_b)]
+    b_forat = blocs(amb_forat)
+
+    def _trepitja(des, fins):          # minuts d'un interval que cauen dins del forat
+        return max(0.0, (min(fins, forat_b) - max(des, forat_a)).total_seconds() / 60)
+    m = timedelta(minutes=MINUTS_BLOC)
+    coixos = [b for b in b_forat
+              if _trepitja(b["quan"] - m, b["quan"]) > 5 or _trepitja(b["quan"] + m, b["quan"] + 2 * m) > 5]
+    prop("cap bloc acceptat té un veí que trepitgi el tram exclòs", not coixos and len(b_forat) < len(tots_b),
+         f"{len(tots_b)} blocs sencers → {len(b_forat)} amb el forat; {len(coixos)} coixos")
 
     print("\nBlocs: l'ordre de les files no hi fa res")
     # ⚠️ L'error del 23/09: l'informe passava les files partides per rampes, i
@@ -856,6 +913,10 @@ def tests() -> int:
          abs(des_t["soterrani_fons"]["c_t"] + 0.3) < 0.03, f"{des_t['soterrani_fons']['c_t']:+.2f}")
     prop("centre, 0,02 °C: soroll, s'escriu 0", des_t["soterrani_centre"]["c_t"] == 0.0,
          f"{aj_t['soterrani_centre']['c_t']:+.3f} → {des_t['soterrani_centre']['c_t']}")
+    llista_t = blocs(_sintetic(amb_t, pas_hr=0.02, quantitza=False))
+    prop("i aplicada, la dispersió de Td baixa (el signe és el bo)",
+         dispersio_td_blocs(llista_t, des_t) < dispersio_td_blocs(llista_t) / 2,
+         f"{dispersio_td_blocs(llista_t):.3f} → {dispersio_td_blocs(llista_t, des_t):.3f} °C")
 
     print("\nUn sensor encallat no es converteix en un pendent")
     # Clavat a 72, amb un sol salt a 73 a mig recorregut: la recta que en surt
@@ -870,6 +931,31 @@ def tests() -> int:
     prop("es marca com a absurd", aj_enc["soterrani_gran"]["pendent_absurd"],
          f"a = {aj_enc['soterrani_gran']['c_rh_a']:.1f}")
     prop("i els altres no", not any(aj_enc[n]["pendent_absurd"] for n in SENSORS if n != "soterrani_gran"))
+    blocs_mort = [_bloc(b["ref"], {**b["hr"], "soterrani_gran": 72.0}) for b in blocs_enc]
+    aj_mort = ajusta_blocs(blocs_mort)
+    prop("un sensor que no es mou gens també es marca (no es disfressa de pendent 1)",
+         aj_mort["soterrani_gran"]["pendent_absurd"], f"a = {aj_mort['soterrani_gran']['c_rh_a']}")
+
+    print("\nLa incertesa per bootstrap")
+    llista_i = blocs(_sintetic_recta(veritat, soroll=0.3, llavor=2))
+    sd_i, curtes_i = incertesa(llista_i, 85.0, reps=60)
+    prop("dona una desviació positiva i finita per a cada sensor",
+         all(0 < sd_i[n] < 5 for n in SENSORS), " ".join(f"{sd_i[n]:.3f}" for n in SENSORS))
+    prop("i diu quantes rèpliques es queden sense recorregut", 0.0 <= curtes_i <= 1.0, f"{curtes_i:.2f}")
+    sd_mes, _ = incertesa(llista_i, 95.0, reps=60)
+    prop("i creix com més lluny del rang", all(sd_mes[n] >= sd_i[n] for n in SENSORS if n != "exterior"))
+
+    print("\nEl muntatge de les files: extrems dels exclosos inclosos, i sense duplicats")
+    t0_ = datetime(2026, 9, 21, tzinfo=timezone.utc)
+    d_ = {f"sensor.{n}_{m}": [(t0_, "50.0")] for n in SENSORS for m in ("temperatura", "humitat")}
+    ff = files_de(d_, [(t0_, t0_ + timedelta(minutes=30)), (t0_ + timedelta(minutes=20), t0_ + timedelta(minutes=40))],
+                  [(t0_ + timedelta(minutes=10), t0_ + timedelta(minutes=15))])
+    temps_ff = [f[0] for f in ff]
+    prop("dos trams que es trepitgen no dupliquen files", len(temps_ff) == len(set(temps_ff)),
+         f"{len(temps_ff)} files")
+    prop("i els extrems de l'exclòs queden fora (10 i 15 inclosos)",
+         t0_ + timedelta(minutes=10) not in temps_ff and t0_ + timedelta(minutes=15) not in temps_ff
+         and t0_ + timedelta(minutes=16) in temps_ff and len(temps_ff) == 41 - 6)
 
     print("\nEl marcador: trams encesos, un per un")
     t0 = datetime(2026, 9, 21, tzinfo=timezone.utc)
@@ -917,6 +1003,25 @@ def tests() -> int:
              and abs(del_text[n]["c_rh_b"] - final_[n]["c_rh_b"]) < 1e-9 for n in SENSORS))
     prop("i porten la versió i el rang", "'2026-01-01'" in text and "RANG_HR" in text)
     prop("i no diuen res de rosada.yaml", "set c_rh_a" not in text)
+
+    print("\nL'eina també sap dir que NO (codi ≠ 0)")
+    import random as _r
+    soroll = _r.Random(3)
+    dolentes = []
+    for q, v in _sintetic_recta(veritat, soroll=0.3, llavor=1):
+        v = dict(v)
+        v["sensor.soterrani_gran_humitat"] = float(round(v["sensor.soterrani_gran_humitat"] + soroll.gauss(0, 6)))
+        dolentes.append((q, v))
+    with contextlib.redirect_stdout(io.StringIO()) as sortida_no:
+        codi_no = informe(dolentes, "2026-01-01")
+    prop("un sensor amb 6 punts de soroll fa fallar el criteri de dispersió", codi_no > 0,
+         f"{codi_no} problemes")
+    prop("i llavors no escriu cap línia per enganxar",
+         "set CALIBRATGE" not in sortida_no.getvalue())
+    encallades = [(q, {**v, "sensor.baixa_humitat": 60.0}) for q, v in f_]
+    with contextlib.redirect_stdout(io.StringIO()):
+        codi_enc = informe(encallades, "2026-01-01")
+    prop("un sensor encallat també", codi_enc > 0, f"{codi_enc} problemes")
 
     # ── LES DADES DE DEBÒ ─────────────────────────────────────────────────
     # ⚠️ Obligatòries: si falten, FALLA. Abans es saltaven en silenci, i amb el
@@ -1047,6 +1152,20 @@ def tests() -> int:
 
 
 # ───────────────────────────────────────────────────────────────── main ─────
+def files_de(dades, trams, exclosos=()) -> list:
+    """Les files de l'ajust: la graella de cada tram, sense els exclosos (extrems
+    inclosos) i sense duplicats si dos trams es trepitgen. La fan servir main()
+    i els tests, perquè no hi hagi dos camins."""
+    per_hora = {}
+    for inici, fi in trams:
+        for fila in graella(dades, inici, fi):
+            per_hora[fila[0]] = fila
+    files = [per_hora[q] for q in sorted(per_hora)]
+    for a, b in exclosos:
+        files = [f for f in files if not (a <= f[0] <= b)]
+    return files
+
+
 def _franja(argv: list[str], opcio: str) -> list[tuple[datetime, datetime]]:
     """«opcio INICI/FI», repetible. Marques ISO amb fus.
 
@@ -1101,17 +1220,13 @@ def main(argv: list[str]) -> int:
         if not trams:
             print(f"No hi ha cap tram amb {MARCADOR} encès. L'experiment s'ha de marcar.")
             return 1
-    files = []
     for inici, fi in trams:
         print(f"Finestra de calibratge: {inici.isoformat()} → {fi.isoformat()}")
-        files += graella(dades, inici, fi)
-    print(f"{len(files)} mostres d'un minut amb els deu sensors alhora")
-
-    for franja in _franges_excloses(argv):
-        abans = len(files)
-        files = [f for f in files if not (franja[0] <= f[0] <= franja[1])]
-        print(f"Exclosa {franja[0].isoformat()} → {franja[1].isoformat()}: "
-              f"{abans - len(files)} mostres fora")
+    exclosos = _franges_excloses(argv)
+    tots = files_de(dades, trams)
+    files = files_de(dades, trams, exclosos)
+    print(f"{len(tots)} mostres d'un minut amb els deu sensors alhora; "
+          f"{len(tots) - len(files)} dins de trams exclosos")
 
     versio = argv[argv.index("--versio") + 1] if "--versio" in argv else None
     return 1 if informe(files, versio) else 0

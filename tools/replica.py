@@ -75,7 +75,9 @@ def punt_de_rosada(temperatura_c: float, humitat_relativa: float) -> float:
 def humitat_relativa(temperatura_c: float, rosada_c: float) -> float:
     """La inversa: la HR que correspon a un punt de rosada a una temperatura.
 
-    És com `sensor.soterrani_humitat_maxima` treu la HR calibrada de cada punt.
+    Fins al 23/09/2026, `sensor.soterrani_humitat_maxima` treia així la HR
+    calibrada de cada punt (exacte només amb t = 0). Ara és el màxim de les
+    tres `*_humitat_calibrada`, i aquesta funció queda com a eina de Magnus.
     """
     return 100.0 * math.exp(MAGNUS_A * rosada_c / (MAGNUS_B + rosada_c)
                             - MAGNUS_A * temperatura_c / (MAGNUS_B + temperatura_c))
@@ -394,7 +396,7 @@ def tests() -> int:
     ok &= _prop("HR 0 % no peta (es limita a 1 %)", punt_de_rosada(20.0, 0.0) < -20)
     ok &= _prop("el punt de rosada creix amb la humitat",
                 punt_de_rosada(20, 40) < punt_de_rosada(20, 60) < punt_de_rosada(20, 80))
-    ok &= _prop("la inversa torna la HR (la de soterrani_humitat_maxima)",
+    ok &= _prop("la inversa de Magnus torna la HR",
                 all(abs(humitat_relativa(t, punt_de_rosada(t, h)) - h) < 1e-9
                     for t in (8.0, 15.0, 28.0) for h in (35.0, 62.0, 97.0)))
     ok &= _prop("arrodonir el Td a 2 decimals mou la HR menys de 0,1 punts",
@@ -801,9 +803,10 @@ def _prova_calibratge(rosada: str) -> bool:
     # La HR màxima surt de les tres humitats calibrades: així és exacta per a
     # qualsevol t, i no depèn que el Td i la T s'actualitzin alhora.
     hrmax = next((p for p in plantilles if p.startswith('"Soterrani — humitat màxima"')), "")
-    ok &= _prop("la HR màxima es calcula de les tres humitats calibrades",
-                all(f"sensor.soterrani_{x}_humitat_calibrada" in hrmax for x in ("fons", "centre", "gran"))
-                and "punt_de_rosada" not in hrmax)
+    estat_hrmax = hrmax.split("attributes:")[0]
+    ok &= _prop("la HR màxima és el MÀXIM de les tres humitats calibrades",
+                all(f"sensor.soterrani_{x}_humitat_calibrada" in estat_hrmax for x in ("fons", "centre", "gran"))
+                and "punt_de_rosada" not in hrmax and "| max" in estat_hrmax)
     return ok
 
 

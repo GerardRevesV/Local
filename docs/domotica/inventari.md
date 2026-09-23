@@ -253,7 +253,8 @@ no menys: l'error sistemàtic entre models diferents no es cancel·la sol.
 > quadren entre ells, i entre els T315 hi ha el que llegeix més baix de tots i dos dels que
 > llegeixen més alt: **cada sensor és el seu cas**, no el seu model. La dispersió de Td passa
 > de **0,95 a 0,24 °C** amb un desplaçament per sensor, i la temperatura no en necessita cap.
-> Falta la franja humida abans d'aplicar-ho → [calibratge.md](calibratge.md)
+> *(23/09/2026: ja feta la franja humida, amb un tàper de sal fins al 73 %; el calibratge
+> definitiu és a `custom_templates/calibratge.jinja` → [calibratge.md](calibratge.md).)*
 
 **Deixa'ls 24 h junts a la mateixa habitació**, apunta la desviació de cadascun respecte de la
 mediana, i li aplico un *offset* fix a Home Assistant. Cost zero, i permet baixar el llindar

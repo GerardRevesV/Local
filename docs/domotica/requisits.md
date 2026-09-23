@@ -52,8 +52,8 @@ mòbil, i no perd els esdeveniments de debò.
 segueixen gravant-se i s'arxiven senceres cada nit.
 
 Això ja és el criteri del projecte en un cas germà: els desplaçaments de calibratge de
-[`packages/rosada.yaml`](../../config/packages/rosada.yaml) s'apliquen **només al càlcul
-derivat**, i la lectura crua queda intacta. El filtratge segueix la mateixa regla, pel mateix
+[`custom_templates/calibratge.jinja`](../../config/custom_templates/calibratge.jinja) s'apliquen
+**només al càlcul derivat**, i la lectura crua queda intacta. El filtratge segueix la mateixa regla, pel mateix
 motiu:
 
 > Un pic pot ser **la prova**. El desgebratge del deshumidificador, una entrada d'aigua, una

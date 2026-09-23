@@ -94,9 +94,9 @@ i la velocitat no s'hi toca (l'aparell ja la baixa sol).
 4. **La temperatura interior és la més baixa dels tres punts** (la v1 feia servir el centre):
    el bloqueig per fred mira el racó més fred, i un sensor caigut no deixa la decisió sense
    dades.
-5. **La HR màxima és la calibrada**: es dedueix del Td calibrat i de la T de cada punt. Com
-   que el calibratge de la T és zero ([calibratge.md](calibratge.md)), és exacta; si algun dia
-   no ho fos, un test de `replica.py` ho atura abans del PR.
+5. **La HR màxima és la calibrada**: el màxim de les tres `*_humitat_calibrada`, que és exacte
+   per a qualsevol calibratge. *(Fins al 23/09/2026 es deduïa del Td calibrat i de la T de cada
+   punt, que només era exacte amb el calibratge de la T a zero → [calibratge.md](calibratge.md).)*
 6. **«El millor moment» per renovar s'aproxima per «un moment que no mulla»**
    (`delta_td_higiene`, 0 °C de partida). Sense previsió, és el que es pot saber en viu; les
    dades diran si una regla més fina paga. Si en tot el dia no n'hi ha cap, es ventila igualment
