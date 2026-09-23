@@ -178,6 +178,21 @@ Els dos mètodes —98 blocs de tota la corba i dos replans independents— **co
 0,2–0,8 punts d'HR**, o sigui **0,04–0,16 °C de Td**. Aquesta coincidència és el que dona dret a
 fer servir els números; el desacord entre ells és la incertesa honesta del calibratge.
 
+⚠️ **I la temperatura? A aquestes dades no es pot separar.** El model corregeix segons l'HR i
+prou. Per saber si l'error també depèn de la T caldria tenir la mateixa HR a temperatures ben
+diferents, i no hi és: cada franja d'HR cau dins d'un interval de **0,2–1,1 °C** (només la del
+70–75 % arriba a 2,4), i a més **l'HR i la T van de bracet** en tot l'experiment —del 48 al 73 %
+d'HR, la T puja 2,1 °C—, de manera que qualsevol efecte de la temperatura queda absorbit pel
+pendent d'HR. Mirant els residus contra la T, només `fons` insinua alguna cosa (−0,39 punts/°C,
+que explicaria un 27 % de la dispersió); els altres quatre, entre −0,14 i +0,27. I el de `fons`
+té una explicació més avorrida: **estava clavat a 72,00** mentre la referència es movia, i això
+sol ja fabrica un residu que sembla dependre de la temperatura.
+
+Amb un recorregut de només **25,7–29,6 °C**, extrapolar-ho als 12 °C del soterrani seria inventar
+(el pendent de `fons` hi donaria +6 punts). Per això la dependència de la temperatura **no
+s'ajusta**: es mesura amb un segon replà de sal en fred i isoterm, que és el que la tercera tanda
+havia de ser i el que caldrà repetir al soterrani a l'hivern.
+
 ⚠️ **Si la prova d'intercanvi (23/09) troba errors de T propis de cada sensor en fred**, un `c_t`
 constant no els representaria: serien un error que **depèn de la temperatura**, i caldria decidir
 si s'aplica el valor d'hivern —que és el que importa al soterrani— o es deixa a zero i el llindar
