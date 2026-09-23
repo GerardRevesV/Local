@@ -403,6 +403,19 @@ views:
           - entity: sensor.tarifa_periode
             name: Tram
 
+      # El mateix, de la darrera hora: en 48 h un cicle del compressor és un
+      # píxel. Aquí es veu l'arrencada, els ~5 min d'espera i on para. És una
+      # lupa, no un gràfic per correlacionar: per això no segueix les 48 h
+      # d'R3 (requisits.md).
+      - type: history-graph
+        title: Potència i tram — darrera hora
+        hours_to_show: 1
+        entities:
+          - entity: sensor.deshumidificador_potencia
+            name: Potència
+          - entity: sensor.tarifa_periode
+            name: Tram
+
       - type: statistics-graph
         title: Energia per hora
         chart_type: bar
