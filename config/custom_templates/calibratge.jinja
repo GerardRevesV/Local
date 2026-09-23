@@ -16,27 +16,30 @@
     «En T i HR, no en punt de rosada».
 
     D'ON SURTEN (23/09/2026)
-    88 blocs de 20 minuts, del 21 al 23 de setembre, amb els cinc sensors
-    junts: una nit a casa (49–59 %) i un tàper tancat amb pasta de sal fins
+    84 blocs de 20 minuts, del 21 al 23 de setembre, amb els cinc sensors
+    junts: una nit a casa (51–59 %) i un tàper tancat amb pasta de sal fins
     al 73 %. La tanda de la nevera NO hi entra: dins del tàper hi havia 2–3 °C
     de gradient. Ajust invers (el sensor en funció de la referència, i
     s'inverteix) perquè la quantització no aplani el pendent, i fora els
-    blocs on l'aire es movia més de 2 punts/hora.
+    blocs on l'aire es movia més de 2 punts/hora o sense els veïns sencers.
     Els calcula tools/calibratge.py amb les dades crues del repositori,
     docs/domotica/dades/calibratge-2026-09.csv; l'ordre exacta és al doc, i
     `python3 tools/calibratge.py --prova` falla si aquests números no són
     exactament els que en surten.
 
     Dispersió del punt de rosada entre els cinc, amb aquests números:
-    0,88 → 0,22 °C per blocs (0,88 → 0,26 minut a minut). Per franges:
-    0,23 °C al 45–60 %, 0,54 al 60–70 % (9 blocs només) i 0,20 al 70–80 %.
+    0,88 → 0,21 °C per blocs (0,88 → 0,26 minut a minut), dins de mostra;
+    fora de mostra, ~0,3–0,5. Per franges: 0,22 °C al 45–60 %, 0,54 al 60–70 %
+    (8 blocs només) i 0,20 al 70–80 %.
 
     ⚠️ RANG DE VALIDESA: RANG_HR i RANG_T, a sota. Fora, s'extrapola. El
        soterrani a l'hivern serà de 65–90 % i 8–20 °C. Al 85 %, la
        incertesa de la correcció (1σ, bootstrap de blocs de 2 h) va de
-       ±0,04 punts (exterior) a ±0,5 (fons); i la TEMPERATURA queda del tot
-       fora del mesurat: no s'ha pogut saber si la correcció en depèn. Es
-       repeteix al soterrani a l'hivern, i llavors es podrà interpolar.
+       ±0,02 punts (exterior) a ±0,4 (fons), i el recorregut, de 22 punts, és
+       just: en una de cada quatre rèpliques baixa de 20. La TEMPERATURA
+       queda del tot fora del mesurat: no s'ha pogut saber si la correcció en
+       depèn. Es repeteix al soterrani a l'hivern, i llavors es podrà
+       interpolar.
 
     ⚠️ LA T NO ES CORREGEIX (t = 0 per als cinc): coincideixen dins de
        ±0,05 °C, que és el gra.
@@ -55,12 +58,12 @@
     ═══════════════════════════════════════════════════════════════════════════ -#}
 {%- set VERSIO = '2026-09-23' -%}
 {%- set CALIBRATGE = {
-      'soterrani_fons':   {'a': 0.9477, 'b':  5.09, 't': 0.00},
-      'soterrani_centre': {'a': 0.9515, 'b':  1.44, 't': 0.00},
-      'soterrani_gran':   {'a': 1.0298, 'b': -1.41, 't': 0.00},
-      'baixa':            {'a': 0.9998, 'b': -1.26, 't': 0.00},
-      'exterior':         {'a': 0.9982, 'b':  0.15, 't': 0.00},
+      'soterrani_fons':   {'a': 0.9473, 'b':  5.12, 't': 0.00},
+      'soterrani_centre': {'a': 0.9516, 'b':  1.45, 't': 0.00},
+      'soterrani_gran':   {'a': 1.0344, 'b': -1.72, 't': 0.00},
+      'baixa':            {'a': 0.9992, 'b': -1.21, 't': 0.00},
+      'exterior':         {'a': 0.9989, 'b':  0.08, 't': 0.00},
     } -%}
 {#- El rang mesurat (HR a l'escala de la referència; T mediana dels blocs). -#}
-{%- set RANG_HR = [49.0, 73.0] -%}
-{%- set RANG_T = [26.0, 29.6] -%}
+{%- set RANG_HR = [50.7, 73.0] -%}
+{%- set RANG_T = [26.4, 29.6] -%}

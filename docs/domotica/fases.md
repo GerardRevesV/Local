@@ -55,7 +55,7 @@ invalidar.
 - [x] ~~Sé **on va cada sensor** i si el de fora estarà protegit de la pluja.~~ ✅ **Assignació
       fixada:** *Centre* (T315), *Fons* (T315) i *Gran* (T310) al soterrani, *Dalt* (T315) a la
       planta baixa i *Fora* (T310) a l'exterior, **protegit** ✅. ⚠️ Això és **on aniran**: ara
-      mateix els cinc són encara **a casa**, junts, fent el calibratge creuat.
+      mateix els cinc són encara **a casa**, junts; el calibratge creuat ja és fet (A.13).
       → [inventari.md](inventari.md)
 - [ ] Sé si el portàtil necessita **SAI**.
 - [ ] ⚠️ Sé si el BIOS té ***restore on AC power loss***. Si no el té, la mitigació està
@@ -87,7 +87,7 @@ feina i tu menys.
 | A.10 | `desplega.sh` amb totes les portes | 🤖 Jo |
 | A.11 | Compte de healthchecks.io i els dos checks | 👤 Tu |
 | A.12 | **Restauració de prova manual verificada** | 🤝 Jo escric el procediment, tu l'executes |
-| A.13 | ✅ **Fet el 23/09/2026** — 60 h amb els cinc junts en tres tandes (nit, tàper amb sal fins al 73 %, nevera). Dispersió de Td **0,88 → 0,22 °C** per blocs (fora de mostra ~0,3–0,5); correcció d'HR a `custom_templates/calibratge.jinja` (versió `2026-09-23`, ⏳ per desplegar) i T sense corregir. ⏳ **El fred queda obert**: el rang mesurat és 26–30 °C i el soterrani serà de 8–20; es repeteix allà a l'hivern. Números, mètode i dades crues a [calibratge.md](calibratge.md) | 🤝 Tu el fas, jo l'ajusto |
+| A.13 | ✅ **Fet el 23/09/2026** — 60 h amb els cinc junts en tres tandes (nit, tàper amb sal fins al 73 %, nevera). Dispersió de Td **0,88 → 0,21 °C** per blocs (fora de mostra ~0,3–0,5); correcció d'HR a `custom_templates/calibratge.jinja` (versió `2026-09-23`, ⏳ per desplegar) i T sense corregir. ⏳ **El fred queda obert**: el rang mesurat és 26–30 °C i el soterrani serà de 8–20; es repeteix allà a l'hivern. Números, mètode i dades crues a [calibratge.md](calibratge.md) | 🤝 Tu el fas, jo l'ajusto |
 | A.14 | ✅ **Fet** — `scripts/comprova.sh` (302 línies): verifica d'una passada el host, la suspensió, la tapa, Docker, **els dos contenidors un per un**, HA, els sostres de memòria i Tailscale. És el que es corre **després de cada canvi al host** i abans de donar una porta per tancada | 🤖 Jo |
 | A.15 | ✅ **Fet** — `tools/valida_yaml.py` (100 línies): valida el YAML **des de casa**, abans de desplegar, sense esperar el `check_config` del contenidor | 🤖 Jo |
 | A.16 | 🔴 **Que els paràmetres sobrevisquin un reinici** ([R2](requisits.md#r2--tocar-els-paràmetres-de-lalgoritme-des-de-la-web)): provar-ho al banc de casa, decidir què es fa amb `initial:` i garantir que els `input_number` **no s'exclouen mai del `recorder`** ni de l'exportació | 🤝 Tu fas la prova de 3 min, jo corregeixo el YAML |
@@ -131,7 +131,7 @@ feina i tu menys.
 | B.4 | ✅ **Fet** — `packages/rosada.yaml` (639 línies): Td, ΔTd, marge, `history_stats`, `utility_meter` i `sensor.decisio_del_soterrani`. Els blocs dels ventiladors hi són **comentats** fins a la Fase C. *(22/09/2026: la decisió, els paràmetres i els modes passen a `packages/control.yaml` amb la [lògica v2](logica-v2-pla.md), en ombra)* | 🤖 Jo |
 | B.5 | **Els ventiladors segueixen en el règim actual — no s'aturen** | — |
 | B.6 | Dashboards natius + app Companion | 🤝 Jo proposo, tu ajustes al gust |
-| B.7 | ✅ **Fet** — `tools/replica.py` (1.147 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor. *(22/09/2026: rèplica de la v2, amb `--prova-ha`, que compara la macro avaluada per HA, i `--deriva`, que torna a decidir cada fila gravada)* | 🤖 Jo |
+| B.7 | ✅ **Fet** — `tools/replica.py` (1.150 línies): rèplica offline de la lògica i test de deriva contra el que va registrar el sensor. *(22/09/2026: rèplica de la v2, amb `--prova-ha`, que compara la macro avaluada per HA, i `--deriva`, que torna a decidir cada fila gravada)* | 🤖 Jo |
 | B.8 | **Filtratge d'espuris en paral·lel, sense decidir res** ([R1](requisits.md#r1--netejar-les-lectures-espúries-sense-perdre-la-prova)): primer mesurar cadència, soroll base i pendent màxima creïble; després escriure'l. La sèrie crua **no es toca** | 🤖 Jo |
 | B.9 | **Avançar el guió de gràfics del dossier** (era D.1) i fer-hi la **correlació creuada Td soterrani ↔ Td exterior**: és la resposta continuada a *per on entra l'aire* | 🤖 Jo |
 | B.10 | Obrir `diari-de-la-serie.md` i anotar-hi els esdeveniments externs —pluges, visites, un sensor agafat amb la mà— perquè cada pic tingui explicació | 🤝 Tu aportes els fets, jo els munto |
