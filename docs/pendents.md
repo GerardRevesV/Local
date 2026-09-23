@@ -98,7 +98,12 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       🔄 **La nevera**: a dins des de les 12:45, ✅ ràdio bé, tapat a les 13:44. ⚠️ La pasta
       sembla més freda que els sensors → **drap a sota i al voltant**. Demà surt **tapat** →
       [tercera tanda](domotica/calibratge.md#tercera-tanda--la-nevera).
-      Els graons ja no calen. En acabar: l'anàlisi per replans, `tools/calibratge.py`,
+      Els graons ja no calen. ⏳ **Feina de codi que en surt** (23/09): portar a
+      `tools/calibratge.py` l'ajust per **blocs de 20 min** i **invers** —el minut a minut sobre
+      rampa dona pendents de 0,81 a 1,23 i no serveix—, i, si l'ancoratge fred difereix del
+      calent més de 0,3 punts, la **interpolació en temperatura** a `rosada.yaml` i a
+      `replica.py` → [com s'ajusta](domotica/calibratge.md#com-sajusta-la-correcció-i-on-saplica).
+      En acabar: l'anàlisi,
       aplicar els desplaçaments i **apagar el mode calibratge**.
 - [ ] ⚠️ **Refer qualsevol calibratge tret amb `--descarrega` abans del 22/09/2026.** L'eina
       demanava l'històric sense `end_time`, i HA en torna només 24 h des de l'inici: amb més
