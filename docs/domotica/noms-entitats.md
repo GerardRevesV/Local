@@ -187,7 +187,9 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 ### La lògica v2 — fixats el 22/09/2026, ABANS de crear-los
 
 Surten de [logica-v2-pla.md](logica-v2-pla.md), fase per fase. Les plantilles noves porten
-`default_entity_id`, o sigui que **el nom no depèn del nom visible**: és aquest.
+`default_entity_id`, o sigui que **el nom no depèn del nom visible**: és aquest. ⚠️ Només la
+primera vegada: si el nom ja era pres, HA hi posa `_2` i se'l queda per sempre.
+`comprova.sh` canta cada `default_entity_id` que no hi sigui tal qual.
 
 **Fase 1 — la decisió en ombra** (`packages/control.yaml`, i les dues de física a `rosada.yaml`)
 
