@@ -128,8 +128,10 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
 
 **Al local**
 
-- [ ] Repartir els sensors segons l'assignació, i `scripts/inicia-serie.sh` per marcar l'inici
-      de la sèrie de debò.
+- [ ] Repartir els sensors segons l'assignació, **apagar `input_boolean.mode_calibratge`** (fins
+      llavors, encès: mentre ho és, res no actua) i `scripts/inicia-serie.sh` per marcar l'inici
+      de la sèrie de debò. ⚠️ Si el marcador s'oblida encès, la sèrie comença amb la decisió
+      dient `calibratge`.
 - [ ] La **setmana de base**: deshumidificador fix al 55 % i ventiladors com ara
       ([logica-v2.md](domotica/logica-v2.md)).
 - [ ] **Fotos de les plaques dels ventiladors**, la **porta de l'escala** i, quan es pugui, la
@@ -378,9 +380,9 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       decidides però pendents d'escriure `nit.py`.
 - [ ] Confirmar si la **càmera Tapo C200** que es va investigar era per al local.
 - [x] ~~**Decidir on viu la lògica de control** del punt de rosada.~~ ✅ **HA natiu**, i ja
-      **escrita**: `config/packages/rosada.yaml` (633 línies), amb un únic punt d'avaluació,
+      **escrita**: `config/packages/rosada.yaml` (639 línies), amb un únic punt d'avaluació,
       `sensor.decisio_del_soterrani`. *(22/09/2026: la decisió passa a
-      `config/packages/control.yaml` (1026 línies), amb la lògica v2.)* Node-RED, AppDaemon, pyscript i el servei propi en
+      `config/packages/control.yaml` (1.029 línies), amb la lògica v2.)* Node-RED, AppDaemon, pyscript i el servei propi en
       Python queden **descartats**. → [decisio-stack.md](domotica/decisio-stack.md)
 - [x] ~~**Decidir la base de dades i l'eina de visualització.**~~ ✅ **SQLite** i els
       **dashboards natius d'HA** per Tailscale. **PostgreSQL, MariaDB, InfluxDB i Grafana
@@ -400,11 +402,27 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       mecanisme ja funciona per al deshumidificador a `rosada.yaml`; els blocs dels
       ventiladors hi són escrits però **comentats a posta** fins a la Fase C, perquè fins que
       els S110E no estiguin instal·lats quedarien `unavailable` i embrutarien l'històric.*
-- [x] ~~🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13).~~ ✅ **Fet i aplicat el
-      23/09/2026** en tres tandes (nit a casa, tàper amb sal fins al 73 %, i nevera). Dispersió
-      de Td entre els cinc: **0,89 → 0,28 °C** per blocs. Els pendents i desplaçaments d'HR són
-      a les cinc plantilles de `rosada.yaml`; la T no es corregeix (`c_t` = 0, coincideixen dins
-      de ±0,05 °C). Histèresi comprovada. Dades crues a
+- [x] ~~🔬 **Fer el calibratge creuat dels cinc sensors** (fase A.13).~~ ✅ **Fet el
+      23/09/2026** (versió `2026-09-23`) en tres tandes (nit a casa, tàper amb sal fins al 73 %,
+      i nevera, que no va servir). Dispersió de Td entre els cinc: **0,88 → 0,22 °C** per blocs
+      dins de mostra, **~0,3–0,5 fora de mostra**. Els pendents i desplaçaments d'HR viuen a
+      `custom_templates/calibratge.jinja`; la T no es corregeix (`t` = 0, coincideixen dins de
+      ±0,05 °C). Histèresi comprovada. Revisat per vuit revisors el mateix dia.
+      Dades crues i l'script que en treu cada xifra a
+      [`dades/`](domotica/dades/calibratge-2026-09.csv), i l'ajust es refà sense HA amb l'ordre
+      que hi ha al doc → [els números](domotica/calibratge.md#els-números-aplicats--23092026).
+- [ ] ⏳ **Desplegar el calibratge** al servidor, amb el procediment de
+      [calibratge.md](domotica/calibratge.md#desplegar-un-calibratge): **primer**
+      `reload_custom_templates` i **després** `template.reload`; comprovar les deu entitats
+      noves i l'atribut `calibratge`; **apuntar l'hora** al registre d'instal·lació, perquè totes
+      les sèries derivades hi fan un salt (~+0,6 °C al Td de `fons`, ~+1 °C al ΔTd contra la
+      planta baixa). Fer-ho a casa, abans del trasllat, i queda a la base d'experimentació que
+      arxiva `inicia-serie.sh`.
+- [ ] **Revisar `delta_td_on`** (2,0 °C) ara que hi ha calibratge, **amb les xifres honestes**:
+      dins de mostra 0,22 °C, però **fora de mostra ~0,3–0,5**, i la referència interior —un
+      màxim de tres— té un biaix de **+0,1 °C** cap a ventilar. Baixar-lo a ~1,2 com es pensava
+      no queda justificat encara; es mira amb la setmana de base, contra la porta de la Fase B.
+      → [calibratge.md](domotica/calibratge.md#els-números-aplicats--23092026) Dades crues a
       [`dades/calibratge-2026-09.csv`](domotica/dades/calibratge-2026-09.csv), i l'ajust es refà
       sense HA amb l'ordre que hi ha al doc →
       [els números](domotica/calibratge.md#els-números-aplicats--23092026).

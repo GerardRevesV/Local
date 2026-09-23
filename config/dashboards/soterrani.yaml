@@ -227,7 +227,7 @@ views:
       # Les dues referències, juntes: amb unes setmanes, quina prediu millor
       # que ventilar asseca (logica-v2.md). La que decideix és la de Ajustos.
       - type: history-graph
-        title: ΔTd — per sobre de 2 °C, ventilar surt a compte
+        title: ΔTd — per sobre del llindar, ventilar surt a compte
         hours_to_show: 48
         entities:
           - entity: sensor.dtd_interior_planta_baixa
@@ -311,7 +311,8 @@ views:
             name: Fora
 
       # ── SENSE CALIBRAR — NOMÉS PER DEPURAR ─────────────────────────────────
-      # Tot el que hi ha a dalt porta la correcció de calibratge.jinja. Aquests
+      # Totes les HR i tots els punts de rosada de dalt porten la correcció de
+      # calibratge.jinja (la T no es corregeix: t = 0 per als cinc). Aquests
       # dos no: són la lectura tal com arriba del sensor. Serveixen per veure
       # què fa la correcció i per adonar-se'n si algun dia se'n va de mare
       # (per exemple, lluny del rang on es va mesurar: calibratge.md).
@@ -527,9 +528,9 @@ views:
         hours_to_show: 48
         entities:
           - entity: sensor.deshumidificador_humitat
-            name: Aparell
+            name: Aparell (sense calibrar)
           - entity: sensor.soterrani_humitat_maxima
-            name: Pitjor racó
+            name: Pitjor racó (Tapo, calibrada)
           - entity: sensor.decisio_llindar_deshumidificador
             name: Llindar que vol la decisió
 

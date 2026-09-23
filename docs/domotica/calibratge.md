@@ -1,13 +1,14 @@
 # Calibratge creuat dels sensors — procediment
 
-> **Estat: ✅ calibratge d'humitat fet i aplicat el 23/09/2026** →
-> [els números](#els-números-aplicats--23092026). Dispersió de Td entre els cinc: **0,89 → 0,28 °C**
-> per blocs, vàlid **entre el 49 i el 73 % d'HR a 26–30 °C**. La temperatura no es corregeix.
-> ⏳ **Queda obert el fred**: la [tanda de la nevera](#tercera-tanda--la-nevera) no va poder donar
-> l'ancoratge —gradients de 2–3 °C dins del tàper—, o sigui que **no se sap si el calibratge
-> depèn de la temperatura**, i es repeteix al soterrani a l'hivern. El mètode és a [com s'ajusta
-> la correcció](#com-sajusta-la-correcció-i-on-saplica), i les dades crues, [al
-> repositori](#les-dades-crues-al-repositori). Fase **A.13** de [fases.md](fases.md).
+> **Estat: ✅ calibratge d'humitat fet el 23/09/2026 (versió `2026-09-23`), pendent de
+> desplegar** → [els números](#els-números-aplicats--23092026). Dispersió de Td entre els cinc:
+> **0,88 → 0,22 °C** per blocs, vàlid **entre el 49 i el 73 % d'HR a 26–30 °C**. La temperatura no
+> es corregeix. ⏳ **Queda obert el fred**: la [tanda de la nevera](#tercera-tanda--la-nevera) no va
+> poder donar l'ancoratge —gradients de 2–3 °C dins del tàper—, o sigui que **no se sap si el
+> calibratge depèn de la temperatura**, i es repeteix al soterrani a l'hivern. El mètode és a [com
+> s'ajusta la correcció](#com-sajusta-la-correcció-i-on-saplica); les dades crues i l'script que
+> en treu cada xifra, [al repositori](#les-dades-crues-al-repositori). Fase **A.13** de
+> [fases.md](fases.md).
 
 ## Per què, i quant val
 
@@ -99,39 +100,59 @@ sense esforç.
 
 ## Després
 
+Amb les dades baixades en un CSV (vegeu [les dades crues](#les-dades-crues-al-repositori)):
+
 ```bash
-export HA_URL=http://<el-teu-servidor>:8123
-export HA_TOKEN_FILE=~/.ha_token
-python3 tools/calibratge.py --descarrega --hores 48
+python3 tools/calibratge.py --csv <fitxer>.csv --versio AAAA-MM-DD [--exclou INICI/FI …]
 ```
+
+o directament de Home Assistant, amb `HA_URL` i `HA_TOKEN_FILE` i `--descarrega --hores 48`.
+La finestra la treu sola del marcador **tram per tram** (si s'apaga entremig, allò d'entremig no
+compta); per a trams sense marcador, `--finestra INICI/FI`.
 
 > ⚠️ **Corregit el 22/09/2026:** fins llavors l'eina demanava l'històric **sense `end_time`**, i
 > Home Assistant en torna només **24 h des de l'inici**, demanis les hores que demanis
-> (comprovat amb HA 2026.9.3). Amb `--hores 48` o les 72 per defecte, l'ajust es quedava les
-> 24 h **més velles** i perdia les més recents —les rampes de la sal i de la nevera— **sense
-> cap avís**. Només afecta les descàrregues de més de 24 h, però **qualsevol calibratge tret amb
-> `--descarrega` abans de la correcció s'ha de tornar a calcular.**
+> (comprovat amb HA 2026.9.3). Qualsevol calibratge tret amb `--descarrega` abans de la
+> correcció s'ha de tornar a calcular.
 
-L'eina **troba sola la finestra** a partir del marcador, parteix les rampes, ajusta i escriu
-les línies per enganxar. ⏳ **Això és el que fa avui; el mètode bo és un altre** → [com s'ajusta
-la correcció](#com-sajusta-la-correcció-i-on-saplica). Mentre no estigui portat a l'eina, el que
-has de mirar de la seva sortida:
+**El que decideix** —i fa sortir amb codi 1 si falla—:
 
 | Què diu | Què vol dir |
 |---|---|
-| `rang assolit: HR 44–81 %` | **Si el rang és curt, no s'ajusta cap pendent** i només es posa un desplaçament. És correcte: un pendent sense recorregut és soroll disfressat de ciència |
-| Comparació entre rampes | Si `c_t` o `c_rh_b` no s'assemblen entre baixada i pujada, hi ha **retard o histèresi**. El número no s'ha de fer servir |
-| Dispersió de Td abans → després | El criteri. **≤ 0,30 °C** per poder abaixar el llindar |
+| `Blocs de 20 min: N utilitzables`, i el recorregut | Calen 10 blocs, i **20 punts d'HR de recorregut** per ajustar pendent; si no, només desplaçament. Un pendent sense recorregut és soroll disfressat de ciència |
+| `⚠ … pendent …, sensor encallat?` | Un pendent fora d'1 ± 0,10 no és calibratge: és un sensor clavat en un valor |
+| Blocs contra minut a minut, **a tots dos extrems** | Dos mètodes independents. Si difereixen més d'1 punt en algun extrem, el número no s'ha de fer servir |
+| Dispersió de Td **per blocs**, amb la correcció que es desplega | El criteri: **≤ 0,30 °C** |
 
-Els números van a les cinc plantilles de [`packages/rosada.yaml`](../../config/packages/rosada.yaml),
-que ja tenen el forat preparat:
+**El que només informa:** la dispersió minut a minut (hi pesa el gra de la mesura), el percentil
+90 i la dispersió **per franges d'HR** —una mediana global la pot aguantar una sola franja—, la
+pujada contra la baixada a una HR comuna, i la **incertesa** de la correcció al 85 i al 90 % per
+bootstrap de blocs de 2 h.
 
-```jinja
-{% set c_t = 0.0 %}{% set c_rh_a = 1.0 %}{% set c_rh_b = 0.0 %}
-```
+L'eina escriu les línies per enganxar a
+[`custom_templates/calibratge.jinja`](../../config/custom_templates/calibratge.jinja), que és
+**l'únic lloc on viuen els números**: la versió, el diccionari i el rang de validesa. I
+`python3 tools/calibratge.py --prova` falla si el que hi ha al fitxer no és exactament el que surt
+de les dades del repositori.
 
-⚠️ **Es corregeix només el Td derivat. La lectura crua no es toca mai**, de manera que l'arxiu
+⚠️ **Es corregeix només el derivat. La lectura crua no es toca mai**, de manera que l'arxiu
 conserva la mesura i la correcció per separat i sempre es pot desfer.
+
+### Desplegar un calibratge
+
+1. `python3 tools/calibratge.py --prova` i `python3 tools/replica.py --prova`, tots dos verds.
+2. Al servidor, **primer** `homeassistant.reload_custom_templates` i **després**
+   `template.reload` (o reiniciar). Al revés, els punts de rosada es queden sense
+   `calibratge.jinja` a la memòria, sense valor, i la decisió passa a `sense_dades`.
+3. Comprovar que existeixen les deu entitats, amb l'atribut `calibratge` igual a la versió:
+   `sensor.{soterrani_fons,soterrani_centre,soterrani_gran,baixa,exterior}_humitat_calibrada` i
+   `sensor.{soterrani_fons,soterrani_centre,soterrani_gran,planta_baixa,exterior}_punt_de_rosada_cru`.
+   Si en surt alguna amb `_2` al final, s'ha de renombrar **abans** que gravi res.
+4. **Apuntar l'hora exacta** al [registre d'instal·lació](home-assistant.md#registre-dinstallació)
+   i al [registre d'aquí](#registre): totes les sèries derivades —els punts de rosada, la
+   referència, els ΔTd, la HR màxima— fan un salt en aquell instant. Amb el primer calibratge,
+   de l'ordre de +0,6 °C al Td de `fons` i +1 °C al ΔTd contra la planta baixa. A partir d'ara,
+   cada fila porta la versió a l'atribut `calibratge`, però el salt s'ha d'explicar igualment.
 
 ## Com s'ajusta la correcció, i on s'aplica
 
@@ -151,10 +172,11 @@ ni es busquen punts propers en una taula. Tres raons:
    d'error de T entra sencer al Td, mentre que 1 punt d'HR hi entra com ~0,2 °C —i aquest factor
    canvia amb la temperatura—. El mateix número no valdria al soterrani a l'hivern.
 3. **No tot el que decideix és un Td.** La urgència de la v2 mira la **HR més alta** dels tres
-   punts, i els llindars del deshumidificador també són en HR. `rosada.yaml` la refà desfent
-   Magnus amb el Td calibrat i la T ⚠️ **—exacte només mentre `c_t` sigui zero—**, i
-   `tools/replica.py` falla si algun dia no ho és sense tocar-ho. Amb la correcció en HR, tot
-   plegat queda consistent; amb un pedaç al Td, el Td aniria calibrat i la HR no.
+   punts, i els llindars del deshumidificador també són en HR. `rosada.yaml` la calcula com el
+   **màxim de les tres humitats calibrades**, que és exacte per a qualsevol calibratge. *(Fins al
+   23/09/2026 es desfeia Magnus amb el Td calibrat i la T crua, que només era exacte amb `t` = 0.)*
+   Amb la correcció en HR, tot plegat queda consistent; amb un pedaç al Td, el Td aniria calibrat
+   i la HR no.
 
 **Per què no una taula de punts propers:** en tindríem **tres** (49–59 % a 26 °C, 73 % a 28 °C i
 la nevera), que no fan graella; interpolar-hi seria ajustar soroll. El model lineal en HR
@@ -178,35 +200,39 @@ la variable independent porta l'error de quantització (±0,5), cosa que **esbia
 avall**, i el retard hi és encara que sigui petit.
 
 **El punt mig funciona:** partir la finestra marcada en **blocs de 20 minuts**, fer la mitjana de
-cada bloc, descartar els blocs on l'HR es mou més de 4 punts/hora i els trams contaminats, i
-ajustar sobre els blocs **en sentit invers** —el sensor en funció de la referència, i després
-s'inverteix—, que és com s'esquiva el biaix. Amb les dades del 20 al 22/09 en surten **98 blocs**
-repartits del **48 al 73 %**:
+cada bloc i ajustar sobre els blocs **en sentit invers** —el sensor en funció de la referència, i
+després s'inverteix—, que és com s'esquiva el biaix. I **descartar els blocs on l'aire es mou
+massa de pressa**, perquè allà el retard entre sensors (~6 min entre el més ràpid i el més lent)
+fabrica desviacions que semblen calibratge: l'error és *ritme × retard*, i amb el llindar a
+**2 punts d'HR/hora** queda per sota de 0,2 punts. El ritme es mira amb el pendent de la
+**mitjana dels cinc sobre 60 minuts**.
 
-| Sensor | a | b | Correcció al 55 % | al 73 % | al 85 % | Diferència amb els dos replans |
-|---|---|---|---|---|---|---|
-| `soterrani_fons` | 0,9474 | +5,20 | +2,31 | +1,36 | +0,73 | ≤ 0,8 |
-| `soterrani_centre` | 0,9576 | +0,90 | −1,43 | −2,20 | −2,71 | ≤ 0,4 |
-| `soterrani_gran` | 1,0287 | −1,36 | +0,22 | +0,74 | +1,08 | ≤ 0,2 |
-| `baixa` | 1,0015 | −1,44 | −1,36 | −1,33 | −1,31 | ≤ 0,2 |
-| `exterior` | 0,9874 | +0,98 | +0,29 | +0,06 | −0,09 | ≤ 0,3 |
+> ⚠️ **Revisat el 23/09/2026.** El primer filtre mirava el primer i l'últim minut de la
+> *mediana*, que és un enter: el tall real anava de 4 a 6 punts/hora segons on queia el graó, i
+> deixava passar el **transitori de després de tancar el tàper** (21/09, 12:40–14:20), amb fins a
+> 6 punts de divergència entre sensors. Amb el filtre nou, surt; la dispersió baixa de 0,28 a
+> 0,22 °C i els coeficients es mouen fins a 1 punt a l'origen (menys al rang que compta). També
+> es va trobar que l'eina no ordenava les files dins de cada bloc: el mateix error que feia
+> sortir 91 blocs en comptes de 98. Els números que hi havia en aquesta secció eren d'una
+> exploració amb l'eina d'abans, i s'han tret: els bons són a [els
+> números](#els-números-aplicats--23092026), i els reprodueix l'script de la carpeta de dades.
 
-Els dos mètodes —98 blocs de tota la corba i dos replans independents— **coincideixen dins de
-0,2–0,8 punts d'HR**, o sigui **0,04–0,16 °C de Td**. Aquesta coincidència és el que dona dret a
-fer servir els números; el desacord entre ells és la incertesa honesta del calibratge.
+La prova de si el número és de fiar és que **dos mètodes independents diguin el mateix**: l'ajust
+per blocs i el minut a minut coincideixen dins de **0,35 punts** a l'extrem baix (49 %) i de
+**0,16** a l'alt (73 %). *(A l'extrem alt, perquè al mig dues rectes s'assemblen sempre.)*
 
 ⚠️ **I la temperatura? A aquestes dades no es pot separar.** El model corregeix segons l'HR i
 prou. Per saber si l'error també depèn de la T caldria tenir la mateixa HR a temperatures ben
-diferents, i no hi és: cada franja d'HR cau dins d'un interval de **0,2–1,1 °C** (només la del
-70–75 % arriba a 2,4), i a més **l'HR i la T van de bracet** en tot l'experiment —del 48 al 73 %
-d'HR, la T puja 2,1 °C—, de manera que qualsevol efecte de la temperatura queda absorbit pel
-pendent d'HR. Mirant els residus contra la T, només `fons` insinua alguna cosa (−0,39 punts/°C,
-que explicaria un 27 % de la dispersió); els altres quatre, entre −0,14 i +0,27. I el de `fons`
-té una explicació més avorrida: **estava clavat a 72,00** mentre la referència es movia, i això
-sol ja fabrica un residu que sembla dependre de la temperatura.
+diferents, i no hi és: cada franja d'HR cau dins d'un interval de **0,0–0,6 °C** (només la del
+70–75 % arriba a 2,4), i a més **l'HR i la T van de bracet** en tot l'experiment —del 49 al 73 %
+d'HR, la T puja 1,9 °C—, de manera que qualsevol efecte de la temperatura queda absorbit pel
+pendent d'HR. Mirant els residus contra la T, només `fons` insinua alguna cosa (−0,36 punts/°C,
+R² 0,27); els altres quatre, entre −0,05 i +0,18. I el de `fons` té una explicació més avorrida:
+**estava clavat a 72,00** set hores mentre la referència es movia, i això sol ja fabrica un residu
+que sembla dependre de la temperatura.
 
-Amb un recorregut de només **25,7–29,6 °C**, extrapolar-ho als 12 °C del soterrani seria inventar
-(el pendent de `fons` hi donaria +6 punts). Per això la dependència de la temperatura **no
+Amb un recorregut de només **26,0–29,6 °C**, extrapolar-ho als 12 °C del soterrani seria inventar
+(el pendent de `fons` hi donaria uns +6 punts). Per això la dependència de la temperatura **no
 s'ajusta**: es mesura amb un segon replà de sal en fred i isoterm, que és el que la tercera tanda
 havia de ser i el que caldrà repetir al soterrani a l'hivern.
 
@@ -218,7 +244,7 @@ tàper fora de la nevera i tancat:
 
 | Ritme | Diferència de T entre els cinc | Desviació de `centre` |
 |---|---|---|
-| 0,0 °C/min | 3,4 °C *(encara a la nevera: gradient)* | −2,6 |
+| −0,06 °C/min | 3,4 °C *(encara a la nevera: gradient)* | −2,6 |
 | +0,46 °C/min | 3,7 °C | −1,5 |
 | +0,36 °C/min | 2,8 °C | 0,0 |
 | +0,24 °C/min | 1,6 °C | 0,0 |
@@ -226,9 +252,9 @@ tàper fora de la nevera i tancat:
 **La desviació de cada sensor canvia amb el ritme i s'encongeix quan la rampa s'alenteix**: és
 **retard tèrmic**, no calibratge. D'aquests números en surt que entre el sensor més ràpid i el més
 lent hi ha uns **6 minuts** d'inèrcia, i que perquè això doni menys de 0,1 °C d'error la rampa ha
-d'anar per sota de **~0,5 °C/hora**. La d'aquell dia anava a 15–25 °C/h: entre 30 i 50 vegades
-massa de pressa. Els graons serveixen per veure **qui reacciona i quan**; per calibrar, calen
-derives lentes —una nit— o el soterrani mateix.
+d'anar per sota de **~1 °C/hora** (6 min × 1 °C/h = 0,1 °C). La d'aquell dia anava a 15–25 °C/h:
+entre 15 i 25 vegades massa de pressa. Els graons serveixen per veure **qui reacciona i quan**;
+per calibrar, calen derives lentes —una nit— o el soterrani mateix.
 
 *(De passada, valida la lectura de la segona ronda de nevera: allà el ritme era de 0,06 °C/min,
 o sigui que el retard només podia explicar 0,3 °C dels 3,4 de diferència. La resta era el lloc.)*
@@ -273,13 +299,14 @@ diferent**, però com a **verificació qualitativa**:
   ⚠️ Amb un matís: la col·locació nova ha de ser **realment diferent**; si per casualitat deixa
   els mateixos sensors a la mateixa zona freda, el patró es mantindria sense voler dir res.
 
-⚠️ **Si la prova d'intercanvi (23/09) troba errors de T propis de cada sensor en fred**, un `c_t`
-constant no els representaria: serien un error que **depèn de la temperatura**, i caldria decidir
-si s'aplica el valor d'hivern —que és el que importa al soterrani— o es deixa a zero i el llindar
-de ventilació es queda alt. En qualsevol dels dos casos, tocar `c_t` obliga a revisar la **HR
-màxima** de `rosada.yaml`.
+✅ **Resposta de la prova d'intercanvi (23/09):** tres col·locacions, tres patrons diferents; la
+desviació de T dins de la nevera **és del lloc**, no dels sensors → [les
+incidències](#registre). No s'implementa cap interpolació en temperatura.
 
-I en acabat: **apagar el mode calibratge** i repartir els sensors.
+**I en acabat**, el marcador `input_boolean.mode_calibratge` **es queda encès** durant el
+trasllat —mentre és encès, res no actua— i **s'apaga just abans d'`inicia-serie.sh`**, al local,
+amb els sensors ja al seu lloc. Si s'oblida, la sèrie de debò comença amb la decisió dient
+`calibratge`.
 
 ## ⚠️ Això no serà un calibratge d'hivern
 
@@ -333,8 +360,8 @@ Entre el que llegeix més baix i els que llegeixen més alt hi ha **~3,4 punts d
 | Dispersió de Td entre els cinc | |
 |---|---|
 | Sense corregir | **0,95 °C** |
-| Amb només desplaçament | **0,24 °C** ✅ dins de l'objectiu de 0,30 |
-| Amb pendent i desplaçament | 0,25 °C — **el pendent no afegeix res** |
+| Amb només desplaçament | **0,25 °C** ✅ dins de l'objectiu de 0,30 |
+| Amb pendent i desplaçament | 0,24 °C — **el pendent gairebé no afegeix res**, i fora del rang inventa |
 
 ### Tres coses que no s'esperaven
 
@@ -345,7 +372,7 @@ tots (`fons`) i dos dels que llegeixen més alt. **Cada sensor és el seu cas.**
 **2. El màxim amplifica l'error.** La referència interior és el **punt de rosada més alt** dels
 tres del soterrani. Sense corregir, **`centre` la marca el 99 % del temps** —no perquè sigui el
 punt més humit, sinó perquè és el que llegeix més alt—, i això infla el Td de referència
-**+0,16 °C**. Un màxim sempre tria el sensor amb el biaix més positiu. Quan estiguin repartits
+**+0,18 °C**. Un màxim sempre tria el sensor amb el biaix més positiu. Quan estiguin repartits
 pel soterrani, l'atribut `punt_mes_humit` assenyalarà el sensor esbiaixat, no el racó humit,
 fins que es calibrin.
 
@@ -473,7 +500,7 @@ la correcció és el que s'ha de **sumar** a la lectura:
 que no cal corregir-la.
 
 **2. Els desplaçaments del 21/09 no valen al 73 %.** Aplicats al replà, la dispersió de Td baixa
-de **0,61 a 0,40 °C**: millora, però queda per sobre dels 0,30. `baixa` i `exterior` no es mouen,
+de **0,61 a 0,40 °C** (sobre les mitjanes de la finestra; minut a minut, de 0,67 a 0,43): millora, però queda per sobre dels 0,30. `baixa` i `exterior` no es mouen,
 però `fons` passa de +2,2 a +0,8 i `centre`, de −1,1 a −2,0: en aquests dos **la desviació depèn
 de l'HR**, amb canvis més grans que el gra d'un replà (±0,5). Va ser bona decisió no aplicar-los.
 I el recorregut ja va del 49 al 75 %, 26 punts: per sobre dels 20 que l'eina demana per ajustar
@@ -493,7 +520,7 @@ equivalen a una pasta **només 0,5 °C més freda** que els sensors —la taula,
 ningú no ho va mesurar. *(Es va veure a la nevera, el 22/09, on la diferència era de graus.)*
 L'ancoratge absolut, doncs, és **provisional**; les correccions **entre sensors** no en depenen.
 
-**Dispersió de Td al replà, sense corregir: 0,61 °C** (al 55 % del 21/09, 0,95).
+**Dispersió de Td al replà, sense corregir: 0,61 °C** sobre les mitjanes de la finestra (0,67 minut a minut; la nit del 21/09 al 55 %, 0,95 minut a minut).
 
 **Els graons ja no calen per als números.** Servien per saber si el retard del hub contaminava
 els desplaçaments trets de **rampes**. Els d'aquesta tanda surten d'un **replà**, on el retard no
@@ -552,75 +579,115 @@ entremig.
 6. **Obrir-lo i deixar-los 1–2 hores a l'aire de l'habitació**, junts. És la **prova
    d'histèresi** del tram 4: si, a la mateixa HR, un sensor no torna a la desviació que tenia el
    21/09 després d'haver passat pel 75 % i pel fred, aquell sensor no admet cap corba.
-7. **Apagar el marcador.**
+7. **El marcador, encès** fins al local: s'apaga just abans d'`inicia-serie.sh` → [com es
+   desplega](#desplegar-un-calibratge) i [el mètode](#com-sajusta-la-correcció-i-on-saplica).
 
 ### Com es llegeix
 
-Les tres tandes donen això:
+Les tres tandes van donar això:
 
 | Tanda | HR | T | Què en surt |
 |---|---|---|---|
-| La nit del 20–21/09 | 49–59 % | ~26 °C | Blocs per a l'ajust |
-| El tàper, 21–22/09 | 48 → 73 % (sal: 75,2) | 26–29,6 °C | La resta dels blocs, i l'ancoratge absolut *(provisional)* |
-| La nevera, 22–23/09 | 66–74 % | 3,8–8,4 °C | L'**ancoratge fred**, si l'intercanvi el neteja |
+| La nit del 20–21/09 | 49–59 % | ~26–27 °C | 25 blocs per a l'ajust |
+| El tàper, 21–22/09 | 49 → 73 % (sal: 75,2) | 26–29,6 °C | 62 blocs més, i l'ancoratge absolut *(provisional)* |
+| La nevera, 22–23/09 | 62–74 % | 3,5–8,4 °C | **Res per a l'ajust**: gradients de 2–3 °C dins del tàper, i la desviació de T segueix el lloc |
 
-El mètode d'ajust, el model i el criteri per decidir si la correcció ha de dependre de la
-temperatura són a [com s'ajusta la correcció](#com-sajusta-la-correcció-i-on-saplica). En dues
-línies: **blocs de 20 minuts** de tota la finestra, ajust invers, pendent en HR del tram calent i
-desplaçament interpolat entre el fred i el calent **si** difereixen més del gra.
-
-⚠️ **`tools/calibratge.py` encara no ho fa així**: parteix la finestra per rampes i ajusta minut
-a minut contra la mediana, que és justament el que s'ha demostrat pitjor. ⏳ Portar-hi els blocs,
-l'ajust invers i els dos ancoratges; fins llavors, l'anàlisi es fa a part i queda escrita aquí.
+El mètode és a [com s'ajusta la correcció](#com-sajusta-la-correcció-i-on-saplica), i els números
+que en surten, a sota.
 
 ## Els números, aplicats — 23/09/2026
 
-Ajustats amb `tools/calibratge.py` sobre **91 blocs de 20 minuts**, del 21 al 23 de setembre, i
-**enganxats a les cinc plantilles** de [`packages/rosada.yaml`](../../config/packages/rosada.yaml).
-`HR_corregida = c_rh_a · HR + c_rh_b`; la T no es corregeix.
+Ajustats amb `tools/calibratge.py` sobre **88 blocs de 20 minuts** (25 de la nit del 21/09, 39 de
+la pujada del tàper, 23 del replà i 1 de després de la nevera), versió **`2026-09-23`**, i escrits
+a [`custom_templates/calibratge.jinja`](../../config/custom_templates/calibratge.jinja).
+`HR_corregida = a · HR + b`; la T no es corregeix. **Encara no desplegats** → [com es
+desplega](#desplegar-un-calibratge). Cada xifra d'aquesta secció la reprodueix
+[`dades/calibratge-2026-09-analisi.py`](dades/calibratge-2026-09-analisi.py).
 
-| Sensor | `c_rh_a` | `c_rh_b` | Correcció al 55 % | al 73 % | al 85 %* |
-|---|---|---|---|---|---|
-| `soterrani_fons` | 0,9399 | +5,70 | +2,40 | +1,31 | +0,59 |
-| `soterrani_centre` | 0,9658 | +0,28 | −1,60 | −2,22 | −2,63 |
-| `soterrani_gran` | 1,0347 | −1,76 | +0,15 | +0,77 | +1,19 |
-| `baixa` | 1,0105 | −2,08 | −1,50 | −1,31 | −1,19 |
-| `exterior` | 0,9836 | +1,25 | +0,35 | +0,05 | −0,14 |
+| Sensor | `a` | `b` | Correcció al 55 % | al 73 % | al 85 %* | al 90 %* |
+|---|---|---|---|---|---|---|
+| `soterrani_fons` | 0,9477 | +5,09 | +2,21 | +1,27 | +0,64 | +0,38 |
+| `soterrani_centre` | 0,9515 | +1,44 | −1,23 | −2,10 | −2,68 | −2,92 |
+| `soterrani_gran` | 1,0298 | −1,41 | +0,23 | +0,77 | +1,12 | +1,27 |
+| `baixa` | 0,9998 | −1,26 | −1,27 | −1,27 | −1,28 | −1,28 |
+| `exterior` | 0,9982 | +0,15 | +0,05 | +0,02 | −0,00 | −0,01 |
 
 \* *Extrapolat: el rang mesurat acaba al 73 %.*
 
 | Criteri | Resultat |
 |---|---|
-| Dispersió de Td, **per blocs** | **0,89 → 0,28 °C** ✅ per sota de l'objectiu de 0,30 |
-| Dispersió de Td, minut a minut | 0,88 → 0,33 °C — el que queda és el **gra** (±0,5 punts d'HR per lectura, i el màxim menys el mínim de cinc sorolls val unes 2,3 desviacions), no calibratge |
-| Blocs contra minut a minut | Coincideixen dins de **0,05 punts** a l'extrem alt ✅ |
-| **Histèresi** (21/09 nit contra 23/09, tots dos al 54–55 %) | Cap sensor no es mou més de **0,61 punts** després d'haver passat pel 75 % i per 4 °C ✅ **Cap sensor necessita constant** |
-| `c_t` | **0,00 per als cinc**: coincideixen en T dins de ±0,05 °C, i la HR màxima només és exacta amb zero |
+| Dispersió de Td, **per blocs**, amb el que es desplega | **0,88 → 0,22 °C** ✅ per sota de l'objectiu de 0,30 |
+| Per franges d'HR | 45–60 %: 0,99 → **0,23** (26 blocs) · 60–70 %: 1,44 → **0,54** (9) · 70–80 %: 0,73 → **0,20** (53) |
+| Percentil 90, per blocs | 1,24 → 0,47 °C |
+| Dispersió de Td, minut a minut | 0,88 → 0,26 °C |
+| Blocs contra minut a minut | Coincideixen dins de **0,35 punts** al 49 % i de **0,16** al 73 % ✅ |
+| **Histèresi** (nit del 21/09, 54,7 %, contra 23/09 13:00–13:33, 53,8 %) | Cap sensor no es mou més de **0,49 punts** després d'haver passat pel 75 % i per 4 °C ✅ Cap sensor necessita constant |
+| `t` | **0,00 per als cinc**: coincideixen en T dins de ±0,05 °C, que és el gra |
 
-⚠️ **Rang de validesa: 49–73 % d'HR i 25,9–29,6 °C**, escrit al costat dels números al YAML. El
-soterrani a l'hivern serà **65–90 % i 8–20 °C**: el tram alt d'HR s'extrapola poc —la recta ve
-d'un recorregut de 24 punts— però **la temperatura queda del tot fora**, i això no s'ha pogut
-mesurar (vegeu la [tercera tanda](#tercera-tanda--la-nevera)). Es repeteix al soterrani a
-l'hivern.
+**El que aquests números NO diuen**, i s'ha de saber abans de fer-los servir per decidir:
+
+- **Són dins de mostra.** Ajustant sense un tram i provant sobre aquell tram, la dispersió puja:
+  **0,52 °C** a la nit (0,23 dins de mostra), 0,31 a la pujada i 0,32 al replà. El 0,22 és el
+  millor cas; la xifra honesta per a condicions noves és **~0,3–0,5 °C**.
+- **No tot el que queda és gra.** Amb un model perfecte i l'HR en enters, el terra seria de
+  ~0,13 °C per blocs i ~0,17 minut a minut: la resta és error que la recta no recull.
+- **La franja del 60–70 % és la pitjor** (0,54) i és precisament la del soterrani a la tardor.
+  Només hi ha 9 blocs: la pujada del tàper hi va passar de pressa.
+- **Fora del rang, la incertesa creix.** Al 85 %, 1σ per bootstrap de blocs de 2 h:
+
+  | | `fons` | `centre` | `gran` | `baixa` | `exterior` |
+  |---|---|---|---|---|---|
+  | 1σ al 85 % | ±0,49 | ±0,39 | ±0,26 | ±0,15 | ±0,04 |
+  | 1σ al 90 % | ±0,61 | ±0,49 | ±0,33 | ±0,18 | ±0,05 |
+  | Traient un tram, al 85 % | −0,04 … +1,51 | −2,94 … −2,18 | +0,68 … +1,27 | −1,44 … −1,12 | +0,01 … +0,04 |
+
+  O sigui: per a `fons` i `centre`, el **risc de model** —quin tram mana el pendent— és d'**1–1,5
+  punts**, més que la incertesa estadística. 1 punt d'HR a 12 °C i 85 % són ~0,17 °C de Td.
+- **La referència interior és un màxim, i un màxim puja amb el soroll.** Amb els cinc al mateix
+  aire, el màxim dels tres del soterrani queda **+0,09 °C** per sobre de la seva mitjana, i el ΔTd
+  interior − planta baixa, que hauria de ser 0, surt **+0,10 °C** de mitjana (p95 +0,25). És un
+  biaix que sempre empeny cap a ventilar, i s'ha de tenir en compte si es baixa `delta_td_on`.
+- **La temperatura queda fora.** Rang de validesa: **49–73 % d'HR i 26,0–29,6 °C**
+  (`RANG_HR` i `RANG_T` al fitxer). El soterrani serà de 65–90 % i 8–20 °C, i no s'ha pogut
+  mesurar si la correcció depèn de la T ([tercera tanda](#tercera-tanda--la-nevera)). Es
+  repeteix al soterrani a l'hivern.
+- **La histèresi no es va mirar en equilibri tèrmic.** El 23/09 els sensors encara s'escalfaven
+  (`exterior`, +0,2 °C sobre la mediana), i el resultat depèn de quan comença la finestra
+  (0,46–0,66 punts). Diu que no hi ha res gros; no diu que no hi hagi res.
 
 ### Les dades crues, al repositori
 
-[`dades/calibratge-2026-09.csv`](dades/calibratge-2026-09.csv) — 3.486 punts, del 21/09 a les
-00:43 al 23/09 a les 13:45, tal com els va gravar Home Assistant. **Hi són perquè no es poden
-repetir**: són l'única mesura de la desviació entre els cinc amb tots junts, i la base de dades
-d'HA purga i a més ha de viatjar al local. Amb el fitxer, l'ajust es refà sense HA:
+[`dades/calibratge-2026-09.csv`](dades/calibratge-2026-09.csv) — 3.486 punts de les onze entitats
+(les deu dels sensors i el marcador), tal com els va gravar Home Assistant: `marca_temps`
+(UTC), `entity_id`, `estat`. **Hi són perquè no es poden repetir**: són l'única mesura de la
+desviació entre els cinc amb tots junts, i la base de dades d'HA purga i a més ha de viatjar al
+local.
+
+**Com es van treure** (23/09/2026, al servidor): `GET /api/history/period/2026-09-20T22:30:00+00:00`
+amb `end_time` = el moment de la consulta (~11:45Z del 23/09), `filter_entity_id` = les onze i
+`minimal_response`, escrit fila a fila amb el mateix format que `desa_csv`. HA només grava quan
+el valor canvia: les últimes files són de les 11:33:45Z (13:33 local), i per això la finestra de
+l'ajust acaba a les 13:33. Hi ha tres `unavailable` per sensor, tots de reinicis d'HA de menys de
+23 s, i el valor d'abans i el de després són iguals.
+
+L'ajust es refà sense HA:
 
 ```bash
 python3 tools/calibratge.py --csv docs/domotica/dades/calibratge-2026-09.csv \
-  --finestra 2026-09-21T00:43+02:00/2026-09-23T13:45+02:00 \
+  --finestra 2026-09-21T00:43+02:00/2026-09-23T13:33+02:00 \
   --exclou   2026-09-21T11:26+02:00/2026-09-21T12:39+02:00 \
   --exclou   2026-09-21T14:50+02:00/2026-09-21T15:35+02:00 \
-  --exclou   2026-09-22T12:45+02:00/2026-09-23T13:00+02:00
+  --exclou   2026-09-22T12:45+02:00/2026-09-23T13:00+02:00 \
+  --versio   2026-09-23
+python3 docs/domotica/dades/calibratge-2026-09-analisi.py   # totes les xifres d'aquest doc
 ```
 
-`--finestra` hi és perquè la primera tanda es va fer **sense encendre el marcador**. Els tres
-`--exclou` són, per ordre: l'estona entre tandes amb els sensors a la mà, el sotrac de les 15:00,
-i **tot el tram de la nevera**, que té gradients de 2–3 °C i no serveix per ajustar.
+`--finestra` hi és per dues raons: la primera tanda es va fer **sense encendre el marcador**, i
+el marcador **no es va apagar** abans d'exportar, de manera que la finestra que en surt aniria de
+les 12:09 del 21/09 fins al final, nevera inclosa. Els tres `--exclou` són, per ordre: l'estona
+entre tandes amb els sensors a la mà, el sotrac de les 15:00, i **tot el tram de la nevera**, que
+té gradients de 2–3 °C i no serveix per ajustar. `tools/calibratge.py --prova` fa exactament
+aquesta anàlisi i falla si `calibratge.jinja` no en surt.
 
 ## Registre
 
@@ -628,15 +695,15 @@ i **tot el tram de la nevera**, que té gradients de 2–3 °C i no serveix per 
 |---|---|---|---|
 | 21/09/2026 | HR 49–59 % · T 25,9–27,0 °C | **0,95 → 0,24 °C** (només desplaçament) | ~11 h a casa, marcador sense encendre. Temperatura sense correcció. **No aplicat**: falta la franja humida |
 | 22/09/2026 | HR 73 % (replà del tàper de sal, 75,2 %) · T 27,8 °C | **0,61 °C** sense corregir · 0,40 amb els desplaçaments del 21/09 | Tàper tancat el 21/09 a les 12:09, replà des de les ~05:00. Tots cinc llegeixen **baix** contra la sal (0,4–3,2 punts). **No aplicat**: falta el punt en fred |
-| 22–23/09/2026 | HR 66–74 % · T 3,8–8,4 °C (nevera) | — | Tres col·locacions, tres patrons: la desviació de T és **del lloc**. Gradients de 2–3 °C dins del tàper: **no aprofitable** per calibrar |
-| **23/09/2026** | **HR 49–73 % · T 25,9–29,6 °C** (91 blocs de 20 min) | **0,89 → 0,28 °C** per blocs (0,88 → 0,33 minut a minut) | ✅ **APLICAT** a `rosada.yaml`: pendent i desplaçament d'HR, `c_t` = 0. Histèresi comprovada (≤ 0,61 punts). Dades crues a `dades/calibratge-2026-09.csv` |
+| 22–23/09/2026 | HR 62–74 % · T 3,5–8,4 °C (nevera, amb drap) | — | Tres col·locacions, tres patrons: la desviació de T és **del lloc**. Gradients de 2–3 °C dins del tàper: **no aprofitable** per calibrar |
+| **23/09/2026** | **HR 49–73 % · T 26,0–29,6 °C** (88 blocs de 20 min) | **0,88 → 0,22 °C** per blocs (0,88 → 0,26 minut a minut; fora de mostra ~0,3–0,5) | ✅ **Versió `2026-09-23`**, a `calibratge.jinja`: pendent i desplaçament d'HR, `t` = 0. Histèresi comprovada (≤ 0,49 punts). ⏳ **Pendent de desplegar**: apuntar-ne l'hora aquí |
 
 > **Incidències de la tanda en marxa** (marcador encès des de les 12:09 del 21/09/2026):
 >
 > - **15:00–15:20** — **algú mou el tàper** i la tapa deixa entrar aire: l'aigua de l'aire baixa
->   de 18,1 a 16,7 g/m³, i `centre` i `gran` perden 4–5 punts en cinc minuts. En un tàper tancat
->   amb sal l'aigua de l'aire només pot pujar, i la T no salta. **Tram descartat**; com a graó no
->   serveix, perquè no se'n sap l'hora exacta ni si va afectar tots cinc alhora.
+>   de 18,0 a 16,3–16,6 g/m³, i tots cinc cauen alhora, dins de 20 s (15:12:54–15:13:14);
+>   `exterior`, el que més, de 61 a 53 %. En un tàper tancat amb sal l'aigua de l'aire només pot
+>   pujar, i la T no salta. **Tram descartat**: és un graó que ningú no va provocar a posta.
 > - **18:15** — el **deshumidificador** s'endolla i arrenca. ✅ **En una altra habitació, a
 >   posta** per no influir en el calibratge (confirmat per l'usuari), i amb un aire condicionat
 >   que també asseca: per això ell llegia 44 % amb els sensors al 66–72 %. **No toca les
@@ -672,7 +739,7 @@ i **tot el tram de la nevera**, que té gradients de 2–3 °C i no serveix per 
 >   freda del previst**, 3–5 °C i no 7–8.
 > - **22/09, ~16:45** — sotrac petit (+0,2–0,3 °C als cinc alhora): la nevera oberta un moment.
 > - **22/09, 18:33** — **el tàper, embolicat amb un drap.** En 20 min la T puja **3 °C** (de
->   3,1–5,1 a 6,4–7,8) i el Td, de −1,8 a **+0,9 °C**: el drap era a temperatura d'habitació i
+>   3,1–5,1 a 6,4–7,8) i el Td, de −1,8 fins a **+1,3 °C** (18:50–18:56): el drap era a temperatura d'habitació i
 >   escalfa el que embolica. Des de les 18:56 tot torna a baixar.
 >   ⚠️ **Primer es va llegir malament**: el sotrac de les 16:45 es va prendre pel drap. El va
 >   desmentir el mateix usuari, i la mida del salt ho confirma: un drap calent no fa 0,3 °C, en
@@ -692,32 +759,32 @@ i **tot el tram de la nevera**, que té gradients de 2–3 °C i no serveix per 
 >
 >   | Col·locació | `fons` | `centre` | `gran` | `baixa` | `exterior` |
 >   |---|---|---|---|---|---|
->   | 22/09 tarda, sense drap | +1,1 | +0,7 | 0,0 | 0,0 | −0,9 |
->   | 22/09 nit, amb drap | +0,4 | −1,1 | −1,1 | +0,4 | 0,0 |
->   | 23/09, col·locació nova | +0,3 | **−2,3** | **+1,1** | 0,0 | −1,6 |
+>   | 22/09, 14:00–18:30, sense drap | +1,2 | +0,7 | 0,0 | −0,1 | −0,9 |
+>   | 22/09 21:00 – 23/09 08:00, amb drap | +0,4 | −0,8 | −0,8 | +0,4 | 0,0 |
+>   | 23/09, 10:45–11:35, col·locació nova | +0,2 | **−2,3** | **+1,2** | 0,0 | −1,7 |
 >
->   `centre` passa de +0,7 a −2,3 i `gran` de 0,0 a +1,1 **sense que els sensors hagin canviat**:
+>   `centre` passa de +0,7 a −2,3 i `gran` de 0,0 a +1,2 **sense que els sensors hagin canviat**:
 >   un error propi no es reordena així. Queda, doncs, que el que a 28 °C quadra a ±0,05 °C **no
 >   s'ha pogut mesurar en fred**, perquè el banc de proves (un tàper dins d'una nevera) té
 >   gradients de 3 °C que tapen qualsevol error de dècimes. ⚠️ Això **acota** l'error propi, no el
 >   descarta: el que hi pogués haver quedaria per sota del gradient. **Conseqüència: no s'implementa
 >   cap interpolació en temperatura**, i la pregunta va al soterrani a l'hivern.
 >   *(De passada, un exemple de llibre de la no-uniformitat: `baixa` es va quedar al 60 % d'HR
->   mentre els altres baixaven al 34–39 % a la mateixa temperatura —6 °C de Td de diferència—,
+>   mentre `fons`, `centre` i `gran` baixaven al 34–39 % (`exterior`, al 55–58) a la mateixa temperatura —5,0–5,5 °C de Td de diferència—,
 >   perquè havia quedat arran de la pasta de sal.)*
 > - **22/09 21:00 – 23/09 08:00, la nit a la nevera** — ⚠️ **el drap no va fer el tàper
 >   isoterm**: entre sensors hi queden **0,8–1,8 °C**, i la nevera hi va afegir un cicle propi
 >   (3,8 → 8,4 °C a les 02:00 i tornada avall). La conseqüència és que **el Td tampoc no és
 >   igual a tot arreu**: amb una pasta que evapora en un punt i parets fredes que condensen en un
 >   altre, el vapor viatja de les zones calentes a les fredes, i la dispersió de Td **segueix el
->   gradient** (0,57 °C amb ΔT de 0,8; 1,24 °C amb ΔT d'1,8). Per això l'HR es va quedar al
->   66–74 % sense arribar mai al 75,7 %, i **l'ancoratge absolut en fred no es pot fer servir**.
+>   gradient** (~0,6–0,8 °C quan la diferència de T era de 0,8 °C; ~1,1–1,2 quan era d'1,5–1,8).
+>   Per això l'HR es va quedar al 62–74 % sense arribar mai al 75,7 %, i **l'ancoratge absolut en fred no es pot fer servir**.
 >   ✅ El que sí que se'n treu: **comparant parelles que són a la MATEIXA temperatura** —i que,
 >   per tant, veuen el mateix vapor— la desviació entre elles surt **igual que en calent dins de
->   0,25 °C** (`fons`–`baixa`: 0,45 calent / 0,62 fred · `centre`–`gran`: 0,58 / 0,34). És a
+>   0,25 °C** (`fons`–`baixa`: 0,45 calent / 0,64 fred · `centre`–`gran`: 0,58 / 0,34). És a
 >   dir: **entre 5 i 28 °C el calibratge relatiu no canvia gaire**, que era la pregunta de la
 >   tanda.
 >   ⚠️ **Amb una hipòtesi a sobre**: que les parelles «a la mateixa temperatura» hi siguin de
 >   debò. Si en fred cada sensor mesurés la T amb un error propi, dos que **marquen** 5,6 °C no
->   hi serien, no veurien el mateix vapor, i el raonament cau. Queda **obert** fins a
->   l'intercanvi de posicions.
+>   hi serien, no veurien el mateix vapor, i el raonament cau. *(L'intercanvi de posicions del
+>   23/09 va dir que la T segueix el lloc, cosa que ho fa més creïble, però no ho demostra.)*

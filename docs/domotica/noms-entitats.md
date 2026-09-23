@@ -24,6 +24,13 @@ sensor.<zona>_<punt>_<magnitud>
 | `punt` | `fons` · `centre` · `gran` · *(buit si la zona té un sol punt)* |
 | `magnitud` | `temperatura` · `humitat` · `rosada` · `bateria` · `potencia` · `energia` · `cost` |
 
+Les **derivades de calibratge** afegeixen un sufix al nom de la seva germana, i res més:
+`_calibrada` a la humitat crua (`sensor.soterrani_fons_humitat` →
+`sensor.soterrani_fons_humitat_calibrada`) i `_cru` al punt de rosada, que ja és calibrat
+(`sensor.planta_baixa_punt_de_rosada` → `sensor.planta_baixa_punt_de_rosada_cru`). Per això
+la planta baixa surt com a `baixa_` en l'una i `planta_baixa_` en l'altra: cadascuna segueix la
+seva germana *(23/09/2026)*.
+
 ## Taula d'entitats
 
 ### Sensors d'ambient — font: **Matter** (hub H110 via `matter-server`)
@@ -128,8 +135,8 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 |---|---|
 | `sensor.soterrani_fons_punt_de_rosada` *(i `centre`, `gran`)* | Punt de rosada de cada punt, **calibrat** |
 | `sensor.planta_baixa_punt_de_rosada` · `sensor.exterior_punt_de_rosada` | Punt de rosada, **calibrat** |
-| `sensor.soterrani_fons_humitat_calibrada` *(i `centre`, `gran`, `baixa`, `exterior`)* | L'HR amb la correcció de `custom_templates/calibratge.jinja`. **És la que miren els gràfics**; la crua (`*_humitat`) no es toca mai i segueix a l'històric *(23/09/2026)* |
-| `sensor.soterrani_fons_punt_de_rosada_cru` *(i `centre`, `gran`, `planta_baixa`, `exterior`)* | El punt de rosada **sense** calibrar. **Només per depurar**: cap decisió no el mira *(23/09/2026)* |
+| `sensor.soterrani_fons_humitat_calibrada` · `sensor.soterrani_centre_humitat_calibrada` · `sensor.soterrani_gran_humitat_calibrada` · `sensor.baixa_humitat_calibrada` · `sensor.exterior_humitat_calibrada` | L'HR amb la correcció de `custom_templates/calibratge.jinja`, i l'atribut `calibratge` amb la versió. **És la que miren els gràfics** i la HR màxima; la crua (`*_humitat`) no es toca mai i segueix a l'històric *(23/09/2026)* |
+| `sensor.soterrani_fons_punt_de_rosada_cru` · `sensor.soterrani_centre_punt_de_rosada_cru` · `sensor.soterrani_gran_punt_de_rosada_cru` · `sensor.planta_baixa_punt_de_rosada_cru` · `sensor.exterior_punt_de_rosada_cru` | El punt de rosada **sense** calibrar. **Només per depurar**: cap decisió no el mira *(23/09/2026)* |
 | `sensor.soterrani_punt_de_rosada_de_referencia` | **Referència interior** = la més alta dels tres punts |
 | `sensor.dtd_interior_exterior` | `soterrani_rosada − exterior_rosada` — el criteri |
 | `sensor.marge_de_condensacio` | `paret més freda − soterrani_rosada` — el KPI del fong |
@@ -182,7 +189,7 @@ Surten de [logica-v2-pla.md](logica-v2-pla.md), fase per fase. Les plantilles no
 | `binary_sensor.decisio_ventiladors` | Si la decisió vol els ventiladors engegats. *No es toquen* = no disponible |
 | `sensor.ventilacio_minuts_avui` | Minuts de ventilació d'avui: els que la decisió **hauria** fet mentre és en ombra; els dels relés quan actua (Fase 3) |
 | `sensor.dtd_interior_planta_baixa` | `soterrani_rosada − planta_baixa_rosada`: el ΔTd contra l'altra referència |
-| `sensor.soterrani_humitat_maxima` | La HR **calibrada** més alta dels tres punts; el punt, a l'atribut `punt` |
+| `sensor.soterrani_humitat_maxima` | La HR **calibrada** més alta dels tres punts —el màxim de les tres `*_humitat_calibrada`—; el punt, a l'atribut `punt` |
 | `input_select.referencia_ventilacio` | *Planta baixa* · *Exterior* |
 | `input_boolean.actuacio_deshumidificador` · `…_ventiladors` | Els dos interruptors del mode ombra: **apagats**, no s'actua |
 | `input_number.parametres_versio` | Fins a quina versió s'han posat els valors de partida (cada fase que afegeix paràmetres, un bloc) |

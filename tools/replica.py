@@ -32,6 +32,7 @@ i /api/history torna l'històric.
 
 from __future__ import annotations
 
+import ast
 import json
 import math
 import os
@@ -737,25 +738,72 @@ def tests_fitxers() -> bool:
     ok &= _prop("cada caducitat és d'un mode que existeix", caducitats and caducitats <= set(MODES),
                 caducitats)
 
-    # sensor.soterrani_humitat_maxima desfà Magnus amb la T CRUA. És exacte
-    # mentre el calibratge de T dels tres punts del soterrani sigui zero.
-    # Els números viuen a custom_templates/calibratge.jinja (l'únic lloc).
-    calib = (ARREL / "config/custom_templates/calibratge.jinja").read_text(encoding="utf-8")
-    cts = {}
-    for punt in ("soterrani_fons", "soterrani_centre", "soterrani_gran"):
-        m = re.search(rf"'{punt}':\s*\{{[^}}]*'t':\s*([-\d.]+)", calib)
-        cts[punt] = float(m.group(1)) if m else None
-    ok &= _prop("el calibratge de T del soterrani és zero (si no, la HR màxima s'ha de corregir)",
-                all(v == 0.0 for v in cts.values()), cts)
+    ok &= _prova_calibratge(rosada)
+    return ok
 
-    # I que els cinc punts de rosada llegeixin d'aquell fitxer i no de números
-    # escrits a mà: dos llocs amb el mateix número acaben sempre divergint.
-    ok &= _prop("cap plantilla de rosada.yaml no porta el calibratge escrit a dins",
-                "set c_rh_a" not in rosada,
-                "n'hi ha alguna amb c_rh_a a dins" if "set c_rh_a" in rosada else "cap")
-    ok &= _prop("i les cinc importen calibratge.jinja",
-                rosada.count("from 'calibratge.jinja' import CALIBRATGE") >= 5,
-                f"{rosada.count(chr(39) + 'calibratge.jinja' + chr(39))} usos")
+
+def _prova_calibratge(rosada: str) -> bool:
+    """Que el calibratge es llegeixi d'un sol lloc, i que cada plantilla llegeixi el SEU.
+
+    Revisat el 23/09/2026 amb proves de mutació: la versió d'abans deixava
+    passar una plantilla que llegia la clau d'un altre sensor, una amb els
+    números escrits a mà i una a qui faltava l'import (comptava «≥ 5» quan en
+    són 10). I llegia el fitxer amb una expressió regular que es quedava el
+    primer que trobava, encara que fos un exemple dins d'un comentari.
+    """
+    ok = True
+    calib = (ARREL / "config/custom_templates/calibratge.jinja").read_text(encoding="utf-8")
+    net = re.sub(r"\{#.*?#\}", "", calib, flags=re.S)
+    defs = re.findall(r"\{%-?\s*set\s+CALIBRATGE\s*=\s*(.*?)\s*-?%\}", net, flags=re.S)
+    ok &= _prop("calibratge.jinja defineix CALIBRATGE una sola vegada", len(defs) == 1,
+                f"{len(defs)} definicions")
+    try:
+        cal = ast.literal_eval(defs[0]) if len(defs) == 1 else {}
+    except (ValueError, SyntaxError):
+        cal = {}
+    noms = ("soterrani_fons", "soterrani_centre", "soterrani_gran", "baixa", "exterior")
+    ok &= _prop("amb els cinc sensors i a, b, t numèrics",
+                set(cal) == set(noms) and all(
+                    isinstance(cal[n].get(k), (int, float)) for n in noms for k in ("a", "b", "t")),
+                sorted(cal))
+    ok &= _prop("i cap pendent absurd (|a − 1| ≤ 0,10)",
+                all(abs(cal[n]["a"] - 1.0) <= 0.10 for n in noms if n in cal),
+                {n: cal[n]["a"] for n in noms if n in cal})
+    ok &= _prop("i VERSIO definida, que va com a atribut a cada fila",
+                len(re.findall(r"\{%-?\s*set\s+VERSIO\s*=", net)) == 1)
+
+    # Plantilla per plantilla. Una plantilla és el tros entre dos «- name:».
+    plantilles = re.split(r"\n      - name: ", rosada)
+    usen = [p for p in plantilles if "CALIBRATGE[" in p]
+    ok &= _prop("deu plantilles fan servir el calibratge (5 punts de rosada + 5 humitats)",
+                len(usen) == 10, f"{len(usen)}")
+    mal = []
+    for p in usen:
+        nom = p.split("\n", 1)[0]
+        claus = set(re.findall(r"CALIBRATGE\['([a-z_]+)'\]", p))
+        llegeix = set(re.findall(r"states\('sensor\.([a-z_]+?)_(?:humitat|temperatura)'\)", p))
+        if len(claus) != 1 or llegeix != claus:
+            mal.append(f"{nom}: clau {sorted(claus)} però llegeix {sorted(llegeix)}")
+        if "from 'calibratge.jinja' import CALIBRATGE" not in p:
+            mal.append(f"{nom}: fa servir CALIBRATGE sense importar-lo")
+        if "* c['a'] + c['b']" not in p:
+            mal.append(f"{nom}: la fórmula no és «HR · a + b»")
+        if "_temperatura')" in p and "+ c['t']" not in p:
+            mal.append(f"{nom}: llegeix la T però no hi suma c['t']")
+        if "import VERSIO" not in p:
+            mal.append(f"{nom}: no porta l'atribut «calibratge»")
+    ok &= _prop("cada plantilla llegeix la SEVA clau, amb l'import, la fórmula i la versió",
+                not mal, "; ".join(mal) or "totes")
+    ok &= _prop("cap número de calibratge escrit a mà a rosada.yaml",
+                "set c_rh_a" not in rosada and not re.search(r"\{\s*'a'\s*:", rosada),
+                "n'hi ha" if ("set c_rh_a" in rosada or re.search(r"\{\s*'a'\s*:", rosada)) else "cap")
+
+    # La HR màxima surt de les tres humitats calibrades: així és exacta per a
+    # qualsevol t, i no depèn que el Td i la T s'actualitzin alhora.
+    hrmax = next((p for p in plantilles if p.startswith('"Soterrani — humitat màxima"')), "")
+    ok &= _prop("la HR màxima es calcula de les tres humitats calibrades",
+                all(f"sensor.soterrani_{x}_humitat_calibrada" in hrmax for x in ("fons", "centre", "gran"))
+                and "punt_de_rosada" not in hrmax)
     return ok
 
 

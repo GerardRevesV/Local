@@ -55,11 +55,11 @@ template:
   #  Td = (b·γ) / (a − γ)   amb   γ = ln(HR/100) + (a·T)/(b + T)
   #  a = 17,625   b = 243,04 °C   ·   error de la fórmula: ±0,1 °C
   #
-  #  ⚠️ CALIBRATGE: els desplaçaments de la taula «offsets» surten de deixar tots
-  #     els sensors 24 h junts a la mateixa habitació i mesurar-ne la desviació
-  #     respecte de la mediana (fase A.13). Viuen AQUÍ, en codi versionat, i no
-  #     com a helpers editables: canviar un calibratge ha de ser un acte
-  #     deliberat, datat i revisable, perquè afecta el corpus probatori.
+  #  ⚠️ CALIBRATGE: els números viuen a custom_templates/calibratge.jinja —l'únic
+  #     lloc—, en codi versionat i no com a helpers editables: canviar un
+  #     calibratge ha de ser un acte deliberat, datat i revisable, perquè
+  #     afecta el corpus probatori. Cada entitat que els fa servir porta
+  #     l'atribut «calibratge» amb la versió. Procediment: calibratge.md.
   #
   #  ⚠️ Les lectures CRUES no es toquen mai. El desplaçament s'aplica només al
   #     càlcul derivat. Així l'arxiu conserva la mesura i la correcció per separat.
@@ -79,12 +79,14 @@ template:
               validesa. Aquí només s'apliquen. -#}
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['soterrani_fons'] %}
-          {% set t  = (states('sensor.soterrani_fons_temperatura') | float + 0.0) + c.t %}
-          {% set rh = (states('sensor.soterrani_fons_humitat')     | float + 0.0) * c.a + c.b %}
+          {% set t  = (states('sensor.soterrani_fons_temperatura') | float + 0.0) + c['t'] %}
+          {% set rh = (states('sensor.soterrani_fons_humitat')     | float + 0.0) * c['a'] + c['b'] %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
           {{ ((b * g) / (a - g)) | round(2) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Soterrani centre — punt de rosada"
         unique_id: soterrani_centre_rosada
@@ -100,12 +102,14 @@ template:
               validesa. Aquí només s'apliquen. -#}
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['soterrani_centre'] %}
-          {% set t  = (states('sensor.soterrani_centre_temperatura') | float + 0.0) + c.t %}
-          {% set rh = (states('sensor.soterrani_centre_humitat')     | float + 0.0) * c.a + c.b %}
+          {% set t  = (states('sensor.soterrani_centre_temperatura') | float + 0.0) + c['t'] %}
+          {% set rh = (states('sensor.soterrani_centre_humitat')     | float + 0.0) * c['a'] + c['b'] %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
           {{ ((b * g) / (a - g)) | round(2) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Soterrani gran — punt de rosada"
         unique_id: soterrani_gran_rosada
@@ -121,12 +125,14 @@ template:
               validesa. Aquí només s'apliquen. -#}
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['soterrani_gran'] %}
-          {% set t  = (states('sensor.soterrani_gran_temperatura') | float + 0.0) + c.t %}
-          {% set rh = (states('sensor.soterrani_gran_humitat')     | float + 0.0) * c.a + c.b %}
+          {% set t  = (states('sensor.soterrani_gran_temperatura') | float + 0.0) + c['t'] %}
+          {% set rh = (states('sensor.soterrani_gran_humitat')     | float + 0.0) * c['a'] + c['b'] %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
           {{ ((b * g) / (a - g)) | round(2) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Planta baixa — punt de rosada"
         unique_id: baixa_rosada
@@ -142,12 +148,14 @@ template:
               validesa. Aquí només s'apliquen. -#}
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['baixa'] %}
-          {% set t  = (states('sensor.baixa_temperatura') | float + 0.0) + c.t %}
-          {% set rh = (states('sensor.baixa_humitat')     | float + 0.0) * c.a + c.b %}
+          {% set t  = (states('sensor.baixa_temperatura') | float + 0.0) + c['t'] %}
+          {% set rh = (states('sensor.baixa_humitat')     | float + 0.0) * c['a'] + c['b'] %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
           {{ ((b * g) / (a - g)) | round(2) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Exterior — punt de rosada"
         unique_id: exterior_rosada
@@ -163,12 +171,14 @@ template:
               validesa. Aquí només s'apliquen. -#}
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['exterior'] %}
-          {% set t  = (states('sensor.exterior_temperatura') | float + 0.0) + c.t %}
-          {% set rh = (states('sensor.exterior_humitat')     | float + 0.0) * c.a + c.b %}
+          {% set t  = (states('sensor.exterior_temperatura') | float + 0.0) + c['t'] %}
+          {% set rh = (states('sensor.exterior_humitat')     | float + 0.0) * c['a'] + c['b'] %}
           {% set rh = [[rh, 1] | max, 100] | min %}
           {% set a = 17.625 %}{% set b = 243.04 %}
           {% set g = log(rh / 100) + (a * t) / (b + t) %}
           {{ ((b * g) / (a - g)) | round(2) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       # ─────────────────────────────────────────────────────────────────────
       #  LES HUMITATS CALIBRADES — el que han de mirar els gràfics i la gent.
@@ -178,8 +188,9 @@ template:
       #  va arribar. Aquestes cinc són la mateixa lectura amb la correcció de
       #  calibratge.jinja aplicada, que és el que s'ha de comparar entre punts.
       #
-      #  Els PARELLS crus per depurar són més avall (sensor.*_rosada_cru), i
-      #  el tauler en té una vista amb tots dos → dashboards/soterrani.yaml.
+      #  Els punts de rosada CRUS per depurar són més avall
+      #  (sensor.*_punt_de_rosada_cru), i el tauler en té dos gràfics, al final
+      #  de l'Històric → dashboards/soterrani.yaml.
       # ─────────────────────────────────────────────────────────────────────
       - name: "Soterrani fons — humitat calibrada"
         unique_id: soterrani_fons_humitat_calibrada
@@ -191,8 +202,10 @@ template:
         state: >
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['soterrani_fons'] %}
-          {% set rh = (states('sensor.soterrani_fons_humitat') | float + 0.0) * c.a + c.b %}
+          {% set rh = (states('sensor.soterrani_fons_humitat') | float + 0.0) * c['a'] + c['b'] %}
           {{ ([[rh, 1] | max, 100] | min) | round(1) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Soterrani centre — humitat calibrada"
         unique_id: soterrani_centre_humitat_calibrada
@@ -204,8 +217,10 @@ template:
         state: >
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['soterrani_centre'] %}
-          {% set rh = (states('sensor.soterrani_centre_humitat') | float + 0.0) * c.a + c.b %}
+          {% set rh = (states('sensor.soterrani_centre_humitat') | float + 0.0) * c['a'] + c['b'] %}
           {{ ([[rh, 1] | max, 100] | min) | round(1) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Soterrani gran — humitat calibrada"
         unique_id: soterrani_gran_humitat_calibrada
@@ -217,8 +232,10 @@ template:
         state: >
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['soterrani_gran'] %}
-          {% set rh = (states('sensor.soterrani_gran_humitat') | float + 0.0) * c.a + c.b %}
+          {% set rh = (states('sensor.soterrani_gran_humitat') | float + 0.0) * c['a'] + c['b'] %}
           {{ ([[rh, 1] | max, 100] | min) | round(1) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Planta baixa — humitat calibrada"
         unique_id: baixa_humitat_calibrada
@@ -230,8 +247,10 @@ template:
         state: >
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['baixa'] %}
-          {% set rh = (states('sensor.baixa_humitat') | float + 0.0) * c.a + c.b %}
+          {% set rh = (states('sensor.baixa_humitat') | float + 0.0) * c['a'] + c['b'] %}
           {{ ([[rh, 1] | max, 100] | min) | round(1) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       - name: "Exterior — humitat calibrada"
         unique_id: exterior_humitat_calibrada
@@ -243,8 +262,10 @@ template:
         state: >
           {% from 'calibratge.jinja' import CALIBRATGE %}
           {% set c = CALIBRATGE['exterior'] %}
-          {% set rh = (states('sensor.exterior_humitat') | float + 0.0) * c.a + c.b %}
+          {% set rh = (states('sensor.exterior_humitat') | float + 0.0) * c['a'] + c['b'] %}
           {{ ([[rh, 1] | max, 100] | min) | round(1) }}
+        attributes:
+          calibratge: "{% from 'calibratge.jinja' import VERSIO %}{{ VERSIO }}"
 
       # ─────────────────────────────────────────────────────────────────────
       #  ELS PUNTS DE ROSADA CRUS — NOMÉS PER DEPURAR.
@@ -458,10 +479,11 @@ template:
       #  El pitjor racó per punt de rosada no és sempre el pitjor per HR, i el
       #  fong el marca la HR (a tocar de la paret, quan hi hagi la sonda).
       #
-      #  És la HR CALIBRADA: es desfà Magnus amb el Td calibrat de cada punt i
-      #  la seva temperatura. ⚠️ Exacte perquè el calibratge de T dels tres
-      #  punts (c_t) és zero —la T no es corregeix, calibratge.md—. Si mai no
-      #  ho fos, caldria sumar-l'hi aquí: tools/replica.py ho vigila i falla.
+      #  És la HR CALIBRADA: el màxim de les tres sensor.*_humitat_calibrada.
+      #  (Revisat el 23/09/2026. Abans es desfeia Magnus amb el Td calibrat i
+      #  la T crua, cosa que només era exacta amb t = 0 i que depenia de dues
+      #  entitats que no s'actualitzen alhora. Així és exacta per a qualsevol
+      #  calibratge, i és el mateix número que es veu al tauler.)
       # ─────────────────────────────────────────────────────────────────────
       - name: "Soterrani — humitat màxima"
         unique_id: soterrani_humitat_maxima
@@ -470,42 +492,26 @@ template:
         device_class: humidity
         state_class: measurement
         availability: >
-          {{ (is_number(states('sensor.soterrani_fons_punt_de_rosada'))
-              and is_number(states('sensor.soterrani_fons_temperatura')))
-             or (is_number(states('sensor.soterrani_centre_punt_de_rosada'))
-              and is_number(states('sensor.soterrani_centre_temperatura')))
-             or (is_number(states('sensor.soterrani_gran_punt_de_rosada'))
-              and is_number(states('sensor.soterrani_gran_temperatura'))) }}
+          {{ [ states('sensor.soterrani_fons_humitat_calibrada'),
+               states('sensor.soterrani_centre_humitat_calibrada'),
+               states('sensor.soterrani_gran_humitat_calibrada') ]
+             | select('is_number') | list | count > 0 }}
         state: >
-          {% set a = 17.625 %}{% set b = 243.04 %}
-          {% set punts = {
-               'fons':   [states('sensor.soterrani_fons_punt_de_rosada'),
-                          states('sensor.soterrani_fons_temperatura')],
-               'centre': [states('sensor.soterrani_centre_punt_de_rosada'),
-                          states('sensor.soterrani_centre_temperatura')],
-               'gran':   [states('sensor.soterrani_gran_punt_de_rosada'),
-                          states('sensor.soterrani_gran_temperatura')] } %}
-          {% set ns = namespace(hr=-1.0) %}
-          {% for nom, v in punts.items() if v[0] | is_number and v[1] | is_number %}
-            {% set td = v[0] | float %}{% set t = v[1] | float %}
-            {% set ns.hr = [ns.hr, 100 * e ** (a * td / (b + td) - a * t / (b + t))] | max %}
-          {% endfor %}
-          {{ ([ns.hr, 100] | min) | round(1) }}
+          {{ [ states('sensor.soterrani_fons_humitat_calibrada'),
+               states('sensor.soterrani_centre_humitat_calibrada'),
+               states('sensor.soterrani_gran_humitat_calibrada') ]
+             | select('is_number') | map('float') | max | round(1) }}
         attributes:
           punt: >
-            {% set a = 17.625 %}{% set b = 243.04 %}
-            {% set punts = {
-                 'fons':   [states('sensor.soterrani_fons_punt_de_rosada'),
-                            states('sensor.soterrani_fons_temperatura')],
-                 'centre': [states('sensor.soterrani_centre_punt_de_rosada'),
-                            states('sensor.soterrani_centre_temperatura')],
-                 'gran':   [states('sensor.soterrani_gran_punt_de_rosada'),
-                            states('sensor.soterrani_gran_temperatura')] } %}
+            {% set d = {
+                 'fons':   states('sensor.soterrani_fons_humitat_calibrada'),
+                 'centre': states('sensor.soterrani_centre_humitat_calibrada'),
+                 'gran':   states('sensor.soterrani_gran_humitat_calibrada') } %}
+            {# ⚠️ Comparant NÚMEROS: states() torna cadenes, i ordenades com a
+               cadenes, «9.5» passa per davant de «85.0». #}
             {% set ns = namespace(hr=-1.0, punt='cap') %}
-            {% for nom, v in punts.items() if v[0] | is_number and v[1] | is_number %}
-              {% set td = v[0] | float %}{% set t = v[1] | float %}
-              {% set hr = 100 * e ** (a * td / (b + td) - a * t / (b + t)) %}
-              {% if hr > ns.hr %}{% set ns.hr = hr %}{% set ns.punt = nom %}{% endif %}
+            {% for nom, v in d.items() if v | is_number %}
+              {% if v | float > ns.hr %}{% set ns.hr = v | float %}{% set ns.punt = nom %}{% endif %}
             {% endfor %}
             {{ ns.punt }}
 

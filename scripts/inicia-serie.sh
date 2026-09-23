@@ -47,7 +47,8 @@ if [ "${1:-}" != "--de-debo" ]; then
     · Els sensors, al seu lloc DEFINITIU del local.
     · Els noms d'entitat fixats i renombrats. Canviar-ne un després
       parteix la sèrie.
-    · Els offsets de calibratge calculats i aplicats a packages/rosada.yaml.
+    · El calibratge desplegat (custom_templates/calibratge.jinja) i el
+      marcador input_boolean.mode_calibratge APAGAT.
     · El deshumidificador amb desguàs continu i l'endoll P110 al seu lloc.
 
   Si tot això hi és:   bash scripts/inicia-serie.sh --de-debo
