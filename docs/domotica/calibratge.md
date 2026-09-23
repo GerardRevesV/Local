@@ -643,7 +643,11 @@ l'informe de l'eina i el que l'eina no calcula.
 - **Són dins de mostra.** Ajustant sense un tram i provant sobre aquell tram, la dispersió puja:
   **0,52 °C** a la nit (0,22 dins de mostra; i sense la nit, no hi ha prou recorregut per ajustar
   cap pendent), 0,30 a la pujada i 0,30 al replà. El 0,21 és el millor cas; la xifra honesta
-  per a condicions noves és **~0,3–0,5 °C**.
+  per a condicions noves és **~0,3–0,5 °C**. ✅ **I es va comprovar amb dades noves:** de 13:40 a
+  16:00 del 23/09, amb els cinc junts a l'habitació i després d'exportar el CSV —o sigui, dades
+  que l'ajust no ha vist mai—, la dispersió per blocs passa de **1,01 a 0,36 °C** (mediana de 7
+  blocs, HR 48–54 %, al límit baix del rang). *(Una lectura sola no serveix per a això: amb l'HR
+  en enters, un instant concret pot donar tant 0,29 com 0,57 per pura sort.)*
 - **Dins de mostra, gairebé tot el que queda és el gra.** Amb un model perfecte i l'HR en enters,
   la dispersió mínima és de ~0,17 °C, per blocs i minut a minut: en un replà, un sensor clavat en
   un enter arrossega el mateix error tot el bloc, i promitjar no ho treu. Per sobre d'això, la
