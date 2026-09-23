@@ -467,6 +467,20 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       temperatura**, interpolant → [com s'ajusta](domotica/calibratge.md#com-sajusta-la-correcció-i-on-saplica).
       Els números porten el **rang de validesa** escrit al costat precisament per poder-los
       comparar quan hi hagi els dos.
+- [ ] 🛰️ **Integrar l'AEMET OpenData**, l'estació oficial. Comprovat el 23/09/2026: **no hi és**
+      —a HA només hi ha la previsió de Met.no, que és un model i no serveix per validar—, i en
+      depenen dues coses que ja estan escrites i esperant: `sensor.residu_del_punt_de_rosada_exterior`
+      (el Td del sensor de fora contra el de l'estació: la salut del sensor, i la prova pericial
+      que el sensor va seguir una referència pública) i el bloqueig per **pluja** de
+      `control.yaml`, que llegeix `sensor.aemet_precipitation`. Són dues de les «4 referències
+      que esperen maquinari» de `comprova.sh`. Passos: (1) l'usuari demana la **clau gratuïta**
+      a `opendata.aemet.es`; (2) l'afegeix a HA (*Dispositius i serveis → AEMET OpenData*) amb el
+      nom **AEMET**; (3) es comproven els noms d'entitat —HA és en català i poden sortir en
+      català— perquè siguin `sensor.aemet_dew_point` i `sensor.aemet_precipitation`, que és el que
+      llegeix la configuració, **abans** que es comencin a gravar; (4) una fila **Estació AEMET**
+      a la taula «Dins i fora, ara» del tauler. Es compara **el punt de rosada**, no la T ni
+      l'HR: és el que no canvia a quilòmetres de distància →
+      [inventari.md](domotica/inventari.md#️-validar-el-sensor-exterior-contra-dades-oficials).
 - [ ] 🔋 **Les bateries dels cinc Tapo no arriben a Home Assistant.** Comprovat el
       21/09/2026: l'HA no té cap entitat de bateria dels sensors —pel que sembla, el hub H110
       no les passa per Matter—, tot i que el conveni de noms en preveu la magnitud `bateria`.
