@@ -474,10 +474,15 @@ descàrrega ha de portar `end_time`, perquè sense HA en torna només 24.
 >   ⚠️ **Primer es va llegir malament**: el sotrac de les 16:45 es va prendre pel drap. El va
 >   desmentir el mateix usuari, i la mida del salt ho confirma: un drap calent no fa 0,3 °C, en
 >   fa 3.
->   ✅ **I dona la resposta que es buscava**: en tornar-lo a col·locar, **l'ordre dels cinc
->   canvia** (abans `fons` > `centre` > `gran` ≈ `baixa` > `exterior`; després `fons` > `baixa` >
->   `exterior` > `centre` > `gran`). Els 2 °C de diferència són, doncs, **la posició dins de la
->   nevera i no els sensors**: un error propi de cada sensor no canviaria d'ordre en moure'ls.
+>   🟡 **I dona mitja resposta**: en tornar-lo a col·locar, **l'ordre dels cinc canvia** (abans
+>   `fons` > `centre` > `gran` ≈ `baixa` > `exterior`; després `fons` > `baixa` > `exterior` >
+>   `centre` > `gran`). Un error propi de cada sensor no canviaria d'ordre, de manera que hi ha
+>   **com a mínim un component de posició** en els 2 °C.
+>   ⚠️ **Però no prova que els sensors mesurin igual en fred**, i la primera redacció ho deia —
+>   malament. Dins del tàper els sensors **no es van intercanviar**; només va canviar l'entorn.
+>   Que a 28 °C quadrin a ±0,05 no garanteix que a 5 °C ho facin: podria haver-hi les dues coses
+>   alhora, gradient i error propi. **Per separar-ho cal intercanviar-los de lloc i repetir**: el
+>   que segueixi la posició és gradient; el que segueixi el sensor és calibratge.
 > - **22/09 21:00 – 23/09 08:00, la nit a la nevera** — ⚠️ **el drap no va fer el tàper
 >   isoterm**: entre sensors hi queden **0,8–1,8 °C**, i la nevera hi va afegir un cicle propi
 >   (3,8 → 8,4 °C a les 02:00 i tornada avall). La conseqüència és que **el Td tampoc no és
@@ -490,3 +495,7 @@ descàrrega ha de portar `end_time`, perquè sense HA en torna només 24.
 >   0,25 °C** (`fons`–`baixa`: 0,45 calent / 0,62 fred · `centre`–`gran`: 0,58 / 0,34). És a
 >   dir: **entre 5 i 28 °C el calibratge relatiu no canvia gaire**, que era la pregunta de la
 >   tanda.
+>   ⚠️ **Amb una hipòtesi a sobre**: que les parelles «a la mateixa temperatura» hi siguin de
+>   debò. Si en fred cada sensor mesurés la T amb un error propi, dos que **marquen** 5,6 °C no
+>   hi serien, no veurien el mateix vapor, i el raonament cau. Queda **obert** fins a
+>   l'intercanvi de posicions.
