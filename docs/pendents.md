@@ -424,8 +424,9 @@ de més amunt — BIOS, SMART, bateria, CMOS i RJ-45. **Es fa abans de moure la 
       apuntat al [registre d'instal·lació](domotica/home-assistant.md#registre-dinstallació). Amb el procediment de
       [calibratge.md](domotica/calibratge.md#desplegar-un-calibratge): **primer**
       `reload_custom_templates` i **després** `template.reload`; `bash scripts/comprova.sh`,
-      que ja mira que les deu entitats noves hi siguin amb el nom exacte i sense `_2` —serà
-      la seva primera passada contra el servidor—; a mà, l'atribut `calibratge` a les deu que
+      que ara mira que les deu entitats noves hi siguin amb el nom exacte i sense `_2` —el
+      servidor encara anava a `95c2868`, d'abans de #55: aquell dia els noms es van mirar a mà,
+      i ⏳ la primera passada d'aquesta versió contra el servidor queda per fer—; a mà, l'atribut `calibratge` a les deu que
       fan servir la correcció (els `_cru` no en porten); **apuntar l'hora** al registre d'instal·lació, perquè totes les sèries derivades
       hi fan un salt (amb els sensors junts: +0,3 a +0,8 °C al Td de `fons`, −1,5 punts a la HR
       màxima, i el ΔTd contra la planta baixa gairebé igual). Fer-ho a casa, abans del trasllat, i queda a la base d'experimentació que
