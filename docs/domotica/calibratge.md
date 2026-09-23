@@ -193,6 +193,33 @@ Amb un recorregut de només **25,7–29,6 °C**, extrapolar-ho als 12 °C del so
 s'ajusta**: es mesura amb un segon replà de sal en fred i isoterm, que és el que la tercera tanda
 havia de ser i el que caldrà repetir al soterrani a l'hivern.
 
+### Si el punt fred serveix: dos ancoratges i interpolació, no «el més proper»
+
+Amb un replà calent (~28 °C) i un de fred (~5 °C) es pot fer que la correcció **depengui de la
+temperatura**, que és el que demana el soterrani. La forma proposada:
+
+- **El pendent en HR, del calent.** En fred l'HR només recorre el 66–74 %: no hi ha palanca per
+  ajustar-hi cap pendent, i el que s'hi mesura és el **desplaçament**.
+- **El desplaçament, interpolat linealment entre els dos ancoratges** segons la T del moment, i
+  **retallat** fora del tram 5–28 °C. El soterrani viurà entre 8 i 20 °C, o sigui **dins**: es
+  fa interpolació i no extrapolació, que és tota la diferència.
+
+⚠️ **Interpolar, no triar el punt més proper.** Agafar «la calibració mesurada a la temperatura
+més propera» introdueix un **graó** just al mig del rang: creuant els 16 °C, la correcció
+saltaria de cop, el Td amb ella, i la decisió de ventilar podria canviar sense que hagués canviat
+res al soterrani. Un control amb histèresi no s'ha de barrejar amb una taula que fa salts.
+
+**El criteri per decidir si s'implementa**, un cop la prova d'intercanvi doni l'ancoratge fred:
+si els desplaçaments en fred s'assemblen als de calent **dins del gra (±0,3 punts)**, no cal tocar
+res i es documenta que s'ha comprovat; si difereixen més, s'implementa la interpolació a les cinc
+plantilles de `rosada.yaml` i **també a `tools/replica.py`**, que ha de seguir dient el mateix.
+
+**Per què l'intercanvi salva l'ancoratge fred:** amb els cinc en fila i la fila invertida entre
+les dues rondes, cada sensor ocupa les posicions *p* i *6−p*. Si el gradient és aproximadament
+lineal al llarg de la fila, la mitjana de les dues rondes és la mateixa per a tots cinc
+—(g₁+g₅)/2 = (g₂+g₄)/2 = g₃— i **la posició s'anul·la**, deixant només l'error propi del sensor.
+És el mateix truc que fer servir la balança dues vegades amb els plats canviats.
+
 ⚠️ **Si la prova d'intercanvi (23/09) troba errors de T propis de cada sensor en fred**, un `c_t`
 constant no els representaria: serien un error que **depèn de la temperatura**, i caldria decidir
 si s'aplica el valor d'hivern —que és el que importa al soterrani— o es deixa a zero i el llindar
