@@ -161,7 +161,7 @@ views:
             label: Fons
           - entity: sensor.soterrani_fons_temperatura
             name: Temperatura
-          - entity: sensor.soterrani_fons_humitat
+          - entity: sensor.soterrani_fons_humitat_calibrada
             name: Humitat
           - entity: sensor.soterrani_fons_punt_de_rosada
             name: Punt de rosada
@@ -169,7 +169,7 @@ views:
             label: Centre
           - entity: sensor.soterrani_centre_temperatura
             name: Temperatura
-          - entity: sensor.soterrani_centre_humitat
+          - entity: sensor.soterrani_centre_humitat_calibrada
             name: Humitat
           - entity: sensor.soterrani_centre_punt_de_rosada
             name: Punt de rosada
@@ -177,7 +177,7 @@ views:
             label: Gran
           - entity: sensor.soterrani_gran_temperatura
             name: Temperatura
-          - entity: sensor.soterrani_gran_humitat
+          - entity: sensor.soterrani_gran_humitat_calibrada
             name: Humitat
           - entity: sensor.soterrani_gran_punt_de_rosada
             name: Punt de rosada
@@ -192,7 +192,7 @@ views:
             label: Dalt
           - entity: sensor.baixa_temperatura
             name: Temperatura
-          - entity: sensor.baixa_humitat
+          - entity: sensor.baixa_humitat_calibrada
             name: Humitat
           - entity: sensor.planta_baixa_punt_de_rosada
             name: Punt de rosada
@@ -200,7 +200,7 @@ views:
             label: Fora
           - entity: sensor.exterior_temperatura
             name: Temperatura
-          - entity: sensor.exterior_humitat
+          - entity: sensor.exterior_humitat_calibrada
             name: Humitat
           - entity: sensor.exterior_punt_de_rosada
             name: Punt de rosada
@@ -284,13 +284,15 @@ views:
         title: Humitat relativa
         hours_to_show: 48
         entities:
-          - entity: sensor.soterrani_fons_humitat
+          - entity: sensor.soterrani_fons_humitat_calibrada
             name: Fons
-          - entity: sensor.soterrani_centre_humitat
+          - entity: sensor.soterrani_centre_humitat_calibrada
             name: Centre
-          - entity: sensor.soterrani_gran_humitat
+          - entity: sensor.soterrani_gran_humitat_calibrada
             name: Gran
-          - entity: sensor.exterior_humitat
+          - entity: sensor.baixa_humitat_calibrada
+            name: Dalt
+          - entity: sensor.exterior_humitat_calibrada
             name: Fora
 
       - type: history-graph
@@ -307,6 +309,41 @@ views:
             name: Dalt
           - entity: sensor.exterior_temperatura
             name: Fora
+
+      # ── SENSE CALIBRAR — NOMÉS PER DEPURAR ─────────────────────────────────
+      # Tot el que hi ha a dalt porta la correcció de calibratge.jinja. Aquests
+      # dos no: són la lectura tal com arriba del sensor. Serveixen per veure
+      # què fa la correcció i per adonar-se'n si algun dia se'n va de mare
+      # (per exemple, lluny del rang on es va mesurar: calibratge.md).
+      - type: history-graph
+        title: Humitat relativa — SENSE CALIBRAR (depuració)
+        hours_to_show: 48
+        entities:
+          - entity: sensor.soterrani_fons_humitat
+            name: Fons (cru)
+          - entity: sensor.soterrani_centre_humitat
+            name: Centre (cru)
+          - entity: sensor.soterrani_gran_humitat
+            name: Gran (cru)
+          - entity: sensor.baixa_humitat
+            name: Dalt (cru)
+          - entity: sensor.exterior_humitat
+            name: Fora (cru)
+
+      - type: history-graph
+        title: Punt de rosada — SENSE CALIBRAR (depuració)
+        hours_to_show: 48
+        entities:
+          - entity: sensor.soterrani_fons_punt_de_rosada_cru
+            name: Fons (cru)
+          - entity: sensor.soterrani_centre_punt_de_rosada_cru
+            name: Centre (cru)
+          - entity: sensor.soterrani_gran_punt_de_rosada_cru
+            name: Gran (cru)
+          - entity: sensor.planta_baixa_punt_de_rosada_cru
+            name: Dalt (cru)
+          - entity: sensor.exterior_punt_de_rosada_cru
+            name: Fora (cru)
 
   # ───────────────────────────────────────────────────────────────────────────
   #  CONSUM — què gasta l'endoll, i quant costa amb els trams de la factura.

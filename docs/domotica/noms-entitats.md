@@ -126,8 +126,10 @@ El Qlima D825 parla en local per `tuya-local` (tasca B.1c,
 
 | `entity_id` | Què és |
 |---|---|
-| `sensor.soterrani_fons_punt_de_rosada` *(i `centre`, `gran`)* | Punt de rosada de cada punt |
-| `sensor.planta_baixa_punt_de_rosada` · `sensor.exterior_punt_de_rosada` | Punt de rosada |
+| `sensor.soterrani_fons_punt_de_rosada` *(i `centre`, `gran`)* | Punt de rosada de cada punt, **calibrat** |
+| `sensor.planta_baixa_punt_de_rosada` · `sensor.exterior_punt_de_rosada` | Punt de rosada, **calibrat** |
+| `sensor.soterrani_fons_humitat_calibrada` *(i `centre`, `gran`, `baixa`, `exterior`)* | L'HR amb la correcció de `custom_templates/calibratge.jinja`. **És la que miren els gràfics**; la crua (`*_humitat`) no es toca mai i segueix a l'històric *(23/09/2026)* |
+| `sensor.soterrani_fons_punt_de_rosada_cru` *(i `centre`, `gran`, `planta_baixa`, `exterior`)* | El punt de rosada **sense** calibrar. **Només per depurar**: cap decisió no el mira *(23/09/2026)* |
 | `sensor.soterrani_punt_de_rosada_de_referencia` | **Referència interior** = la més alta dels tres punts |
 | `sensor.dtd_interior_exterior` | `soterrani_rosada − exterior_rosada` — el criteri |
 | `sensor.marge_de_condensacio` | `paret més freda − soterrani_rosada` — el KPI del fong |
