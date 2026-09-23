@@ -143,6 +143,12 @@ estat(){ curl -sf -m 5 -H "Authorization: Bearer $T" "$HA/api/states/$1" \
 # marcador). Les parets (ESPHome) i els ventiladors (S110E) són en altres
 # seccions: no hi entren fins que existeixin i algú els hi posi.
 #
+# comprova.sh, a la porta 1, també canta les que falten i les «_N», però
+# d'una altra llista: cada default_entity_id dels paquets i cada entitat del
+# tauler. Avui hi són les 21, però és perquè el tauler les mostra: si es
+# treu un gràfic, se'n cauen sense avís. Aquí la llista és el conveni, i si
+# alguna falta es diu quina, no només «comprova.sh falla».
+#
 # Si les taules no es llegeixen com cal —cada sensor d'ambient dona una T, una
 # HR, una HR calibrada i un punt de rosada—, la porta queda TANCADA: una llista
 # escurçada per una taula reformatada la faria passar sense haver mirat res.
@@ -151,8 +157,6 @@ estat(){ curl -sf -m 5 -H "Authorization: Bearer $T" "$HA/api/states/$1" \
 # humitat calibrada són sensor.baixa_*, els punts de rosada sensor.planta_baixa_*
 # (noms-entitats.md). Fins al 23/09/2026 només hi havia el segon, i el sensor
 # de dalt podia ser mort sense que la porta ho veiés.
-# Aquesta porta veu les que hi són però no llegeixen. Les que FALTEN, o que
-# tenen una còpia «_2», les canta comprova.sh, a la porta 1.
 if [ "$LLEGIT" -eq 1 ]; then
   sensors=$(python3 - "$ESTATS" "$NOMS" "$DECISIO" <<'PY'
 import json, re, sys
