@@ -183,6 +183,7 @@ template:
       # ─────────────────────────────────────────────────────────────────────
       - name: "Soterrani fons — humitat calibrada"
         unique_id: soterrani_fons_humitat_calibrada
+        default_entity_id: sensor.soterrani_fons_humitat_calibrada
         unit_of_measurement: "%"
         device_class: humidity
         state_class: measurement
@@ -195,6 +196,7 @@ template:
 
       - name: "Soterrani centre — humitat calibrada"
         unique_id: soterrani_centre_humitat_calibrada
+        default_entity_id: sensor.soterrani_centre_humitat_calibrada
         unit_of_measurement: "%"
         device_class: humidity
         state_class: measurement
@@ -207,6 +209,7 @@ template:
 
       - name: "Soterrani gran — humitat calibrada"
         unique_id: soterrani_gran_humitat_calibrada
+        default_entity_id: sensor.soterrani_gran_humitat_calibrada
         unit_of_measurement: "%"
         device_class: humidity
         state_class: measurement
@@ -219,6 +222,7 @@ template:
 
       - name: "Planta baixa — humitat calibrada"
         unique_id: baixa_humitat_calibrada
+        default_entity_id: sensor.baixa_humitat_calibrada
         unit_of_measurement: "%"
         device_class: humidity
         state_class: measurement
@@ -231,6 +235,7 @@ template:
 
       - name: "Exterior — humitat calibrada"
         unique_id: exterior_humitat_calibrada
+        default_entity_id: sensor.exterior_humitat_calibrada
         unit_of_measurement: "%"
         device_class: humidity
         state_class: measurement
@@ -251,6 +256,7 @@ template:
       # ─────────────────────────────────────────────────────────────────────
       - name: "Soterrani fons — punt de rosada cru"
         unique_id: soterrani_fons_rosada_cru
+        default_entity_id: sensor.soterrani_fons_punt_de_rosada_cru
         unit_of_measurement: "°C"
         device_class: temperature
         state_class: measurement
@@ -266,6 +272,7 @@ template:
 
       - name: "Soterrani centre — punt de rosada cru"
         unique_id: soterrani_centre_rosada_cru
+        default_entity_id: sensor.soterrani_centre_punt_de_rosada_cru
         unit_of_measurement: "°C"
         device_class: temperature
         state_class: measurement
@@ -281,6 +288,7 @@ template:
 
       - name: "Soterrani gran — punt de rosada cru"
         unique_id: soterrani_gran_rosada_cru
+        default_entity_id: sensor.soterrani_gran_punt_de_rosada_cru
         unit_of_measurement: "°C"
         device_class: temperature
         state_class: measurement
@@ -296,6 +304,7 @@ template:
 
       - name: "Planta baixa — punt de rosada cru"
         unique_id: baixa_rosada_cru
+        default_entity_id: sensor.planta_baixa_punt_de_rosada_cru
         unit_of_measurement: "°C"
         device_class: temperature
         state_class: measurement
@@ -311,6 +320,7 @@ template:
 
       - name: "Exterior — punt de rosada cru"
         unique_id: exterior_rosada_cru
+        default_entity_id: sensor.exterior_punt_de_rosada_cru
         unit_of_measurement: "°C"
         device_class: temperature
         state_class: measurement
