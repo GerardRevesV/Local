@@ -318,8 +318,9 @@ incidències](#registre). No s'implementa cap interpolació en temperatura.
 
 **I en acabat**, el marcador `input_boolean.mode_calibratge` **es queda encès** durant el
 trasllat —mentre és encès, res no actua— i **s'apaga just abans d'`inicia-serie.sh`**, al local,
-amb els sensors ja al seu lloc. Si s'oblida, la sèrie de debò comença amb la decisió dient
-`calibratge`.
+amb els sensors ja al seu lloc. Si s'oblida, la sèrie de debò començaria amb la decisió dient
+`calibratge`, i per això `inicia-serie.sh` **s'hi nega**; amb `--apaga-marcador` l'apaga ell
+just abans d'aturar HA, perquè el canvi quedi a la base arxivada.
 
 ## ⚠️ Això no serà un calibratge d'hivern
 
