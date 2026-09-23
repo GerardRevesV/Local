@@ -120,6 +120,7 @@ tools/                 Eines que corren a casa, no al local (Python stdlib)
   replica.py           Rèplica de la decisió v2: tests, --prova-ha (contra HA) i --deriva
   valida_yaml.py       Valida el YAML abans de desplegar
   valida_xifres.py     Comprova les xifres de línies citades als docs, abans del PR
+  valida_ancores.py    Comprova que els enllaços amb àncora entre docs resolguin, abans del PR
   calibratge.py        Calcula els desplaçaments de calibratge des de l'històric
   tarifa.py            El calendari de trams per segona vegada: tests i festius
   prova_deshumidificador.py  Ordre per tuya-local → watts al P110M, de punta a punta

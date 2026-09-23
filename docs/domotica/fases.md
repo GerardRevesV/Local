@@ -93,6 +93,7 @@ feina i tu menys.
 | A.16 | 🔴 **Que els paràmetres sobrevisquin un reinici** ([R2](requisits.md#r2--tocar-els-paràmetres-de-lalgoritme-des-de-la-web)): provar-ho al banc de casa, decidir què es fa amb `initial:` i garantir que els `input_number` **no s'exclouen mai del `recorder`** ni de l'exportació | 🤝 Tu fas la prova de 3 min, jo corregeixo el YAML |
 | A.17 | 🔴 **Gravar la previsió des del primer dia** ([R3](requisits.md#-la-previsió-lúnica-part-que-no-té-arreglada-a-posteriori)): sensors per disparador que materialitzin el Td previst a +3 h, +12 h i +24 h. Una previsió que no es grava **no es pot reconstruir després** | 🤖 Jo |
 | A.18 | ✅ **Fet** — `tools/valida_xifres.py` (249 línies): comprova que les **xifres de línies** citades als documents quadrin amb els fitxers reals. Es corre **abans d'obrir cada PR**: cada cop que es tocava un fitxer, la xifra quedava vella sense que ningú se n'adonés, i va passar quatre vegades en una sola sessió | 🤖 Jo |
+| A.19 | ✅ **Fet** — `tools/valida_ancores.py` (257 línies): comprova que els **enllaços amb àncora** entre documents (`[…](fitxer.md#títol)`) portin a un títol que existeixi, amb l'àncora calculada com GitHub. Es corre **abans d'obrir cada PR**, amb `valida_xifres.py`: un títol ratllat i reanomenat va deixar un enllaç de [deshumidificador.md](deshumidificador.md) apuntant a dalt de tot d'[inventari.md](inventari.md) sense que res avisés (PR #60). Contrastada el 23/09/2026 amb les pàgines de GitHub: les 468 àncores dels 29 documents, idèntiques | 🤖 Jo |
 
 ### 🚦 Porta A — la més important de totes
 
