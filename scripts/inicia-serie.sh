@@ -125,6 +125,8 @@ estat(){ curl -sf -m 5 -H "Authorization: Bearer $T" "$HA/api/states/$1" \
 # humitat calibrada són sensor.baixa_*, els punts de rosada sensor.planta_baixa_*
 # (noms-entitats.md). Fins al 23/09/2026 només hi havia el segon, i el sensor
 # de dalt podia ser mort sense que la porta ho veiés.
+# Aquesta porta veu les que hi són però no llegeixen. Les que FALTEN, o que
+# tenen una còpia «_2», les canta comprova.sh, a la porta 1.
 if [ "$LLEGIT" -eq 1 ]; then
   morts=$(python3 -c '
 import sys, json
