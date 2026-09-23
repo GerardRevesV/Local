@@ -136,8 +136,9 @@ tots dos ΔTd.
 
 ## Les fases
 
-Cada fase: un PR, `tools/valida_yaml.py`, `tools/valida_xifres.py`, els tests de
-`tools/replica.py` i `check_config` en un contenidor d'un sol ús al servidor, abans d'obrir-lo.
+Cada fase: un PR, `tools/valida_yaml.py`, `tools/valida_xifres.py`, `tools/valida_ancores.py`,
+els tests de `tools/replica.py` i `check_config` en un contenidor d'un sol ús al servidor, abans
+d'obrir-lo.
 Es desplega **només després de fusionar-lo**: `git pull --ff-only` al servidor i recàrrega.
 
 ### Fase 0 — Aquest pla
