@@ -823,3 +823,14 @@ aquesta anàlisi i falla si `calibratge.jinja` no en surt.
 >   debò. Si en fred cada sensor mesurés la T amb un error propi, dos que **marquen** 5,6 °C no
 >   hi serien, no veurien el mateix vapor, i el raonament cau. *(L'intercanvi de posicions del
 >   23/09 va dir que la T segueix el lloc, cosa que ho fa més creïble, però no ho demostra.)*
+>
+> - **23/09, 20:15–22:05 — el trasllat al local.** El hub es desendolla a les 20:15 i els cinc
+>   queden `unavailable` fins a les 21:37, quan Matter torna per la Wi-Fi. ⚠️ **Pel camí, `baixa`
+>   es va poder mullar una mica** (segons l'usuari). En tornar, amb els cinc junts, marca **~6
+>   punts d'HR per sobre** dels altres quatre —69 % cru a les 21:37 i 65 % a les 22:02, amb els
+>   altres a 56–60 %— i baixa més de pressa que ells, amb la T pujant de 22,8 a 23,0 °C: el que
+>   fa un sensor capacitiu que s'asseca. Els altres quatre, calibrats, coincideixen dins d'**1,2
+>   punts** (22:02), però amb el deshumidificador assecant la sala a ~5 punts/h, més de pressa
+>   que el filtre de ritme de l'eina. **Res d'aquest tram no serveix per calibrar**, per decisió
+>   de l'usuari. ⏳ Queda comprovar que `baixa` **torna a coincidir** amb els altres quan sigui
+>   sec: si no hi torna, el mullat li ha deixat un desplaçament i el seu calibratge ja no val.
