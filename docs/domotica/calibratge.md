@@ -210,6 +210,29 @@ Amb un recorregut de només **25,7–29,6 °C**, extrapolar-ho als 12 °C del so
 s'ajusta**: es mesura amb un segon replà de sal en fred i isoterm, que és el que la tercera tanda
 havia de ser i el que caldrà repetir al soterrani a l'hivern.
 
+### ⚠️ Una rampa de temperatura també ha de ser lenta
+
+La temptació, quan es veu el tàper passar de 10 a 23 °C en tres quarts d'hora, és aprofitar-ho
+com a escombratge de temperatures intermèdies. **No serveix.** Mesurat el 23/09/2026, amb el
+tàper fora de la nevera i tancat:
+
+| Ritme | Diferència de T entre els cinc | Desviació de `centre` |
+|---|---|---|
+| 0,0 °C/min | 3,4 °C *(encara a la nevera: gradient)* | −2,6 |
+| +0,46 °C/min | 3,7 °C | −1,5 |
+| +0,36 °C/min | 2,8 °C | 0,0 |
+| +0,24 °C/min | 1,6 °C | 0,0 |
+
+**La desviació de cada sensor canvia amb el ritme i s'encongeix quan la rampa s'alenteix**: és
+**retard tèrmic**, no calibratge. D'aquests números en surt que entre el sensor més ràpid i el més
+lent hi ha uns **6 minuts** d'inèrcia, i que perquè això doni menys de 0,1 °C d'error la rampa ha
+d'anar per sota de **~0,5 °C/hora**. La d'aquell dia anava a 15–25 °C/h: entre 30 i 50 vegades
+massa de pressa. Els graons serveixen per veure **qui reacciona i quan**; per calibrar, calen
+derives lentes —una nit— o el soterrani mateix.
+
+*(De passada, valida la lectura de la segona ronda de nevera: allà el ritme era de 0,06 °C/min,
+o sigui que el retard només podia explicar 0,3 °C dels 3,4 de diferència. La resta era el lloc.)*
+
 ### Si el punt fred serveix: dos ancoratges i interpolació, no «el més proper»
 
 Amb un replà calent (~28 °C) i un de fred (~5 °C) es pot fer que la correcció **depengui de la
