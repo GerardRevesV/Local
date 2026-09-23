@@ -478,3 +478,15 @@ descàrrega ha de portar `end_time`, perquè sense HA en torna només 24.
 >   canvia** (abans `fons` > `centre` > `gran` ≈ `baixa` > `exterior`; després `fons` > `baixa` >
 >   `exterior` > `centre` > `gran`). Els 2 °C de diferència són, doncs, **la posició dins de la
 >   nevera i no els sensors**: un error propi de cada sensor no canviaria d'ordre en moure'ls.
+> - **22/09 21:00 – 23/09 08:00, la nit a la nevera** — ⚠️ **el drap no va fer el tàper
+>   isoterm**: entre sensors hi queden **0,8–1,8 °C**, i la nevera hi va afegir un cicle propi
+>   (3,8 → 8,4 °C a les 02:00 i tornada avall). La conseqüència és que **el Td tampoc no és
+>   igual a tot arreu**: amb una pasta que evapora en un punt i parets fredes que condensen en un
+>   altre, el vapor viatja de les zones calentes a les fredes, i la dispersió de Td **segueix el
+>   gradient** (0,57 °C amb ΔT de 0,8; 1,24 °C amb ΔT d'1,8). Per això l'HR es va quedar al
+>   66–74 % sense arribar mai al 75,7 %, i **l'ancoratge absolut en fred no es pot fer servir**.
+>   ✅ El que sí que se'n treu: **comparant parelles que són a la MATEIXA temperatura** —i que,
+>   per tant, veuen el mateix vapor— la desviació entre elles surt **igual que en calent dins de
+>   0,25 °C** (`fons`–`baixa`: 0,45 calent / 0,62 fred · `centre`–`gran`: 0,58 / 0,34). És a
+>   dir: **entre 5 i 28 °C el calibratge relatiu no canvia gaire**, que era la pregunta de la
+>   tanda.
