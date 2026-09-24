@@ -841,4 +841,6 @@ aquesta anàlisi i falla si `calibratge.jinja` no en surt.
 >   dades que l'ajust no va veure mai (−0,5 a +0,3)—. Només se'n separa a les rampes ràpides i a
 >   la nevera, on cada sensor tenia una T diferent: allà, en punt de rosada, queda dins de 0,6 °C.
 >   Després del trasllat, amb la mateixa T que els altres: **+6,6 → +5,2 → +4,7 → +4,2 punts** de
->   mediana per blocs de 2 h (21:37–03:00), o sigui **s'asseca a ~0,25 punts/h**.
+>   mediana per blocs de 2 h (21:37–03:00), i després +3,6 a les 07:18, +1,6 a les 08:18 i
+>   **+0,6 a les 09:18 del 24/09**: s'ha assecat en unes 12 h, a l'aire i amb els altres, i torna
+>   a ser dins del marge dels altres quatre. ⏳ Falta veure que s'hi queda unes hores.
