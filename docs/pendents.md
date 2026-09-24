@@ -134,7 +134,8 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
 
 **Al local**
 
-- [ ] 🔬 **Abans de repartir-los, els cinc junts al soterrani 3–4 hores** (la primera, perquè
+- [x] ~~🔬 **Abans de repartir-los, els cinc junts al soterrani 3–4 hores**~~ ⏭️ **No s'ha fet**:
+      el 24/09/2026 es van repartir sense; queda per a la repetició d'hivern. (La primera, perquè
       s'aclimatin), amb el marcador encara encès. El calibratge s'ha ajustat entre el **51 i el
       73 % d'HR a 26–30 °C**, i el soterrani és del 65 al 90 % i més fred: per sobre del 73 % les
       rectes s'extrapolen sense que ningú les hagi vistes. Al 90 % la correcció ja és gran
@@ -152,7 +153,9 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       arribar al local, marcava ~6 punts d'HR de més, i baixant: el que fa un sensor que
       s'asseca. Si un cop sec no hi torna, el mullat li ha deixat un desplaçament i el seu
       calibratge ja no val → [incidències](domotica/calibratge.md#registre).
-- [ ] Repartir els sensors segons l'assignació, **apagar `input_boolean.mode_calibratge`** (fins
+- [ ] ✅ **Repartits el 24/09/2026 a les 13:46, en posicions de prova, i marcador apagat a les
+      13:51:11.** ⏳ Queda `inicia-serie.sh --de-debo` quan les posicions siguin les definitives.
+      Repartir els sensors segons l'assignació, **apagar `input_boolean.mode_calibratge`** (fins
       llavors, encès: mentre ho és, res no actua) i `scripts/inicia-serie.sh` per marcar l'inici
       de la sèrie de debò. *Des del 23/09/2026 el guió **s'hi nega** si el marcador és encès —la
       sèrie començaria amb la decisió dient `calibratge`—; amb `--apaga-marcador` l'apaga ell

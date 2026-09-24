@@ -850,3 +850,9 @@ aquesta anàlisi i falla si `calibratge.jinja` no en surt.
 >   continu: la dispersió de Td per blocs és de **0,42 °C** amb els cinc i **0,35** amb els quatre
 >   que no es van mullar. Dins del ~0,3–0,5 esperat fora de mostra. **No entra a l'ajust**: 2 punts
 >   d'HR de recorregut no donen cap pendent, i no canviaria els números.
+>
+> - **24/09, 13:46 — fi dels cinc junts.** Es reparteixen per les sales, en posicions de prova
+>   (la sèrie de debò encara no comença). **Marcador apagat a les 13:51:11**; de 13:46 a 13:51 són
+>   el trasllat de sala en sala i **no serveixen per a res**, per indicació de l'usuari. Al mateix
+>   moment es buida el dipòsit del deshumidificador (el compressor para a les 13:46:26). La
+>   comprovació per sobre del 73 % **no s'ha fet**: queda per a la repetició d'hivern.
