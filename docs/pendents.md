@@ -147,7 +147,8 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       a ~5 punts/h, i a més la sala era al 57–58 %, dins del rang ja calibrat. Es fa amb `baixa`
       sec i, per arribar per sobre del 73 % i estar estable, amb el deshumidificador aturat →
       [incidències](domotica/calibratge.md#registre).
-- [ ] 🔬 **Que `baixa` torni a coincidir amb els altres quatre quan sigui sec.** El 23/09, en
+- [x] ~~🔬 **Que `baixa` torni a coincidir amb els altres quatre quan sigui sec.**~~ ✅ **Hi torna**
+      (24/09/2026): sec en ~12 h a l'aire, i de 11:20 a 13:40 entre −0,35 i +0,67 punts. El 23/09, en
       arribar al local, marcava ~6 punts d'HR de més, i baixant: el que fa un sensor que
       s'asseca. Si un cop sec no hi torna, el mullat li ha deixat un desplaçament i el seu
       calibratge ja no val → [incidències](domotica/calibratge.md#registre).

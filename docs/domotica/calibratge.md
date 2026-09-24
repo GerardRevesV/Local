@@ -843,4 +843,10 @@ aquesta anàlisi i falla si `calibratge.jinja` no en surt.
 >   Després del trasllat, amb la mateixa T que els altres: **+6,6 → +5,2 → +4,7 → +4,2 punts** de
 >   mediana per blocs de 2 h (21:37–03:00), i després +3,6 a les 07:18, +1,6 a les 08:18 i
 >   **+0,6 a les 09:18 del 24/09**: s'ha assecat en unes 12 h, a l'aire i amb els altres, i torna
->   a ser dins del marge dels altres quatre. ⏳ Falta veure que s'hi queda unes hores.
+>   a ser dins del marge dels altres quatre. ✅ **I s'hi queda**: de 11:20 a 13:40, per blocs de
+>   20 min, entre −0,35 i +0,67 punts, com abans del trasllat.
+>   📏 **De passada, una validació a una T nova.** Aquestes mateixes 2 h 20 min, a **24,8 °C**
+>   —1,6 °C per sota del rang del calibratge— i al 54–56 % d'HR, amb el deshumidificador en marxa
+>   continu: la dispersió de Td per blocs és de **0,42 °C** amb els cinc i **0,35** amb els quatre
+>   que no es van mullar. Dins del ~0,3–0,5 esperat fora de mostra. **No entra a l'ajust**: 2 punts
+>   d'HR de recorregut no donen cap pendent, i no canviaria els números.
