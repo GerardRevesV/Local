@@ -834,3 +834,11 @@ aquesta anàlisi i falla si `calibratge.jinja` no en surt.
 >   que el filtre de ritme de l'eina. **Res d'aquest tram no serveix per calibrar**, per decisió
 >   de l'usuari. ⏳ Queda comprovar que `baixa` **torna a coincidir** amb els altres quan sigui
 >   sec: si no hi torna, el mullat li ha deixat un desplaçament i el seu calibratge ja no val.
+>   **L'historial diu que és el camí, no el calibratge** (revisat el 24/09 a les 03:00, amb l'HR
+>   calibrada cada 2 min des del 21/09 i els números desplegats): en **totes** les fases estables
+>   amb els cinc a la mateixa T, `baixa` va a **±0,5 punts** de la mediana dels altres quatre —la
+>   nit a casa (−0,4 a +0,2), el replà del tàper de sal (−0,2 a +0,5) i el 23/09 de 12:00 a 20:00,
+>   dades que l'ajust no va veure mai (−0,5 a +0,3)—. Només se'n separa a les rampes ràpides i a
+>   la nevera, on cada sensor tenia una T diferent: allà, en punt de rosada, queda dins de 0,6 °C.
+>   Després del trasllat, amb la mateixa T que els altres: **+6,6 → +5,2 → +4,7 → +4,2 punts** de
+>   mediana per blocs de 2 h (21:37–03:00), o sigui **s'asseca a ~0,25 punts/h**.
