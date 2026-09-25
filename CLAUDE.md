@@ -96,6 +96,7 @@ docs/
     logica-v2.md       La lògica v2: llindar per tram, ventilació contra la planta baixa, estats
     logica-v2-pla.md   ⭐ Com es codifica la v2: modes, estats, paràmetres i fases
     requisits.md       El que el sistema ha de saber fer i encara no és decisió
+    diari-de-la-serie.md  Els esdeveniments de fora que expliquen la sèrie: finestres, neteja, talls
   privat/              (IGNORAT per git — mai commitar)
     identificacio.md   Adreça, cadastre, registre, parts, preu, detall de l'ITE
 

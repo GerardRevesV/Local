@@ -368,6 +368,8 @@ i **«el dia 3 vaig agafar el sensor del fons»**.
 d'esborrar, s'ha d'explicar**. Un pic anotat val més que un pic desaparegut, i costa una línia
 de text.
 
+✅ **Creat el 26/09/2026** → [diari-de-la-serie.md](diari-de-la-serie.md).
+
 **Proposta:** un fitxer pla al repositori, `docs/domotica/diari-de-la-serie.md`, una línia per
 esdeveniment amb data, hora i descripció. Zero peces, es versiona, i el guió de gràfics el pot
 llegir per posar-hi les anotacions. Amb la regla de sempre: **sense noms ni dades personals**.

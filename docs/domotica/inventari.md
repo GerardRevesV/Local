@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Hub | **Tapo H110** ✅ *(hub IR + sub-GHz)* | corridor | Actiu |
 | Endoll intel·ligent | **Tapo P110M** ✅ *(Matter — mesura consum)* | corridor | **Actiu a HA** — node 9, mesurant |
-| **Mòduls de relé** | **2× Tapo S110E** | — | ⏳ **Comprats, sense instal·lar** |
+| **Mòduls de relé** | **2× Tapo S110E** | — | 🔧 **Instal·lats** (24–25/09/2026, segons l'usuari) · ⏳ **sense emparellar a HA** |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Centre* | Actiu |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Fons* | Actiu |
 | Sensor T/HR | **Tapo T310** | Soterrani — *Gran* | Actiu |
