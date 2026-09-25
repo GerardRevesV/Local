@@ -53,7 +53,8 @@ cobreix la condensació per mal ús propi.
 | Finalitat | Temps estimat per ambdues parts per **determinar l'origen de les humitats** |
 | Ús | La part compradora pot deduir-ne les despeses en què hagi incorregut per resoldre els problemes d'humitat, **exhibint les factures** al venedor |
 
-Punt de partida de la negociació: 8.000 € i 12 mesos. Acord final: 3.000 € i 6 mesos.
+Acord final, després d'una negociació: 3.000 € i 6 mesos. El punt de partida, al fitxer privat
+(`docs/privat/identificacio.md`, *Preu i pagaments*).
 
 > **Límit conegut:** si el cost de reparació supera la retenció, recuperar la diferència ja
 > no és automàtic — depèn de les excepcions de la clàusula QUINTA i, si cal, de reclamar.
