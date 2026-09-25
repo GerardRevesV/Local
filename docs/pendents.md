@@ -153,6 +153,13 @@ pot fer còmodament a casa**, o el que val més fer abans de desendollar res.*
       arribar al local, marcava ~6 punts d'HR de més, i baixant: el que fa un sensor que
       s'asseca. Si un cop sec no hi torna, el mullat li ha deixat un desplaçament i el seu
       calibratge ja no val → [incidències](domotica/calibratge.md#registre).
+- [ ] 🔌 **Reserves DHCP al router** (al local, el 27/09). Cinc aparells sense: el **portàtil per la
+      Wi-Fi** —té una altra MAC que pel cable, i amb els talls ja ha passat de `.106` a `.107`—, el
+      **hub** (`.100`), l'**endoll** (`.101`) i els dos **S110E** (`.103` al fons i `.105` a la sala
+      gran). El **deshumidificador** (`.104`) ja la té des del 21/09, i és el que més importa:
+      `tuya-local` hi parla per IP. Matter i Tailscale no depenen de la IP. Les MAC són a l'app de
+      Tapo; al repositori no hi van. *(Des de casa no es pot: pel túnel SSH el router refusa tot el
+      que no ve de la seva pròpia adreça, 26/09.)*
 - [ ] ✅ **Repartits el 24/09/2026 a les 13:46, en posicions de prova, i marcador apagat a les
       13:51:11.** ⏳ Queda `inicia-serie.sh --de-debo` quan les posicions siguin les definitives.
       Repartir els sensors segons l'assignació, **apagar `input_boolean.mode_calibratge`** (fins
