@@ -304,6 +304,43 @@ connectat no és qui l'obre, sinó què passa a dins:
 > El camí que **sí** que esquiva el servidor és el de la segona fila: **de fàbrica**, amb el
 > parpelleig i el QR de l'etiqueta. Per això és el pla B de debò quan tota la resta falla.
 
+### 🏠 Des de casa, sense mòbil: el codi directe al `matter-server`
+
+✅ **Així es van emparellar els dos S110E el 26/09/2026**, des del portàtil de casa, amb l'usuari
+a casa i els relés al local: **8 segons cadascun**. Si la conversa per la xarxa la fa el servidor
+igualment (primera fila de la taula), l'app Companion només hi posa el codi, i el codi es pot
+donar directament al `matter-server` per la seva API, per SSH:
+
+1. **App de Tapo** (des d'on sigui): l'aparell → Matter → *afegir-lo a una altra plataforma*. En
+   surten les **11 xifres**, que valen ~15 min i un sol ús. Qui fa servir l'app diu **quin
+   aparell és** i el final de la seva MAC, que l'app ensenya; es comprova després amb `ip neigh`.
+2. **Comprovar que la finestra és oberta**: `avahi-browse -rpt _matterc._udp` ha de donar `CM=1`
+   o `CM=2` per a aquell aparell.
+3. **L'ordre**, des de dins del contenidor, que ja té `aiohttp`. Es desa en un fitxer i s'hi
+   envia: `ssh local-ha 'docker exec -i matter-server python3 -' < emparella.py`.
+
+```python
+# emparella.py — les 11 xifres a CODI, i res més
+import asyncio, aiohttp
+CODI = 'LES11XIFRES'
+async def main():
+    async with aiohttp.ClientSession() as s:
+        async with s.ws_connect('http://localhost:5580/ws') as ws:
+            await ws.receive_json()                      # informació del servidor
+            await ws.send_json({'message_id': '1', 'command': 'commission_with_code',
+                                'args': {'code': CODI, 'network_only': True}})
+            while (m := await ws.receive_json()).get('message_id') != '1':
+                pass
+            print(m.get('result', {}).get('node_id'), m.get('error_code'), m.get('details'))
+asyncio.run(main())
+```
+
+4. HA el recull sol: el dispositiu i les entitats apareixen en uns segons. **Renombrar-les al
+   moment** (Pas 6), abans que gravin gaire amb el nom automàtic.
+
+> ⚠️ **El codi no s'apunta enlloc**: ni al repositori, ni al diari, ni al fitxer un cop fet
+> servir. Val un sol cop i caduca sol, però mentre dura és la clau d'entrada a l'aparell.
+
 ### El que queda, i què s'hi fa
 
 Si l'aparell hi és, s'anuncia i respon a un ping però **no contesta l'emparellament**, la causa

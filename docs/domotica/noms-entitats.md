@@ -64,8 +64,8 @@ seva germana *(23/09/2026)*.
 | Aparell | Funció | `entity_id` |
 |---|---|---|
 | Tapo P110M | Deshumidificador | `switch.deshumidificador` · `sensor.deshumidificador_potencia` · `sensor.deshumidificador_energia` |
-| Tapo S110E | Ventilador 1 | `switch.ventilador_1` · `sensor.ventilador_1_potencia` |
-| Tapo S110E | Ventilador 2 | `switch.ventilador_2` · `sensor.ventilador_2_potencia` |
+| Tapo S110E | Ventilador 1 — soterrani, **fons** | `switch.ventilador_1` · `sensor.ventilador_1_potencia` · `sensor.ventilador_1_energia` |
+| Tapo S110E | Ventilador 2 — soterrani, **sala gran** | `switch.ventilador_2` · `sensor.ventilador_2_potencia` · `sensor.ventilador_2_energia` |
 | Tapo T300 | Inundació | `binary_sensor.soterrani_inundacio` |
 
 **L'endoll en publica nou més**, que Matter bateja sol i que en renombrar el dispositiu han
@@ -75,6 +75,11 @@ quedat amb el mateix prefix: `sensor.deshumidificador_effective_voltage` i
 d'estar en `on`—, `update.deshumidificador_microprogramari`, `button.deshumidificador_identifica`
 i tres sensors de diagnòstic desactivats. **No són al conveni perquè no els fa servir ningú**;
 hi consten perquè existeixen i perquè la decisió sobre tensió i corrent és oberta.
+
+**Els dos S110E en publiquen els mateixos**, amb el prefix `ventilador_1_` i `ventilador_2_`
+*(26/09/2026, nodes 10 i 11)*. Amb una diferència que és a posta: el seu
+`select.ventilador_N_power_on_behavior` és a **`off`** —després d'un tall, **apagats** (C.6)—, al
+revés que el de l'endoll.
 
 > **La nota, que fins avui faltava (21/09/2026).** Que la font sigui Matter vol dir que
 > l'aparell ha de **parlar Matter**: el hub **H110** i els **S110E** sí, i l'endoll també,
