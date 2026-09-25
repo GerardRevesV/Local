@@ -265,6 +265,13 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
         amb `actuacio_deshumidificador` encès i algú al davant comptant xiulets.
   - [ ] **La setmana de base**, en mode *Llindar fix* amb `actuacio_deshumidificador` encès.
   - [ ] **Fase 4 — el segon nivell**, quan se sàpiga la desviació de l'higròmetre de l'aparell.
+        📏 **Ja es veu que fa falta** (24/09 14:15 → 26/09 01:10, amb l'actuació encesa): la decisió
+        diu **deshumidificar 18 h** i el compressor en fa **6**. En 142 de les 145 mostres amb el
+        compressor parat, l'higròmetre de l'aparell ja era **al llindar o per sota** (mediana: objectiu
+        60 %, aparell 59 %) mentre el racó més humit dels Tapo era al **65,5 %**. Amb el llindar de HA
+        enviat tal qual, l'aparell **es creu sec ~6 punts abans d'hora**. ⚠️ Són dies amb les finestres
+        obertes ([diari](domotica/diari-de-la-serie.md)), i la diferència depèn d'on és l'aparell i de
+        quin racó mana: ⏳ **a quina sala és el deshumidificador**.
   - [ ] **Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.
         🔧 **Instal·lats el 24–25/09/2026** (segons l'usuari). A HA encara **no hi són**
         (comprovat el 26/09 a la 01:00: el `matter-server` té els 2 nodes de sempre), o sigui que no
