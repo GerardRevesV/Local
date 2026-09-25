@@ -266,6 +266,12 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
   - [ ] **La setmana de base**, en mode *Llindar fix* amb `actuacio_deshumidificador` encès.
   - [ ] **Fase 4 — el segon nivell**, quan se sàpiga la desviació de l'higròmetre de l'aparell.
   - [ ] **Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.
+        🔧 **Instal·lats el 24–25/09/2026** (segons l'usuari). A HA encara **no hi són**
+        (comprovat el 26/09 a la 01:00: el `matter-server` té els 2 nodes de sempre), o sigui que no
+        graven res amb cap nom. ⏳ Emparellar-los per Matter
+        ([emparellar-matter.md](domotica/emparellar-matter.md)) i **renombrar-los abans que gravin**:
+        `switch.ventilador_1` i `_2`, `sensor.ventilador_1_potencia` i `_2`; arrencada **apagada**
+        (C.6); i llavors `ventiladors.jinja`.
 - [ ] ❓ **El volum del soterrani**: la v2 fa servir **115 m³** (~46 m² per l'alçada), però
       l'alçada no s'ha mesurat mai. Amb el cabal, és el que converteix renovacions en minuts.
 - [ ] 📌 **Filament en caixes estanques amb dessecant**: a un 55 % ja agafa massa humitat.
@@ -345,7 +351,10 @@ Identificat el 20/09/2026: **Acer TravelMate B3 TMB311-32-C4JR**. Veredicte: **s
       i HA torna sol amb HTTP 200. Queda oberta la meitat de maquinari (BIOS).
 - [ ] ⚠️ **Decidir un SAI petit (~40–60 €) per al router i el hub H110.** La bateria del
       portàtil només manté viu el portàtil: en un tall, els sensors deixen d'arribar igualment
-      i la sèrie de dades fa un forat.
+      i la sèrie de dades fa un forat. 📏 **Mesurat el 24–25/09/2026**: quatre talls (per instal·lar
+      els S110E) sumen **139 min** de forat a tots els sensors —el més llarg, **81 min**—, i el
+      portàtil els aguanta tots amb la bateria, sense reiniciar-se →
+      [diari de la sèrie](domotica/diari-de-la-serie.md).
 - [ ] **Col·locar-lo a la planta baixa, no al soterrani** (humitat sobre l'electrònica), en un
       lloc airejat i, si es pot, amb **cable Ethernet**.
 - [ ] 🆕 **Aplicar la llista negra del Bluetooth al servidor, i reiniciar — DESPRÉS del
