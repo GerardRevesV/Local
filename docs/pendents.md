@@ -273,12 +273,12 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
         obertes ([diari](domotica/diari-de-la-serie.md)), i la diferència depèn d'on és l'aparell i de
         quin racó mana: ⏳ **a quina sala és el deshumidificador**.
   - [ ] **Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.
-        🔧 **Instal·lats el 24–25/09/2026** (segons l'usuari). A HA encara **no hi són**
-        (comprovat el 26/09 a la 01:00: el `matter-server` té els 2 nodes de sempre), o sigui que no
-        graven res amb cap nom. ⏳ Emparellar-los per Matter
-        ([emparellar-matter.md](domotica/emparellar-matter.md)) i **renombrar-los abans que gravin**:
-        `switch.ventilador_1` i `_2`, `sensor.ventilador_1_potencia` i `_2`; arrencada **apagada**
-        (C.6); i llavors `ventiladors.jinja`.
+        🔧 **Instal·lats el 24–25/09/2026** (segons l'usuari). ✅ **Emparellats per Matter i
+        renombrats el 26/09/2026** (01:18 i 01:21, des de casa): *Ventilador 1* al fons (node 10),
+        *Ventilador 2* a la sala gran (node 11), arrencada **apagada** (C.6), microprogramari al dia →
+        [emparellar-matter.md](domotica/emparellar-matter.md#-des-de-casa-sense-mòbil-el-codi-directe-al-matter-server).
+        ⏳ Queda: **mesurar-los amb el relé obert** i fixar `W_MINIM` —el de 5 W no serveix: el 2
+        fa 4,8 W girant—; llavors `ventiladors.jinja` i els `history_stats` de `rosada.yaml`.
 - [ ] ❓ **El volum del soterrani**: la v2 fa servir **115 m³** (~46 m² per l'alçada), però
       l'alçada no s'ha mesurat mai. Amb el cabal, és el que converteix renovacions en minuts.
 - [ ] 📌 **Filament en caixes estanques amb dessecant**: a un 55 % ja agafa massa humitat.

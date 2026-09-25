@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Hub | **Tapo H110** ✅ *(hub IR + sub-GHz)* | corridor | Actiu |
 | Endoll intel·ligent | **Tapo P110M** ✅ *(Matter — mesura consum)* | corridor | **Actiu a HA** — node 9, mesurant |
-| **Mòduls de relé** | **2× Tapo S110E** | — | 🔧 **Instal·lats** (24–25/09/2026, segons l'usuari) · ⏳ **sense emparellar a HA** |
+| **Mòduls de relé** | **2× Tapo S110E** | Soterrani — *fons* (ventilador 1) i *sala gran* (ventilador 2) | ✅ **A HA per Matter** (26/09/2026, nodes 10 i 11, microprogramari 1.3.0) · ⏳ encara **no a la lògica** (`ventiladors.jinja`) |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Centre* | Actiu |
 | Sensor T/HR | **Tapo T315** | Soterrani — *Fons* | Actiu |
 | Sensor T/HR | **Tapo T310** | Soterrani — *Gran* | Actiu |
@@ -291,6 +291,11 @@ Un **S110E** és un **mòdul de relé** que va darrere l'interruptor o en línia
   cablejats a la xarxa.
 - **Contacte sec** — contacte lliure de tensió, per governar equips que tenen la seva pròpia
   entrada de comandament.
+
+📏 **Primeres mesures** (26/09/2026, 01:18–01:22, els dos relés tancats): el del **fons**, **7,0 W** i
+després **4,3 W** (0,064 → 0,042 A); el de la **sala gran**, **4,8 W**. Ventiladors petits. ⚠️ Amb
+aquests números, el `W_MINIM` de 5 W de `ventiladors.jinja` —per sota, «el relé és tancat però
+no gira»— **no serveix**: donaria el 2 per aturat girant. Cal mesurar-los amb el relé obert.
 
 I, el que aquí importa més, **mesuren consum**. Amb això es compleix la regla de
 [monitoritzacio.md](monitoritzacio.md): *mesura watts, no relés*. «El relé estava tancat» és
