@@ -158,10 +158,8 @@ views:
             name: El seu mode ara
           - entity: binary_sensor.ventiladors_en_marxa
             name: Ventiladors
-          - type: attribute
-            entity: binary_sensor.ventiladors_en_marxa
-            attribute: virtuals
-            name: Relés de mentida (sense S110E)
+          - entity: sensor.ventiladors_potencia
+            name: Ventiladors, potència
           - type: divider
           - entity: input_boolean.actuacio_deshumidificador
             name: Actuar sobre el deshumidificador
@@ -758,8 +756,12 @@ views:
           - entity: input_number.ventiladors_max_minuts
             name: Engegada màxima (res «per sempre»)
           - type: section
-            label: Els relés de mentida, fins als S110E
-          - entity: input_boolean.ventilador_1_virtual
-            name: Ventilador 1 (virtual)
-          - entity: input_boolean.ventilador_2_virtual
-            name: Ventilador 2 (virtual)
+            label: Els relés (S110E) — el 1 al fons, el 2 a la sala gran
+          - entity: switch.ventilador_1
+            name: Ventilador 1 (fons)
+          - entity: sensor.ventilador_1_potencia
+            name: Ventilador 1, potència
+          - entity: switch.ventilador_2
+            name: Ventilador 2 (sala gran)
+          - entity: sensor.ventilador_2_potencia
+            name: Ventilador 2, potència

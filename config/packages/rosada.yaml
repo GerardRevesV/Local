@@ -580,27 +580,25 @@ sensor:
     start: "{{ today_at('00:00') }}"
     end: "{{ now() }}"
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  VENTILADORS — s'activa a la FASE C, quan els Tapo S110E estiguin instal·lats.
-#  Fins llavors les entitats no existeixen i aquests blocs quedarien
-#  «unavailable», embrutant l'històric amb forats que no són forats.
-#
-#  sensor:
-#    - platform: history_stats
-#      name: Ventilador 1 — hores avui
-#      entity_id: switch.ventilador_1
-#      state: "on"
-#      type: time
-#      start: "{{ today_at('00:00') }}"
-#      end: "{{ now() }}"
-#    - platform: history_stats
-#      name: Ventilador 2 — hores avui
-#      entity_id: switch.ventilador_2
-#      state: "on"
-#      type: time
-#      start: "{{ today_at('00:00') }}"
-#      end: "{{ now() }}"
-# ─────────────────────────────────────────────────────────────────────────────
+  # ── VENTILADORS — els Tapo S110E, des del 26/09/2026 (Fase 5) ─────────────
+  #  Hores amb el RELÉ tancat, no hores girant: qui diu si gira són els watts
+  #  (binary_sensor.ventiladors_en_marxa, a control.yaml).
+  - platform: history_stats
+    name: Ventilador 1 — hores avui
+    unique_id: ventilador_1_hores_avui
+    entity_id: switch.ventilador_1
+    state: "on"
+    type: time
+    start: "{{ today_at('00:00') }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: Ventilador 2 — hores avui
+    unique_id: ventilador_2_hores_avui
+    entity_id: switch.ventilador_2
+    state: "on"
+    type: time
+    start: "{{ today_at('00:00') }}"
+    end: "{{ now() }}"
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  VIGILÀNCIA DE SENSORS
