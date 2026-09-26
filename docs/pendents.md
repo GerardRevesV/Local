@@ -279,13 +279,21 @@ exterior, gravant-les totes dues), i estats d'higiene, impressió i ocupat.*
         enviat tal qual, l'aparell **es creu sec ~6 punts abans d'hora**. ⚠️ Són dies amb les finestres
         obertes ([diari](domotica/diari-de-la-serie.md)), i la diferència depèn d'on és l'aparell i de
         quin racó mana: ⏳ **a quina sala és el deshumidificador**.
-  - [ ] **Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.
+  - [x] ~~**Fase 5 — els S110E**: un sol canvi, a `custom_templates/ventiladors.jinja`.~~ ✅ **Feta i
+        provada el 26/09/2026**: `W_MINIM` a 1 W, desplegada a les 01:40 i experiment de punta a punta
+        de 01:42 a 02:05 —la decisió mana, els relés obeeixen amb els temps mínims, els watts ho
+        confirmen— → [logica-v2-pla.md](domotica/logica-v2-pla.md#fase-5--els-s110e).
         🔧 **Instal·lats el 24–25/09/2026** (segons l'usuari). ✅ **Emparellats per Matter i
         renombrats el 26/09/2026** (01:18 i 01:21, des de casa): *Ventilador 1* al fons (node 10),
         *Ventilador 2* a la sala gran (node 11), arrencada **apagada** (C.6), microprogramari al dia →
         [emparellar-matter.md](domotica/emparellar-matter.md#-des-de-casa-sense-mòbil-el-codi-directe-al-matter-server).
-        ⏳ Queda: **mesurar-los amb el relé obert** i fixar `W_MINIM` —el de 5 W no serveix: el 2
-        fa 4,8 W girant—; llavors `ventiladors.jinja` i els `history_stats` de `rosada.yaml`.
+        Amb el relé obert, **0,0 W** tots dos; tancat, 2,9–7,0 W.
+  - [ ] ⚠️ **`actuacio_ventiladors` és ENCESA des del 26/09 a les 01:42**: HA governa els ventiladors de
+        debò. Decidir si es queda així o s'apaga fins a la setmana de base. Apagar-la **atura** els
+        ventiladors (automatització «en apagar l'actuació, els ventiladors s'aturen»).
+  - [ ] 🔁 **Reiniciar HA quan convingui** (es pot fer amb el de la llista negra del Bluetooth): des
+        del pas a la Wi-Fi, el SSDP d'HA encara escolta l'adreça del cable i cada 10 min registra
+        «Address not available». No afecta Matter ni res del projecte.
 - [ ] ❓ **El volum del soterrani**: la v2 fa servir **115 m³** (~46 m² per l'alçada), però
       l'alçada no s'ha mesurat mai. Amb el cabal, és el que converteix renovacions en minuts.
 - [ ] 📌 **Filament en caixes estanques amb dessecant**: a un 55 % ja agafa massa humitat.
