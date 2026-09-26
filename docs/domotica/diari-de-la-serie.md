@@ -20,6 +20,7 @@
 | 25/09 11:23 | 25/09 11:27 | **Tall de llum** | mesurat | 4 min |
 | 25/09 11:38 | 25/09 12:01 | **Tall de llum** | mesurat | 23 min |
 | 25/09 18:21 | 25/09 19:43 | **Tall de llum**; el router torna a les 19:25 | mesurat | 81 min |
+| 26/09 01:42 | ⏳ | **Ventiladors governats per HA** (`actuacio_ventiladors` encesa). Experiment: `delta_td_higiene` a 1,0 de 01:44:27 a 01:53:52 | mesurat | Ventiladors aturats de 01:52:51 a 02:03:47; deshumidificador assecant de 01:44:36 a 01:53:54 |
 
 **Els talls de llum** són **tots quatre per instal·lar els S110E**, segons l'usuari. En tots quatre el portàtil aguanta amb la bateria, sense reiniciar-se, i HA segueix
 en marxa; el que cau és el router, el hub i l'endoll, i per tant **totes** les dades.

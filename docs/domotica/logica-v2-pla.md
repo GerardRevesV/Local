@@ -270,6 +270,25 @@ L'estat (esglaó i des de quan) anirà als atributs de la decisió, que es resta
    potències. `reload_custom_templates` + `template.reload`. **És l'únic canvi de codi.**
 4. Descomentar els `history_stats` dels ventiladors de `rosada.yaml` (`history_stats.reload`).
 
+✅ **Feta el 26/09/2026.** Emparellats des de casa (01:18 i 01:21) i desplegada a les 01:40, amb
+**`W_MINIM` a 1 W**: amb el relé obert, cada S110E marca 0,0 W; tancat, el 1 fa 4,3–7,0 W i el 2,
+2,9–4,8 W, i els 5 W previstos haurien donat el 2 per aturat girant. Els `history_stats` van
+dins del `sensor:` que ja hi havia. **L'experiment de punta a punta** (`actuacio_ventiladors`
+encesa i `delta_td_higiene` pujat i tornat a baixar):
+
+| Hora | Què | Decisió | Relés | Watts (1 / 2) |
+|---|---|---|---|---|
+| 01:42:25 | `actuacio_ventiladors` → **on** | higiene, vol ventilar | tancats | 5,7 / 3,8 |
+| 01:44:27 | `delta_td_higiene` 0,0 → **1,0** (ΔTd era 0,29) | **01:44:42**: *deshumidificar*, no vol ventilar | tancats: falten els 12 min d'engegada (des de 01:40) | 3,0–7,2 / 1,8–4,1 |
+| **01:52:51** | l'executor, en complir-se els 12 min | no vol ventilar | **oberts** | **0,0 / 0,0** |
+| 01:53:52 | `delta_td_higiene` → **0,0** | **01:54:07**: higiene, vol ventilar | oberts: falten els 10 min d'aturada | 0,0 / 0,0 |
+| **02:03:47** | l'executor, en complir-se els 10 min | vol ventilar | **tancats** | **02:04:03**: 10,6 / 7,4, i després 7–8 / 4,5–5,8 |
+
+La decisió canvia en ~15 s, l'executor respecta els dos temps mínims —el d'engegada comptat des
+de la recàrrega de les plantilles, que torna a posar `last_changed` a zero— i «en marxa» segueix
+els watts amb una lectura de retard (~16 s). De passada, els 9 minuts en *deshumidificar* el
+deshumidificador va anar al 55 % del tram de vall i el compressor va funcionar (01:44:36–01:53:54).
+
 ## Què respon cada gràfic
 
 | Pregunta | Objectiu | On |
@@ -294,7 +313,8 @@ L'estat (esglaó i des de quan) anirà als atributs de la decisió, que es resta
   prova del dipòsit o el calibratge no hagi acabat, i sense reiniciar HA.
 - **Fase 3**, després del trasllat: primer desplegada amb **tot apagat**; la **setmana de base**
   en mode *Llindar fix* amb `actuacio_deshumidificador` encès; després, *Òptim*.
-- Els **ventiladors** no s'actuen fins a la Fase 5; fins llavors, els relés virtuals.
+- Els **ventiladors** no s'actuen fins a la Fase 5; fins llavors, els relés virtuals. ✅ **Des del
+  26/09/2026**, els S110E.
 
 ## Fora d'aquest pla
 
